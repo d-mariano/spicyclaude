@@ -61,11 +61,10 @@ The generated PRD should include the following sections:
 Assume the primary reader of the PRD is a **junior developer**. Therefore, requirements should be explicit, unambiguous, and avoid jargon where possible. Provide enough detail for them to understand the feature's purpose and core logic.
 
 ## Output
-
 *   **Format:** Markdown (`.md`)
-*   **Location:** `/context/[nnn]-{feature|branch|question}/research-[nnn].md`
+*   **Location:** `/context/[nnn]-{feature|branch|question}`
 *   **Filename:** `prd-[nnn].md`
-#   **Example:** `prd-001.md`
+*   **Example:** `prd-001.md`
 
 ## Final instructions
 
