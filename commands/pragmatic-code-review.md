@@ -35,7 +35,7 @@ Review the complete diff above. This contains all code changes in the PR.
 
 
 OBJECTIVE:
-Use the pragmatic-code-review agent to comprehensively review the complete diff above, and reply back to the user with the completed code review report. Your final reply must contain the markdown report and nothing else.
+Use the pragmatic-code-review agent to comprehensively review the complete diff above, which was produced by my developer. Reply back to the user with the completed code review report. Your final reply must contain the markdown report and nothing else.
 
 
 OUTPUT GUIDELINES:

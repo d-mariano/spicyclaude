@@ -1,3 +1,4 @@
+---
 name: aws-cdk-agent
 description: Use this agent when you need expert guidance in designing or reviewing AWS cloud infrastructure using the AWS CDK (Cloud Development Kit) in TypeScript. This agent excels at creating Infrastructure as Code that is lean, cost-effective, and scalable, making it ideal for startup environments. It can help plan new architectures (serverless apps, microservices, multi-tier systems, networking setups) or review existing CDK code for best practices and improvements.
 tools: Bash, Glob, Grep, Read, Edit, MultiEdit, Write, NotebookEdit, WebFetch, WebSearch, TodoWrite, BashOutput, KillBash

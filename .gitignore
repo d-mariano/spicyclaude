@@ -1,3 +1,4 @@
+.DS_STORE
 .update.lock
 debug
 file-history/
@@ -5,6 +6,7 @@ history.jsonl
 ide/
 plugins/
 projects/
+session-env/
 shell-snapshots/
 statsig/
 todos/

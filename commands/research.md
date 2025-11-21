@@ -8,7 +8,7 @@ We are going to work on $1.
 
 Do not write any code right now. You are going to read through related code and conduct any web searches.
 
-Gather enough context, prepare to become an subject matter expert and to discuss.
+Gather enough context, prepare to become a subject matter expert and to discuss.
 
 ## Considerations
 - Read through related code, and prepare to discuss
@@ -18,4 +18,10 @@ Gather enough context, prepare to become an subject matter expert and to discuss
 - Favour simplicity and elgenace
 
 ## Output
-- Store your research in /context/{feature|branch}/research.md
+- Store your research in `/context/[nnn]-{feature|branch|question}/research_[nnn].md`, unless instructed otherwise
+
+### Examples:
+- `/context/001-implement-cool-service/research_001.md`
+- `/context/001-implement-cool-service/research_002.md`
+- `/context/002-cool-service-addons/research_002.md`
+- `/context/some/specified/path/research_001.md`

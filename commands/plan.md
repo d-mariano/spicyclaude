@@ -8,7 +8,7 @@ We are going to work on $1.
 
 Think hardest. Make a detailed plan to accomplish this, based on $2.
 
-Identify files that need to be changed.
+Prioritize for rapid iteration and MVP development, do NOT add scope.
 
 ## Plan Outline
 - Plan to implement only the functionality we need right now
@@ -19,7 +19,12 @@ Identify files that need to be changed.
 - Reinforce CLAUDE.md rules when relevant, especially around code clarity, simplicity, reuse, and third-party usage
 - Include Tasks section at the end
 
-## Avoid the Following
+## Testing
+- Unless otherwise stated, you will be using Test Driven Development w/ RED/GREEN phases
+- Do not over-engineer tests or amount of tests
+- Do not create redundant tests
+
+## DO NOT
 - Do not include plans for legacy fallback unless required or explicitly requested
 - Fail fast and loud, avoid unnecessary error handling
 - Do not over-engineer abstractions

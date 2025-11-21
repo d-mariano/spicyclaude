@@ -1,6 +1,6 @@
 ---
 name: planner
-description: Use this agent to plan implementation steps and tasks.
+description: Use this agent to plan implementation steps and tasks on a given topic or PRD with given context or research.
 tools: Bash, Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch
 argument-hint: [prd] [research]
 color: green
@@ -43,9 +43,10 @@ Tasks musts be outlined in the following section and format, at the end of the f
 ```
 
 ## Output
-Store your plan in /context/[nnn]-{feature|branch}/plan-[nnn].md
+- Store your plan in `/context/[nnn]-{feature|branch}/plan-[nnn].md`, unless instructed otherwise
+- Output the path to your output file
 
 ### Examples:
-/context/001-implement-cool-service/plan-001.md
-/context/001-implement-cool-service/plan-002.md
-/context/002-next-neat-service/plan-001.md
+- `/context/001-implement-cool-service/plan-001.md`
+- `/context/001-implement-cool-service/plan-002.md`
+- `/context/002-next-neat-service/plan-001.md`

@@ -1,7 +1,7 @@
 ---
 allowed-tools: Bash, BashOutput, Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch
 argument-hint: [idea]
-description: Interactively generate a PRD for a given idea.
+description: Interactively generate a PRD for a given idea, uses the researcher agent as needed.
 ---
 # Rule: Generating a Product Requirements Document (PRD)
 
@@ -12,11 +12,23 @@ To guide an AI assistant in creating a detailed Product Requirements Document (P
 ## User Input
 $1
 
+## Using the Researcher Agent
+- When using @agent-researcher, direct it to keep outputting to the same file, i.e `/context/001-implement-cool-service/research_001.md`
+- Use it by either directing it to an input file or specific topic, it should maintain and grow the new research file for this thread
+- Use @agent-researcher to maintain research for this PRD, it will output a research file and tell you where it is saved
+- For any subsequent calls to @agent-researcher, also provide it the location of the original research file and tell it to update it as needed
+- Use @agent-researcher before asking clarifying questions, after asking clarifying questions, and after any changes to the PRD
+- Use @agent-researcher if the PRD changes in a way where the research that you have access to is not sufficient enough to make educated decisions
+
 ## Process
 
-1.  **Ask Clarifying Questions:** Before writing the PRD, the AI *must* ask clarifying questions to gather sufficient detail. The goal is to understand the "what" and "why" of the feature, not necessarily the "how" (which the developer will figure out). Make sure to provide options in letter/number lists so I can respond easily with my selections.
-2.  **Generate PRD:** Based on the initial prompt and the user's answers to the clarifying questions, generate a PRD using the structure outlined below.
-3. **Save PRD:** Save the generated document in `/context/[nnn]-{feature|branch|question}`
+1.  **Research:** Use @agent-researcher as needed in order to become a subject matter expert, this should include a first pass of what is needed to understand the original idea
+2.  **Ask Clarifying Questions:** Before writing the PRD, the AI *must* ask clarifying questions to gather sufficient detail. The goal is to understand the "what" and "why" of the feature, not necessarily the "how" (which the developer will figure out). Make sure to provide options in letter/number lists so I can respond easily with my selections.
+3.  **Repeat:** Go back to step 1 as needed, especially for researching any technical approaches
+4.  **Generate PRD:** Based on the initial prompt and the user's answers to the clarifying questions, generate a PRD using the structure outlined below
+7.  **Save PRD:** Save the generated document in `/context/[nnn]-{feature|branch|question}`
+8.  **Research Again:** Use @agent-researcher to determine if more research is needed for the generated PRD
+9.  **Refine:** If the PRD should be adjusted based on new research, go through all the steps again before updating the generated PRD
 
 ## Clarifying Questions (Examples)
 
@@ -63,3 +75,4 @@ Store the PRD in `/context/[nnn]-{feature|branch}/prd-[nnn].md`
 1. Do NOT start implementing the PRD
 2. Make sure to ask the user clarifying questions
 3. Take the user's answers to the clarifying questions and improve the PRD
+4. Research as needed

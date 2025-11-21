@@ -19,7 +19,7 @@ Gather enough context, prepare to become an subject matter expert and to discuss
 ## Output
 - Store your research in `/context/[nnn]-{feature|branch|question}/research_[nnn].md`, unless instructed otherwise
 - A caller may give you an existing research file and ask you to ammend research to it, do this as requested
-- Tell the calling agent where your research lies
+- Output the path to your output file
 
 ### Examples:
 - `/context/001-implement-cool-service/research_001.md`

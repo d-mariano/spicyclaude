@@ -6,20 +6,70 @@ A comprehensive collection of slash commands, agents, and workflows for Claude C
 
 This repository provides a complete workflow system for building features with Claude Code, from initial ideation through implementation and validation. The workflow emphasizes structured planning, incremental development, and continuous validation to maximize code quality while maintaining developer control.
 
-## 🔄 Core Workflow (WIP)
+## 🔄 Core Workflow
 
 The recommended development cycle follows four distinct phases:
 
-1. **💡 Ideation** - Start with an idea (use Gemini Deep Dive or similar tools for exploration)
-2. **📋 Requirements & Research** - Use `/prdgen` to create a comprehensive PRD from your idea
-   - Interactively asks clarifying questions ❓
-   - Automatically uses `@researcher` agent to become a subject matter expert 🔬
-   - Continuously researches as you refine the PRD, as needed 📚
-   - **⚠️ Known Issue** - Sometimes an extra call to the researcher is needed (WIP)
-3. **🗺️ Planning** - Use `/plan` to create a detailed implementation plan based on the PRD
-4. **⚡ Execution** - Use `/execute` to implement the plan with continuous validation
+1. **💡 Ideation & Requirements** - Generate a PRD or Story document
+   - Use Gemini Deep Research for exploration 🔬
+   - Import from Jira or other tools 📋
+   - Use `/prdgen [idea]` for interactive PRD generation ❓
+   - Creates clear, actionable requirements for junior developers 👥
 
-This structured approach ensures clarity at each stage and prevents scope creep while maintaining flexibility to adapt as you learn.
+2. **🔍 Research** - Use `/research <prd.md>` to become a subject matter expert
+   - Reads through related code and documentation 📚
+   - Conducts web searches on frameworks and libraries 🌐
+   - Identifies third-party types and alternative approaches 🔎
+   - Outputs to `/context/[nnn]-{feature}/research-[nnn].md`
+
+3. **🗺️ Planning** - Use `/plan <prd.md> <research.md>` to create detailed implementation plan
+   - Identifies files that need changes 📝
+   - Lists new classes, functions, and test names 🏗️
+   - Includes specific tasks in checkbox format ✅
+   - Outputs to `/context/[nnn]-{feature}/plan-[nnn].md`
+
+4. **⚡ Execution** - Use `/execute <plan.md>` to implement with continuous validation
+   - Follows Test Driven Development practices 🧪
+   - Marks tasks complete incrementally with commits 🔄
+   - Runs full test suite before each commit ✅
+   - Tracks progress in `/context/[nnn]-{feature}/progress.md`
+
+This structured approach ensures clarity at each stage and prevents scope creep while maintaining flexibility to adapt as you learn. All work happens in a **single context window** for maximum coherence.
+
+## 🧪 Experimental Workflows
+
+These workflows explore alternative approaches to managing complexity and context windows:
+
+### PRD Refinement Workflow
+Use `/prdgen [idea]` to iteratively refine an existing PRD:
+- Interactively asks clarifying questions to improve requirements
+- Helps evolve and detail existing product specifications
+- Outputs refined PRD to `/context/[nnn]-{feature}/prd-[nnn].md`
+
+### Integrated Research & Refinement (WIP)
+Use `/prdresearch [idea]` to combine PRD generation with automatic research:
+- Cycles between refining requirements and conducting research
+- Automatically invokes `@researcher` agent throughout the process
+- Research happens before questions, after answers, and after PRD changes
+- **⚠️ Known Issue**: Sometimes requires an extra researcher call
+- Useful when you want a fully integrated ideation → research → PRD flow
+
+### Context-Partitioned Execution (Experimental)
+Execute plans across **separate context windows** to avoid context bloat:
+
+- **`@iterator` agent** - Iterative task execution with continuous review
+  - Chooses next important task from plan
+  - Assigns task to `@executer` agent in new context
+  - Uses `@pragmatic-code-review` to validate implementation
+  - Repeats until plan complete
+  - **Benefit**: Each task gets fresh context, avoiding degradation
+
+- **`@executer` agent** - Fire-and-forget plan execution
+  - Executes entire plan in separate context window
+  - Returns when complete
+  - **Benefit**: Main context stays clean for oversight
+
+**Why Context Partitioning?** As context windows grow large, Claude's performance can degrade. Executing work in separate contexts maintains peak performance while allowing the main context to orchestrate and review.
 
 ## 📟 Available Slash Commands
 
@@ -27,18 +77,24 @@ This structured approach ensures clarity at each stage and prevents scope creep 
 
 - **`/prdgen [idea]`** - Interactively generate a Product Requirements Document from an initial idea
   - Asks clarifying questions to gather requirements
-  - Automatically uses `@researcher` agent throughout the process
-  - Researches before asking questions, after receiving answers, and after PRD changes
-  - Maintains research file alongside the PRD
-  - Outputs to `/context/[nnn]-{feature}/prd-[nnn].md` and `research-[nnn].md`
+  - Focuses on understanding "what" and "why" (not "how")
+  - Outputs to `/context/[nnn]-{feature}/prd-[nnn].md`
   - Target audience: junior developers
+  - **Recommended for**: Refining existing PRDs or starting simple PRDs
 
-- **`/research [topic]`** - Standalone research command (optional, as research is integrated into `/prdgen`)
+- **`/prdresearch [idea]`** - PRD generation with integrated research (Experimental)
+  - Combines `/prdgen` and `/research` in iterative cycles
+  - Automatically invokes `@researcher` agent throughout process
+  - Researches before questions, after answers, and after PRD changes
+  - Outputs PRD and research files to `/context/[nnn]-{feature}/`
+  - **⚠️ Note**: May require extra researcher calls (WIP)
+
+- **`/research [topic]`** - Conduct comprehensive research on a topic or PRD
   - Reads through related code and documentation
   - Conducts web searches on frameworks and libraries
   - Identifies third-party types and alternative approaches
-  - Outputs to `/context/{feature}/research.md`
-  - Use this for ad-hoc research outside the main workflow
+  - Outputs to `/context/[nnn]-{feature}/research-[nnn].md`
+  - **Recommended for**: Main workflow research phase
 
 - **`/plan [prd] [research]`** - Create detailed implementation plan
   - Identifies files that need changes
@@ -89,15 +145,22 @@ This structured approach ensures clarity at each stage and prevents scope creep 
 
 Specialized agents provide focused capabilities for complex tasks:
 
-- **`@planner`** 🗺️ - Creates detailed implementation plans
+### Core Development Agents
+- **`@planner`** 🗺️ - Creates detailed implementation plans from PRDs and research
 - **`@researcher`** 🔬 - Conducts comprehensive research and maintains research files
-- **`@executer`** ⚡ - Implements code following strict TDD principles
-- **`@claude-crawler`** 🕷️ - Generates and maintains CLAUDE.md files
+- **`@executer`** ⚡ - Implements code following strict TDD principles (used in main workflow)
+- **`@iterator`** 🔄 - Iterative task execution with continuous review (experimental, for context partitioning)
+
+### Review & Quality Agents
+- **`@plan-reviewer`** 📋 - Reviews implementation plans with detailed feedback
+- **`@pragmatic-code-review`** 🔍 - Pragmatic code quality assessment
 - **`@design-review`** 🎨 - Automated UI/UX validation with browser testing
-- **`@pragmatic-code-review`** 🔍 - Code quality assessment
-- **`@python-pro`** 🐍 - Python 3.12+ expertise with modern tooling
-- **`@typescript`** 📘 - TypeScript expertise with advanced patterns
+
+### Infrastructure & Documentation Agents
+- **`@claude-crawler`** 🕷️ - Generates and maintains CLAUDE.md files
 - **`@aws-cdk-agent`** ☁️ - AWS CDK infrastructure development
+
+**Note**: Agents marked as "experimental" are part of the context-partitioning workflows. They execute in separate context windows to manage complexity.
 
 ## 📁 Context Management
 
@@ -127,6 +190,45 @@ This workflow adheres to principles defined in `CLAUDE.md`:
 - ✅ Validate every code block: lint, compile, test
 - 🎯 Maximize code coverage quality, not just quantity
 
+## 🧠 Context Window Management
+
+A key theme in the roadmap is **managing context window size** to maintain peak Claude performance.
+
+### The Challenge
+As context windows grow with conversation history, file reads, and accumulated changes, Claude's performance can degrade. This manifests as:
+- Slower response times
+- Decreased code quality
+- Higher likelihood of errors or missed requirements
+- Difficulty maintaining coherence across large codebases
+
+### The Solution: Context Partitioning
+The experimental workflows explore executing work across **separate context windows**:
+
+1. **Main context** - Orchestration, planning, and high-level oversight
+2. **Agent contexts** - Focused execution of specific tasks or plans
+
+**Benefits:**
+- Each task/plan gets fresh, focused context
+- Main context stays lean for strategic decisions
+- Better performance on complex, multi-phase projects
+- Easier to review and validate work in isolation
+
+### Choosing Your Approach
+
+**Use single context (main workflow)** when:
+- Working on small to medium features
+- You want maximum coherence across all phases
+- The entire workflow fits comfortably in context
+- You prefer direct control and visibility
+
+**Use context partitioning (experimental)** when:
+- Working on large, complex features
+- Context window is approaching limits (200K+ tokens)
+- You want to maintain peak performance across long sessions
+- You're comfortable with agent-based orchestration
+
+The goal is to provide flexibility: start with the simple single-context workflow, and graduate to context partitioning as your needs grow.
+
 ## 🌟 Inspirations & Resources
 
 This workflow synthesizes ideas from several AI-assisted development approaches:
@@ -147,13 +249,36 @@ This workflow synthesizes ideas from several AI-assisted development approaches:
 
 ## 🎯 Getting Started
 
+Follow the **Core Workflow** for the best experience:
+
 1. **⚙️ Set up your environment** - Ensure Claude Code is installed and configured
+
 2. **📖 Review CLAUDE.md** - Understand the development principles
-3. **💡 Start with an idea** - Begin the workflow with `/prdgen [your idea]`
-   - The command will research automatically as you work through clarifying questions 🔬
-4. **🗺️ Plan the implementation** - Use `/plan` with your generated PRD
-5. **⚡ Execute and validate** - Use `/execute` to implement with continuous testing
-6. **✅ Review before finalizing** - Use review commands before merging
+
+3. **💡 Create your PRD** - Generate a Product Requirements Document
+   - Use Gemini Deep Research for complex features 🔬
+   - Use `/prdgen [idea]` for interactive PRD generation ❓
+   - Import from Jira or other tools 📋
+   - Outputs to `/context/[nnn]-{feature}/prd-[nnn].md`
+
+4. **🔍 Research** - Use `/research <prd.md>` to become a subject matter expert
+   - Explores codebase and documentation 📚
+   - Researches frameworks and libraries 🌐
+   - Outputs to `/context/[nnn]-{feature}/research-[nnn].md`
+
+5. **🗺️ Plan** - Use `/plan <prd.md> <research.md>` for detailed implementation plan
+   - Identifies files, classes, functions needed 🏗️
+   - Creates task checklist ✅
+   - Outputs to `/context/[nnn]-{feature}/plan-[nnn].md`
+
+6. **⚡ Execute** - Use `/execute <plan.md>` to implement with TDD
+   - Incremental commits per task 🔄
+   - Full test suite before each commit 🧪
+   - Tracks progress in `/context/[nnn]-{feature}/progress.md`
+
+7. **✅ Review** - Use review commands before merging
+   - `/pragmatic-code-review` for code quality 🔍
+   - `/design-review` for UI/UX validation 🎨
 
 ## 🏗️ Command Architecture
 
@@ -171,13 +296,15 @@ The command body contains the prompt template with `$1`, `$2`, etc. for argument
 
 ## ⭐ Best Practices
 
-- **🔄 Follow the workflow** - prdgen (with integrated research) → plan → execute
-- **🧠 Trust the research** - `/prdgen` handles research automatically; don't repeat it
-- **✅ Validate incrementally** - Don't batch commits
-- **🤝 Use agents** for specialized processing
-- **📁 Organize context** by feature or branch name
-- **💎 Reference principles** from CLAUDE.md in all work
-- **🧪 Test continuously** - Run suite before every commit
+- **🔄 Follow the Core Workflow** - PRD → `/research` → `/plan` → `/execute`
+- **🧠 Trust your research** - Don't re-read files unnecessarily; reference research docs
+- **✅ Validate incrementally** - Commit after each task completion, not in batches
+- **🤝 Use agents strategically** - Let specialized agents handle complex subtasks
+- **📁 Organize context** - Use `/context/[nnn]-{feature}/` structure consistently
+- **💎 Reference principles** - Follow CLAUDE.md guidelines in all work
+- **🧪 Test continuously** - Run full test suite before every commit
+- **📏 Monitor context size** - Consider experimental workflows if context exceeds 200K tokens
+- **🎯 Start simple** - Use main workflow first; graduate to context partitioning as needed
 
 ## 🧪 Testing
 

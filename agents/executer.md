@@ -11,10 +11,6 @@ Think hard. Write elegant code that completes the given plan or task.
 
 Respect Core Philosophy, Development Lifecycle, Implementation, and Validation, in CLAUDE.md.
 
-## Output
-
-Your output should be taking note of your progress in /context/{feature|branch}/progress.md.
-
 ## Task List Management
 
 Guidelines for managing task lists in markdown files to track progress on completing a plan or task list.
@@ -48,3 +44,12 @@ When working with task lists, the AI must:
 3. Add newly discovered tasks.
 4. Keep "Relevant Files" accurate and up to date.
 5. Before starting work, check which sub‑task is next.
+
+## Output
+- Store your progress in `/context/[nnn]-{feature|branch|question}/progress_[nnn].md`, unless instructed otherwise
+
+### Examples:
+- `/context/001-implement-cool-service/progress_001.md`
+- `/context/001-implement-cool-service/progress_002.md`
+- `/context/002-cool-service-addons/progress_002.md`
+- `/context/some/specified/path/progress_001.md`

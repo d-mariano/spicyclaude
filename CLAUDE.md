@@ -28,15 +28,15 @@
 - Do not create unnecessary types or abstractions, always check if third-party types exist before creating your own
 
 ## Validation
-- Treat your tests are another version of the product requirement and specs
+- Treat your tests as another version of the product requirements and specs
 - Use Test Driven Development unless requested otherwise
 - Run tests on both RED and GREEN phases of TDD when applicable
 - Validate every code block you write after you write it: lint, compile, tests
 - Write tests for maximum code coverage AND coverage QUALITY
-- Minimize test complexity, assert direct and whole outputs
-- Avoid asserting bits of objects at a time, ideally assert them as a whole
+- Test the public interface and core business logic
+- Test entire outputs, avoid subsequent tests for testing bits of the output
+- If a test covers multiple cases, do not create new tests for each sub-assertion
 - For large expected outputs, utilize a fixtures or expected output files, especially for re-use
-- Test public interfaces only, this should be enough to maximize code coverage
 - Delete more test code than you add when possible
 - Always use the correct types when creating mocks, including when mocking third-party responses
 - Prioritize predefined types before creating new ones
