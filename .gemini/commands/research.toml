@@ -1,0 +1,25 @@
+description = "Conduct research on relevant files and resources to gain enough context for a full understanding of the given PRD or topic."
+prompt = """
+We are going to work on {{args}}.
+
+Do not write any code right now. You are going to read through related code and conduct any web searches.
+
+Gather enough context, prepare to become a subject matter expert and to discuss.
+
+## Considerations
+- Read through related code, and prepare to discuss
+- Conduct any web searches that you may need on frameworks in use, unless the usage examples in code are telling enough
+- Conduct any web searches on official protocols, APIs, or standards
+- Research if third-party packages in use already provide required types and explicitly call this out
+- If alternative approaches are identified and you have identified a preference, only mention your preference
+- Favour simplicity and elgenace
+- Always cite your sources
+
+## Output
+- Store your research in `/context/[nnn]-{feature|branch|question}/research-[nnn].md`, unless instructed otherwise
+
+### Examples:
+- `/context/001-implement-cool-service/research-001.md`
+- `/context/001-implement-cool-service/research-002.md`
+- `/context/002-cool-service-addons/research-002.md`
+- `/context/some/specified/path/research-001.md`"""

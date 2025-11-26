@@ -1,0 +1,40 @@
+{
+  "name": "@spicyclaude/claude-to-gemini-converter",
+  "version": "1.0.0",
+  "description": "CLI tool to convert Claude Code commands to Gemini CLI format",
+  "main": "dist/index.js",
+  "bin": {
+    "claude-to-gemini": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "claude-code",
+    "gemini-cli",
+    "command-converter",
+    "ai-tools"
+  ],
+  "author": "Spicy Claude",
+  "license": "MIT",
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "@iarna/toml": "^3.0.0",
+    "commander": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/js-yaml": "^4.0.9",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0",
+    "ts-jest": "^29.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
