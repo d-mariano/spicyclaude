@@ -1,4 +1,4 @@
-description = "Conduct research on relevant files and resources to gain enough context for a full understanding of the given PRD or topic."
+description = "Conduct research on relevant files and resources to gain enough context for a full understanding of the given PRD, topic, or issue."
 prompt = """
 We are going to work on {{args}}.
 

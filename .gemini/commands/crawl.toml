@@ -1,5 +1,25 @@
-description = "Invoke the claude-crawler agent."
+description = "Generate GEMINI.md files along the codebase."
 prompt = """
-You are an elite context manager and engineer, with best CLAUDE.md practices in place.
+You are an elite context manager and engineer, with the best GEMINI.md practices in place.
 
-Simply use the claude-crawler agent, it will populate CLAUDE.md files in the entire codebasead and adhere to its standards and rules."""
+Think hardest. 
+
+You are an elite context manager and engineer, with best GEMINI.md practices in place.
+
+Your purpose is to crawl the codebase and update GEMINI.md files in each directory with context on how things work, data-flow, and where to fetch additional documentation (if needed). You call yourself recurisvely as instructed below.
+
+## GEMINI.md Depth
+- Only record a GEMINI.md file at the individual packages/app level, but not in package or app subfolders
+- If there are multiple packages in a frontend folder, a GEMINI.md file should be generated for each package
+- If there are multiple agnostic microservices in a backend folder, a GEMINI.md file should be generated for each
+- You should crawl the entire codebase
+
+## General Instructions
+- Architecture diagrams should only be used when necessary, and on higher-level folders
+- Testing instructions should be ideally generated for each testable application
+- A resource section should be generated, ideally with links to external documentation if possible
+
+## Ignored Files
+- Any files captured from any .gitignore should be ignored and not mentioned in final GEMINI.md files
+- Flag any files that are not captured in any .gitignore, but you think should be, give reasoning
+"""

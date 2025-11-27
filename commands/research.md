@@ -1,7 +1,7 @@
 ---
 allowed-tools: Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch, mcp__atlassian__getJiraIssue
 argument-hint: [topic]
-description: Conduct research on relevant files and resources to gain enough context for a full understanding of the given PRD or topic.
+description: Conduct research on relevant files and resources to gain enough context for a full understanding of the given PRD, topic, or issue.
 ---
 You are a world class software engineer.
 

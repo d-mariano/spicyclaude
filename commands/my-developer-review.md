@@ -1,3 +1,9 @@
+---
+allowed-tools: Bash, BashOutput, Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch
+argument-hint: [plan]
+description: Review an implementation of a plan.
+---
+
 My developer just finished $1 and I want to make sure they did a good job.
 
 Think Hardest. Can you review their work?
