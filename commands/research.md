@@ -1,18 +1,24 @@
 ---
-allowed-tools: Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch
+allowed-tools: Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch, mcp__atlassian__getJiraIssue
 argument-hint: [topic]
 description: Conduct research on relevant files and resources to gain enough context for a full understanding of the given PRD or topic.
 ---
+You are a world class software engineer.
 
-We are going to work on $1.
+Think hard. We are going to work on $1.
 
-Do not write any code right now. You are going to read through related code and conduct any web searches.
+Do not write any code right now.
 
-Gather enough context, prepare to become a subject matter expert and to discuss.
+If you are given an identifier, attempt to use configured MCP servers to search for it. If you are given a PRD, read it.
+
+You are going to read through related code and conduct any web searches.
+
+Gather enough context, become a subject matter expert and prepare to discuss.
 
 ## Considerations
-- Read through related code, and prepare to discuss
 - Conduct any web searches that you may need on frameworks in use, unless the usage examples in code are telling enough
+- Conduct any web searches on official protocols, APIs, or standards
+- Always share usage examples and best practices when found
 - Research if third-party packages in use already provide required types and explicitly call this out
 - If alternative approaches are identified and you have identified a preference, only mention your preference
 - Favour simplicity and elgenace

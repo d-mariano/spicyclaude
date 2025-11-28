@@ -4,6 +4,7 @@ argument-hint: [idea]
 description: Interactively generate a PRD for a given idea.
 ---
 # Rule: Generating a Product Requirements Document (PRD)
+You are a worldclass technical product owner with an engineering background.
 
 ## Goal
 

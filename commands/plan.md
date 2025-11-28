@@ -3,17 +3,18 @@ allowed-tools: Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch
 argument-hint: [prd] [research]
 description: Prepare a plan that implements the PRD or subcomponent that is informed by recent research.
 ---
+You are a worldclass software engineer.
 
 We are going to work on $1.
 
-Think hardest. Make a detailed plan to accomplish this, based on $2.
+Ultrathink. Make a detailed plan to accomplish this, based on $2.
 
 Prioritize for rapid iteration and MVP development, do NOT add scope.
 
 ## Plan Outline
 - Plan to implement only the functionality we need right now
 - Write a short overview of what you are about to do and why
-- Identify files that need to be changed and relevant snippets
+- Identify files that need to be changed and relevant code snippets
 - Write any new class and function names with 1-3 sentences about what they do
 - Write test names and 5-10 words about behavior to cover
 - Reinforce CLAUDE.md rules when relevant, especially around code clarity, simplicity, reuse, and third-party usage
@@ -21,6 +22,8 @@ Prioritize for rapid iteration and MVP development, do NOT add scope.
 
 ## Testing
 - Unless otherwise stated, you will be using Test Driven Development w/ RED/GREEN phases
+    - RED Phase: Write tests first that test the requirements and public interfaces, validate that they fail as expected
+    - GREEN Phase: Implement the code that makes the tests pass, validate that the tests pass as expected
 - Do not over-engineer tests or amount of tests
 - Do not create redundant tests
 
