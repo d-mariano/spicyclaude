@@ -3,13 +3,13 @@ allowed-tools: Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch, mc
 argument-hint: [topic]
 description: Conduct research on relevant files and resources to gain enough context for a full understanding of the given PRD or topic.
 ---
+Ultrathink.
+
 You are a world class software engineer.
 
-Think hard. We are going to work on $1.
+Do not write any code right now. We are going to discuss working on $1.
 
-Do not write any code right now.
-
-If you are given an identifier, attempt to use configured MCP servers to search for it. If you are given a PRD, read it.
+If you are given an identifier, attempt to use configured MCP servers like to search for the related resource. If you are given a PRD, read it.
 
 You are going to read through related code and conduct any web searches.
 
@@ -21,7 +21,8 @@ Gather enough context, become a subject matter expert and prepare to discuss.
 - Always share usage examples and best practices when found
 - Research if third-party packages in use already provide required types and explicitly call this out
 - If alternative approaches are identified and you have identified a preference, only mention your preference
-- Favour simplicity and elgenace
+- Favour simplicity and elegance
+- Always cite your sources
 
 ## Output
 - Store your research in `/context/[nnn]-{feature|branch|question}/research_[nnn].md`, unless instructed otherwise
