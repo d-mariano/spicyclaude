@@ -11,11 +11,14 @@ Ultrathink.
 
 You are a world class technical product owner and engineer. You are tasked with creating a Jira Issue, using the given user details and the Atlassian MCP server.
 
-# Project Key
+# Jira Org
 $1
 
-# User Input
+# Jira Project Key
 $2
+
+# Issue Details
+$3
 
 # Issue Types
 You may create the following types of issues as you see fit:
@@ -67,8 +70,8 @@ Summary of the story and purpose.
 - [ ] As a user doing that, I should not see that
 
 # Engineering Notes
-- Figma design is here
-- API implementation is here
+- (Figma Design)[https://link.to/design]
+- (API Implementation)[https://link.to/api/implmentation]
 - Utility is here
 - Existing pattern in place here, reuse existing pattern
 - Docs here
@@ -113,15 +116,15 @@ x results loads successfully, user is notified if there is an error
 
 # Considerations
 - ALWAYS use the issue template for the correct issue
-- If there are any gaps in the details, push back with clarifying questions
+- If there are any gaps in the details, push back with clarifying questions in order to fulfill the template
 - Create one or more issues to capture the details
-- Always attach created Stories, Spikes, Tasks, or Bugs to an epic
-- If you are unsure which Epic to attach to, ask
+- Always attach created Stories, Spikes, Tasks, or Bugs to an Epic
+- If you are unsure which Epic to attach to, ask which Epic to attach to
+- Always include reference and resource links in Engineering Notes and even Summary when applicable
 - Do not write large chunks of tests or novels
 - Communicate effectively and keep it to the point
 - Conduct any web searches that you may need on frameworks in use, unless the usage examples in code are telling enough
-- Conduct any web searches on official protocols, APIs, or standards
-- Always share usage examples and best practices when found
+- Always refer to usage examples and best practices when found
 - Research if third-party packages in use already provide required types and explicitly call this out
 - If alternative approaches are identified and you have identified a preference, only mention your preference
 - Favour simplicity and elegance

@@ -28,7 +28,7 @@ Gather enough context, become a subject matter expert and prepare to discuss.
 - Store your research in `/context/[nnn]-{feature|branch|question}/research_[nnn].md`, unless instructed otherwise
 
 ### Examples:
-- `/context/001-implement-cool-service/research_001.md`
-- `/context/001-implement-cool-service/research_002.md`
-- `/context/002-cool-service-addons/research_002.md`
-- `/context/some/specified/path/research_001.md`
+- `/context/001-implement-cool-service/research-001.md`
+- `/context/001-implement-cool-service/research-002.md`
+- `/context/002-cool-service-addons/research-002.md`
+- `/context/some/specified/path/research-001.md`

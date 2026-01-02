@@ -1,10 +1,9 @@
 ---
-allowed-tools: Bash, BashOutput, Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch
+allowed-tools: Bash, BashOutput, Glob, Grep, Read, Edit, TodoWrite, Write
 argument-hint: [idea]
 description: Interactively generate a PRD for a given idea.
 ---
 # Rule: Generating a Product Requirements Document (PRD)
-You are a world class technical product owner with an engineering background.
 
 ## Goal
 
@@ -15,9 +14,10 @@ $1
 
 ## Process
 
-1.  **Ask Clarifying Questions:** Before writing the PRD, the AI *must* ask clarifying questions to gather sufficient detail. The goal is to understand the "what" and "why" of the feature, not necessarily the "how" (which the developer will figure out). Make sure to provide options in letter/number lists so I can respond easily with my selections.
-2.  **Generate PRD:** Based on the initial prompt and the user's answers to the clarifying questions, generate a PRD using the structure outlined below.
-3.  **Save PRD:** Save the generated document in `/context/[nnn]-{feature|branch|question}`
+1.  **Receive Initial Prompt:** The user provides a brief description or request for a new feature or functionality.
+2.  **Ask Clarifying Questions:** Before writing the PRD, the AI *must* ask only the most essential clarifying questions needed to write a clear PRD. Limit questions to 3-5 critical gaps in understanding. The goal is to understand the "what" and "why" of the feature, not necessarily the "how" (which the developer will figure out). Make sure to provide options in letter/number lists so I can respond easily with my selections.
+3.  **Generate PRD:** Based on the initial prompt and the user's answers to the clarifying questions, generate a PRD using the structure outlined below.
+4.  **Save PRD:** Save the generated document as `prd-[feature-name].md` inside the `/tasks` directory.
 
 ## Clarifying Questions (Guidelines)
 
@@ -29,6 +29,34 @@ Ask only the most critical questions needed to write a clear PRD. Focus on areas
 *   **Success Criteria:** If unstated - "How will we know when this feature is successfully implemented?"
 
 **Important:** Only ask questions when the answer isn't reasonably inferable from the initial prompt. Prioritize questions that would significantly impact the PRD's clarity.
+
+### Formatting Requirements
+
+- **Number all questions** (1, 2, 3, etc.)
+- **List options for each question as A, B, C, D, etc.** for easy reference
+- Make it simple for the user to respond with selections like "1A, 2C, 3B"
+
+### Example Format
+
+```
+1. What is the primary goal of this feature?
+   A. Improve user onboarding experience
+   B. Increase user retention
+   C. Reduce support burden
+   D. Generate additional revenue
+
+2. Who is the target user for this feature?
+   A. New users only
+   B. Existing users only
+   C. All users
+   D. Admin users only
+
+3. What is the expected timeline for this feature?
+   A. Urgent (1-2 weeks)
+   B. High priority (3-4 weeks)
+   C. Standard (1-2 months)
+   D. Future consideration (3+ months)
+```
 
 ## PRD Structure
 
@@ -49,12 +77,10 @@ The generated PRD should include the following sections:
 Assume the primary reader of the PRD is a **junior developer**. Therefore, requirements should be explicit, unambiguous, and avoid jargon where possible. Provide enough detail for them to understand the feature's purpose and core logic.
 
 ## Output
-Store the PRD in `/context/[nnn]-{feature|branch}/prd-[nnn].md`
 
-### Examples:
-- `/context/001-implement-cool-service/prd-001.md`
-- `/context/001-implement-cool-service/prd-002.md`
-- `/context/002-next-neat-service/prd-001.md`
+*   **Format:** Markdown (`.md`)
+*   **Location:** `/tasks/`
+*   **Filename:** `prd-[feature-name].md`
 
 ## Final instructions
 

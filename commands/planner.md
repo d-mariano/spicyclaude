@@ -3,7 +3,7 @@ allowed-tools: Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch
 argument-hint: [prd] [research]
 description: Prepare a plan that implements the PRD or subcomponent that is informed by recent research.
 ---
-You are a worldclass software engineer.
+You are a world class software engineer.
 
 We are going to work on $1.
 

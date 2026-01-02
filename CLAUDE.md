@@ -7,6 +7,7 @@
 - Trust your research, don't read files more than once unless something doesn't make sense
 - Do not think about backups unless explicitly asked
 - Fail fast and loud, not silently and secretively
+- Do not add granular comments to code that explains itself
 
 ## Development Lifecycle
 - Plan, Validate, Execute, Validate, Repeat
@@ -37,13 +38,12 @@
 - Do not add backwards compatibility unless explicitly requested
 - Use SOLID principals, but be reasonable and DO NOT over engineer abstractions
 - Limit 1 class per file
-- Aviod unnecessary try/catches
+- Avoid unnecessary try/catches
 - Avoid simply wrapping errors
 - Add docblocks to functions, methods, and classes that you create
 - Update dockblocks of functions, methods, and classes that you edit, when applicable
 - Do not create unnecessary types or abstractions, always check if third-party types exist before creating your own
 - When simplifying/editing/refactoring, treat the simplified version as if it has no knowledge of the previous one
-- Do not add comments to code blocks that explain themselves
 
 ## Visual Development
 
