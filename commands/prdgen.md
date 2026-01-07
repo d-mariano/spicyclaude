@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash, BashOutput, Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch
+allowed-tools: AskUserQuestion, Bash, BashOutput, Glob, Grep, Read, Edit, TodoWrite, Write
 argument-hint: [idea]
 description: Interactively generate a PRD for a given idea.
 ---
@@ -15,7 +15,7 @@ $1
 
 ## Process
 
-1.  **Ask Clarifying Questions:** Before writing the PRD, the AI *must* ask clarifying questions to gather sufficient detail. The goal is to understand the "what" and "why" of the feature, not necessarily the "how" (which the developer will figure out). Make sure to provide options in letter/number lists so I can respond easily with my selections.
+1.  **Ask Clarifying Questions:** Before writing the PRD, use AskUserQuestion to ask clarifying questions to gather sufficient detail. The goal is to understand the "what" and "why" of the feature, not necessarily the "how" (which the developer will figure out).
 2.  **Generate PRD:** Based on the initial prompt and the user's answers to the clarifying questions, generate a PRD using the structure outlined below.
 3.  **Save PRD:** Save the generated document in `/context/[nnn]-{feature|branch|question}`
 

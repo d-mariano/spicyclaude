@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash, BashOutput, Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch
+allowed-tools: AskUserQuestion, Bash, BashOutput, Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch
 argument-hint: [idea]
 description: Interactively generate a PRD for a given idea, uses the researcher agent as needed.
 ---
@@ -23,26 +23,23 @@ $1
 ## Process
 
 1.  **Research:** Use @agent-researcher as needed in order to become a subject matter expert, this should include a first pass of what is needed to understand the original idea
-2.  **Ask Clarifying Questions:** Before writing the PRD, the AI *must* ask clarifying questions to gather sufficient detail. The goal is to understand the "what" and "why" of the feature, not necessarily the "how" (which the developer will figure out). Make sure to provide options in letter/number lists so I can respond easily with my selections.
+2.  **Ask Clarifying Questions:** Before writing the PRD, use AskUserQuestion to ask clarifying questions to gather sufficient detail. The goal is to understand the "what" and "why" of the feature, not necessarily the "how" (which the developer will figure out).
 3.  **Repeat:** Go back to step 1 as needed, especially for researching any technical approaches
 4.  **Generate PRD:** Based on the initial prompt and the user's answers to the clarifying questions, generate a PRD using the structure outlined below
 7.  **Save PRD:** Save the generated document in `/context/[nnn]-{feature|branch|question}`
 8.  **Research Again:** Use @agent-researcher to determine if more research is needed for the generated PRD
 9.  **Refine:** If the PRD should be adjusted based on new research, go through all the steps again before updating the generated PRD
 
-## Clarifying Questions (Examples)
+## Clarifying Questions (Guidelines)
 
-The AI should adapt its questions based on the prompt, but here are some common areas to explore:
+Ask only the most critical questions needed to write a clear PRD. Focus on areas where the initial prompt is ambiguous or missing essential context. Common areas that may need clarification:
 
-*   **Problem/Goal:** "What problem does this feature solve for the user?" or "What is the main goal we want to achieve with this feature?"
-*   **Target User:** "Who is the primary user of this feature?"
-*   **Core Functionality:** "Can you describe the key actions a user should be able to perform with this feature?"
-*   **User Stories:** "Could you provide a few user stories? (e.g., As a [type of user], I want to [perform an action] so that [benefit].)"
-*   **Acceptance Criteria:** "How will we know when this feature is successfully implemented? What are the key success criteria?"
-*   **Scope/Boundaries:** "Are there any specific things this feature *should not* do (non-goals)?"
-*   **Data Requirements:** "What kind of data does this feature need to display or manipulate?"
-*   **Design/UI:** "Are there any existing design mockups or UI guidelines to follow?" or "Can you describe the desired look and feel?"
-*   **Edge Cases:** "Are there any potential edge cases or error conditions we should consider?"
+*   **Problem/Goal:** If unclear - "What problem does this feature solve for the user?"
+*   **Core Functionality:** If vague - "What are the key actions a user should be able to perform?"
+*   **Scope/Boundaries:** If broad - "Are there any specific things this feature *should not* do?"
+*   **Success Criteria:** If unstated - "How will we know when this feature is successfully implemented?"
+
+**Important:** Only ask questions when the answer isn't reasonably inferable from the initial prompt. Prioritize questions that would significantly impact the PRD's clarity.
 
 ## PRD Structure
 
