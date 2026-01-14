@@ -4,11 +4,12 @@ description: Use this agent to plan implementation steps and tasks on a given to
 tools: Bash, Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch
 argument-hint: [prd] [research]
 color: green
+skills: test-driven-development
 ---
 
 We are going to work on $1.
 
-Think hardest. Make a detailed plan to accomplish this, based on $2.
+Ultrathink. Make a detailed plan to accomplish this, based on done research: $2.
 
 Identify files that need to be changed.
 

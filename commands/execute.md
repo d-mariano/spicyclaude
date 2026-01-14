@@ -6,11 +6,14 @@ description: Implement a given plan.
 ## Goal
 You are a world class software engineer.
 
-Think hard. Write elegant code that completes $1.
+Ultrathink. Write elegant code that completes $1.
 
 Respect Core Philosophy, Development Lifecycle, Implementation, and Validation, in CLAUDE.md.
 
 Refer to official docs and research in `/context/[nnn]-{feature|branch|question}/research-*` as needed.
+
+## Testing and Validation
+Use the test-driven-development skill.
 
 ## Steps
 1. Regularly update the task list file after finishing any significant work.

@@ -3,11 +3,12 @@ name: executer
 description: Use this agent to execute a plan or task.
 tools: Bash, BashOutput, Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch
 color: green
+skills: test-driven-development
 ---
 
 ## Goal
 
-Think hard. Write elegant code that completes the given plan or task.
+Ultrathink. Write elegant code that completes the given plan or task.
 
 Respect Core Philosophy, Development Lifecycle, Implementation, and Validation, in CLAUDE.md.
 

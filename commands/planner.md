@@ -21,11 +21,7 @@ Prioritize for rapid iteration and MVP development, do NOT add scope.
 - Include Tasks section at the end
 
 ## Testing
-- Unless otherwise stated, you will be using Test Driven Development w/ RED/GREEN phases
-    - RED Phase: Write tests first that test the requirements and public interfaces, validate that they fail as expected
-    - GREEN Phase: Implement the code that makes the tests pass, validate that the tests pass as expected
-- Do not over-engineer tests or amount of tests
-- Do not create redundant tests
+Use the test-driven-development skill.
 
 ## DO NOT
 - Do not include plans for legacy fallback unless required or explicitly requested
