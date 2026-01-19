@@ -1,6 +1,6 @@
 # SPICE
 
-**S**ubagent **P**owered for **I**terative **C**oding **E**cosystem
+**S**ubagent-**P**owered **I**terative **C**oding **E**cosystem
 
 A Claude Code skill for multi-phase software development using isolated subagents and dynamic skill loading.
 

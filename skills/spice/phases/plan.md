@@ -27,9 +27,9 @@ You will receive:
   - **If Research**: Use skills detected, patterns, and third-party analysis
 - Identify which type of input you have (TDD is preferred when available)
 
-#### 2. Leverage Technical Design (if TDD provided)
+#### 2. Leverage Technical Design (if Technical Design Document provided)
 
-When a TDD is provided, use it to inform task breakdown:
+When a Technical Design Document is provided, use it to inform task breakdown:
 
 | TDD Section | Planning Use |
 |-------------|--------------|
@@ -46,14 +46,14 @@ When a TDD is provided, use it to inform task breakdown:
 - Identify public interfaces
 - Note which files will be created/modified
 
-#### 3. Plan TDD Workflow
+#### 3. Plan Test-Driven Development Workflow
 
 For each component:
 1. Define what tests will prove it works (RED)
 2. Define minimum implementation to pass (GREEN)
 3. Identify refactoring opportunities
 
-**TDD is mandatory** — every implementation task must have RED and GREEN phases.
+**Test-Driven Development is mandatory** — every implementation task must have RED and GREEN phases.
 
 #### 4. Assign Skills Per Task
 
