@@ -1,13 +1,13 @@
 ---
 allowed-tools: Task, Read, Glob, Grep
-argument-hint: [prd-path] [research-path]
-description: SPICE plan — spawn isolated subagent to create TDD task breakdown
+argument-hint: [prd-path] [tdd-or-research-path]
+description: SPICE plan — spawn isolated subagent to create TDD task breakdown from PRD and technical design
 ---
 
 # SPICE Planning
 
 **PRD**: $1
-**Research**: $2
+**Technical Input**: $2 (TDD preferred, or research if design phase was skipped)
 
 This command spawns an **isolated subagent** to create the plan.
 
@@ -19,11 +19,17 @@ This command spawns an **isolated subagent** to create the plan.
 
 Verify both files exist:
 - PRD document at $1
-- Research document at $2
+- Technical document at $2 (either `tdd-*.md` or `research-*.md`)
 
 Derive context folder from the PRD path.
 
-### 2. Spawn Planner Subagent
+### 2. Determine Input Type
+
+Check if $2 is a TDD or research file:
+- If filename contains `tdd`: Use as technical design (preferred)
+- If filename contains `research`: Use as research context
+
+### 3. Spawn Planner Subagent
 
 **Use the Task tool** to spawn the `spice-planner` agent:
 
@@ -32,13 +38,15 @@ Task tool:
   agent: spice-planner
   prompt: |
     PRD: $1
-    Research: $2
+    Technical Input: $2 (type: {tdd|research})
     Context folder: {derived from PRD path}
     
     Execute the planner protocol.
     
-    1. Read PRD and research documents
-    2. Note Skills Detected from research
+    1. Read PRD document
+    2. Read technical input ($2)
+       - If TDD: Use architecture, contracts, and interfaces for task breakdown
+       - If Research: Use patterns and skills for task breakdown
     3. Break work into TDD tasks
     4. Assign skills to every task
     5. Define RED/GREEN phases
@@ -61,6 +69,11 @@ Task tool:
     - What to implement
     ```
     
+    If using TDD, reference:
+    - API contracts for test expectations
+    - Data models for entity structure
+    - Interfaces for implementation signatures
+    
     Valid skill references:
     - spice/languages/python
     - spice/languages/typescript
@@ -74,6 +87,19 @@ After subagent completes:
 - Summarize the task breakdown
 - Show task count and dependencies
 - Suggest next step: `/spice:iterate` or `/spice:execute`
+
+---
+
+## With TDD vs Without
+
+| With TDD (`/spice:design` first) | Without TDD (research only) |
+|----------------------------------|----------------------------|
+| Tasks derived from architecture | Tasks derived from requirements |
+| Test cases from API contracts | Test cases from functional reqs |
+| Interfaces already defined | Interfaces designed during planning |
+| More precise task breakdown | More exploration during implementation |
+
+**Recommendation**: Use the design phase for anything involving APIs, data models, or system integration.
 
 ---
 
@@ -104,9 +130,9 @@ After plan approval:
 ## Examples
 
 ```bash
-# Standard planning
-/spice:plan /context/001-auth/prd-001.md /context/001-auth/research-001.md
+# Planning with TDD (recommended for APIs/services)
+/spice:plan /context/001-auth/prd-001.md /context/001-auth/tdd-001.md
 
-# Different folder structure
-/spice:plan /docs/feature.md /context/001-feature/research-001.md
+# Planning with research only (simpler features)
+/spice:plan /context/002-ui/prd-001.md /context/002-ui/research-001.md
 ```

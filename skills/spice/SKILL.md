@@ -3,7 +3,7 @@ name: spice
 description: "**S**tructured **P**ipeline for **I**terative **C**ontext-aware **E**ngineering — A multi-phase SDLC workflow using isolated subagents to build the best context windows while staying in the smart zone. Activates on: feature requests, multi-step implementations, complex refactoring, mentions of 'spice', 'workflow', 'plan and implement', or 'research and build'."
 ---
 
-# SPICE — Subagent Powered Iterative Coding Ecosystem
+# SPICE — Structured Pipeline for Iterative Context-aware Engineering
 
 **SPICE** orchestrates the complete software development lifecycle using **isolated subagents**. Each phase runs in a fresh context via the Task tool, communicating through markdown deliverables.
 
@@ -40,6 +40,7 @@ description: "**S**tructured **P**ipeline for **I**terative **C**ontext-aware **
 |-------|---------|----------|-------------|---------|
 | **Ideation** | `/spice:ideate` | `spice-ideator` | `prd-{nnn}.md` | Flesh out ideas into PRD |
 | **Research** | `/spice:research` | `spice-researcher` | `research-{nnn}.md` | Explore codebase, gather context |
+| **Design** | `/spice:design` | `spice-designer` | `tdd-{nnn}.md` | Technical architecture & contracts |
 | **Planning** | `/spice:plan` | `spice-planner` | `plan-{nnn}.md` | Create TDD task breakdown |
 | **Execute** | `/spice:execute` | `spice-implementer` | `progress-{nnn}.md` | Implement one task |
 | **Iterate** | `/spice:iterate` | Multiple | `progress-{nnn}.md` | Implement all tasks |
@@ -51,6 +52,8 @@ description: "**S**tructured **P**ipeline for **I**terative **C**ontext-aware **
 |---------|---------|------------|
 | Research (online) | `/spice:research` | Web search enabled |
 | Research (offline) | `/spice:research-offline` | No web search, codebase only |
+| Planning (with TDD) | `/spice:plan [prd] [tdd]` | Uses technical design |
+| Planning (without TDD) | `/spice:plan [prd] [research]` | Skips design phase |
 
 ---
 
@@ -63,6 +66,7 @@ All phases communicate via markdown in `/context/`:
 └── {nnn}-{feature}/
     ├── prd-001.md          # Product requirements (from ideation)
     ├── research-001.md     # Technical findings (skills detected)
+    ├── tdd-001.md          # Technical design (architecture, contracts)
     ├── plan-001.md         # TDD task breakdown (skills per task)
     └── progress-001.md     # Implementation status
 ```
@@ -110,6 +114,7 @@ Each subagent gets a **fresh 200K context** — exploration doesn't accumulate.
 Detailed instructions for each phase:
 - [phases/ideate.md](phases/ideate.md) — PRD generation protocol
 - [phases/research.md](phases/research.md) — Research protocol
+- [phases/design.md](phases/design.md) — Technical design protocol
 - [phases/plan.md](phases/plan.md) — Planning protocol
 - [phases/execute.md](phases/execute.md) — Implementation protocol
 
@@ -168,11 +173,15 @@ This keeps each subagent's context focused.
 # Or run phases separately
 /spice:ideate "notification system for user events"
 /spice:research "payment processing" /context/001-payments/
-/spice:plan /context/001-payments/prd-001.md /context/001-payments/research-001.md
+/spice:design /context/001-payments/prd-001.md /context/001-payments/research-001.md
+/spice:plan /context/001-payments/prd-001.md /context/001-payments/tdd-001.md
 /spice:iterate /context/001-payments/
 
 # Research without web search
 /spice:research-offline /context/001-payments/
+
+# Skip design phase (plan directly from research)
+/spice:plan /context/001-payments/prd-001.md /context/001-payments/research-001.md
 ```
 
 ---

@@ -12,7 +12,7 @@
 
 You will receive:
 1. Path to PRD document
-2. Path to research document
+2. Path to technical input document (either TDD or research)
 3. Context folder path for output
 
 ---
@@ -22,11 +22,24 @@ You will receive:
 #### 1. Load Context
 
 - Read the PRD document
-- Read the research document
-- **Note the "Skills Detected" section** — use this for per-task assignments
-- Review recommended approach from research
+- Read the technical input document:
+  - **If TDD**: Use architecture, API contracts, data models, and interfaces
+  - **If Research**: Use skills detected, patterns, and third-party analysis
+- Identify which type of input you have (TDD is preferred when available)
 
-#### 2. Identify Components
+#### 2. Leverage Technical Design (if TDD provided)
+
+When a TDD is provided, use it to inform task breakdown:
+
+| TDD Section | Planning Use |
+|-------------|--------------|
+| Architecture | Component tasks, service boundaries |
+| Data Models | Entity creation tasks, migration tasks |
+| API Contracts | Test expectations, endpoint tasks |
+| Interfaces | Implementation signatures, protocol tasks |
+| Technical Decisions | Implementation constraints |
+
+#### 3. Identify Components
 
 - Break feature into logical components
 - Map dependencies between components

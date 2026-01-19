@@ -20,12 +20,23 @@ Also load the TDD skill for test planning:
 
 ## Quick Reference
 
-1. **Load context** — Read PRD and research
-2. **Note Skills Detected** — From research document
+1. **Load context** — Read PRD and technical input (TDD or research)
+2. **Identify input type** — TDD provides architecture/contracts; research provides patterns/skills
 3. **Break into tasks** — Testable increments
 4. **Assign skills** — Every task needs `**Skills:**` field
 5. **Define TDD phases** — RED then GREEN for each task
 6. **Order by dependencies** — Independent tasks first
+
+## When Using TDD Input
+
+If the technical input is a TDD (technical design document):
+
+| TDD Section | Use For |
+|-------------|---------|
+| Architecture | Component task breakdown |
+| Data Models | Entity/migration tasks |
+| API Contracts | Test expectations |
+| Interfaces | Implementation signatures |
 
 ## Critical Requirements
 

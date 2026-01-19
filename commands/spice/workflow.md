@@ -23,12 +23,20 @@ Complete SDLC pipeline using **isolated subagents** for each phase.
 │         │                                                           │
 │         ▼                                                           │
 │  ┌─────────────┐     ┌─────────────┐     ┌─────────────┐          │
-│  │   IDEATE    │ ──► │  RESEARCH   │ ──► │    PLAN     │          │
-│  │  (if idea)  │     │             │     │             │          │
+│  │   IDEATE    │ ──► │  RESEARCH   │ ──► │   DESIGN    │          │
+│  │  (if idea)  │     │             │     │   (TDD)     │          │
 │  └──────┬──────┘     └──────┬──────┘     └──────┬──────┘          │
 │         │                   │                   │                  │
 │         ▼                   ▼                   ▼                  │
-│      prd.md            research.md           plan.md               │
+│      prd.md            research.md           tdd.md                │
+│                                                 │                  │
+│                                                 ▼                  │
+│                                          ┌─────────────┐          │
+│                                          │    PLAN     │          │
+│                                          └──────┬──────┘          │
+│                                                 │                  │
+│                                                 ▼                  │
+│                                             plan.md                │
 │                                                 │                  │
 │                                                 ▼                  │
 │                                    ┌─────────────────────┐        │
@@ -104,7 +112,35 @@ Task tool:
 
 ---
 
-### Phase 3: Planning
+### Phase 3: Design (Technical Design Document)
+
+**Spawn via Task tool** — `spice-designer` agent:
+
+```
+Task tool:
+  agent: spice-designer
+  prompt: |
+    PRD: /context/{nnn}-$1/prd-001.md
+    Research: /context/{nnn}-$1/research-001.md
+    
+    Execute designer protocol.
+    Write output to: /context/{nnn}-$1/tdd-001.md
+    
+    Include:
+    - Architecture (components, interactions)
+    - Data Models (entities, schemas)
+    - API Contracts (endpoints, request/response)
+    - Interfaces (protocols, DTOs)
+    - Technical Decisions (with rationale)
+```
+
+**Wait for completion**, then review TDD with user.
+
+**Checkpoint**: Confirm technical design before proceeding.
+
+---
+
+### Phase 4: Planning
 
 **Spawn via Task tool** — `spice-planner` agent:
 
@@ -113,10 +149,15 @@ Task tool:
   agent: spice-planner
   prompt: |
     PRD: /context/{nnn}-$1/prd-001.md
-    Research: /context/{nnn}-$1/research-001.md
+    TDD: /context/{nnn}-$1/tdd-001.md
     
     Execute planner protocol.
     Write output to: /context/{nnn}-$1/plan-001.md
+    
+    Use the TDD for:
+    - Component breakdown from architecture
+    - Test cases from API contracts
+    - Interface implementations from protocols
     
     Every task MUST have Skills: and Files: fields.
 ```
@@ -127,7 +168,7 @@ Task tool:
 
 ---
 
-### Phase 4: Implementation
+### Phase 5: Implementation
 
 Use the iterate pattern — spawn **fresh subagent for each task**:
 
@@ -156,6 +197,7 @@ The workflow pauses at key points:
 |-------------|------------|
 | Ideation | "Does this PRD capture your requirements?" |
 | Research | "Does this research cover the necessary context?" |
+| Design | "Does this technical design look correct?" |
 | Planning | "Does this plan look correct? Ready to implement?" |
 
 User can:
@@ -173,6 +215,7 @@ After workflow completion:
 /context/{nnn}-$1/
 ├── prd-001.md          # Product requirements
 ├── research-001.md     # Technical findings
+├── tdd-001.md          # Technical design document
 ├── plan-001.md         # TDD task breakdown
 └── progress-001.md     # Implementation status
 ```
@@ -215,8 +258,11 @@ If workflow is interrupted, resume from any phase:
 # Resume from research
 /spice:research /context/001-feature/ "topic"
 
+# Resume from design
+/spice:design /context/001-feature/prd-001.md /context/001-feature/research-001.md
+
 # Resume from planning
-/spice:plan /context/001-feature/prd-001.md /context/001-feature/research-001.md
+/spice:plan /context/001-feature/prd-001.md /context/001-feature/tdd-001.md
 
 # Resume from implementation
 /spice:iterate /context/001-feature/
