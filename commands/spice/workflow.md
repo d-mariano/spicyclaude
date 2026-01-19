@@ -1,7 +1,7 @@
 ---
 allowed-tools: Task, Read, Write, Glob, Grep
-argument-hint: [feature-name] [description-or-ticket]
-description: SPICE full workflow — research → plan → implement using isolated subagents
+argument-hint: [feature-name] [description-or-prd-or-ticket]
+description: SPICE full workflow — ideate → research → plan → implement using isolated subagents
 ---
 
 # SPICE Workflow
@@ -9,113 +9,233 @@ description: SPICE full workflow — research → plan → implement using isola
 **Feature**: $1
 **Input**: $2
 
-Each phase runs in an **isolated subagent** via the Task tool. This prevents context pollution between phases.
+Complete SDLC pipeline using **isolated subagents** for each phase.
 
 ---
 
-## Phase 0: Setup
+## Pipeline Overview
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│                        SPICE WORKFLOW                               │
+│                                                                     │
+│  $1 (feature) + $2 (input)                                         │
+│         │                                                           │
+│         ▼                                                           │
+│  ┌─────────────┐     ┌─────────────┐     ┌─────────────┐          │
+│  │   IDEATE    │ ──► │  RESEARCH   │ ──► │    PLAN     │          │
+│  │  (if idea)  │     │             │     │             │          │
+│  └──────┬──────┘     └──────┬──────┘     └──────┬──────┘          │
+│         │                   │                   │                  │
+│         ▼                   ▼                   ▼                  │
+│      prd.md            research.md           plan.md               │
+│                                                 │                  │
+│                                                 ▼                  │
+│                                    ┌─────────────────────┐        │
+│                                    │     ITERATE         │        │
+│                                    │  (task by task)     │        │
+│                                    └──────────┬──────────┘        │
+│                                               │                   │
+│                                               ▼                   │
+│                                          progress.md              │
+│                                          + code changes           │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Process
+
+### Phase 0: Setup
 
 1. Create context folder: `/context/{nnn}-$1/`
-2. If $2 is a PRD path, copy to context folder
-3. If $2 is a description, note for research phase
+   - Find next available number
+   - Sanitize feature name for folder
+
+2. Determine starting point:
+   - If $2 is a PRD path → Skip ideation
+   - If $2 is a ticket ID → Start with research
+   - If $2 is a description → Start with ideation
+
+### Phase 1: Ideation (Optional)
+
+**Skip if**: $2 is already a PRD path
+
+**Spawn via Task tool** — `spice-ideator` agent:
+
+```
+Task tool:
+  agent: spice-ideator
+  prompt: |
+    Context folder: /context/{nnn}-$1/
+    Idea: $2
+    
+    Execute ideator protocol.
+    Write output to: /context/{nnn}-$1/prd-001.md
+```
+
+**Wait for completion**, then review PRD with user.
+
+**Checkpoint**: Confirm PRD before proceeding.
 
 ---
 
-## Phase 1: Research (Isolated Subagent)
+### Phase 2: Research
 
-**Use the Task tool** to spawn the `spice-researcher` agent:
+**Spawn via Task tool** — `spice-researcher` agent:
 
 ```
 Task tool:
   agent: spice-researcher
   prompt: |
+    Mode: Online
     Context folder: /context/{nnn}-$1/
-    Topic/Input: $2
+    PRD: /context/{nnn}-$1/prd-001.md (if exists)
+    Topic: $2
     
-    Execute the researcher protocol.
+    Execute researcher protocol.
     Write output to: /context/{nnn}-$1/research-001.md
-    Include a **Skills Detected** section.
+    Include Skills Detected section.
 ```
 
-**Wait for subagent to complete**, then review research with user.
+**Wait for completion**, then review research with user.
+
+**Checkpoint**: Confirm research before proceeding.
 
 ---
 
-## Phase 2: Planning (Isolated Subagent)
+### Phase 3: Planning
 
-**Use the Task tool** to spawn the `spice-planner` agent:
+**Spawn via Task tool** — `spice-planner` agent:
 
 ```
 Task tool:
   agent: spice-planner
   prompt: |
-    PRD: /context/{nnn}-$1/prd.md (if exists)
+    PRD: /context/{nnn}-$1/prd-001.md
     Research: /context/{nnn}-$1/research-001.md
     
-    Execute the planner protocol.
+    Execute planner protocol.
     Write output to: /context/{nnn}-$1/plan-001.md
-    Every task MUST have **Skills:** and **Files:** fields.
+    
+    Every task MUST have Skills: and Files: fields.
 ```
 
-**Wait for subagent to complete**, then review plan with user.
+**Wait for completion**, then review plan with user.
+
+**Checkpoint**: Confirm plan before implementation.
 
 ---
 
-## Phase 3: Implementation (Isolated Subagent Per Task)
+### Phase 4: Implementation
 
-Use `/spice:iterate` which spawns a **fresh implementer subagent for each task**:
-
-```
-/spice:iterate /context/{nnn}-$1/
-```
-
-Or for manual control, use `/spice:execute` which also spawns isolated subagents:
+Use the iterate pattern — spawn **fresh subagent for each task**:
 
 ```
-/spice:execute /context/{nnn}-$1/plan-001.md 1.1
-/spice:execute /context/{nnn}-$1/plan-001.md 1.2
+Task tool (for each task):
+  agent: spice-implementer
+  prompt: |
+    Plan: /context/{nnn}-$1/plan-001.md
+    Task: {task number}
+    Skills to load: {from task's Skills field}
+    
+    Execute TDD protocol.
+    Update progress.
+    Mark task [x] complete.
 ```
 
-**Each task gets a fresh context window** — no accumulated state from previous tasks.
+**Report progress** after each task completes.
 
 ---
 
-## Why Isolated Subagents?
+## Checkpoints
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│ ORCHESTRATOR (this command)                                         │
-│   • Manages flow between phases                                     │
-│   • Reviews outputs with user                                       │
-│   • Spawns subagents via Task tool                                  │
-└─────────────────────────────────────────────────────────────────────┘
-        │                    │                    │
-        ▼                    ▼                    ▼
-┌───────────────┐   ┌───────────────┐   ┌───────────────┐
-│ RESEARCHER    │   │ PLANNER       │   │ IMPLEMENTER   │
-│ (200K context)│   │ (200K context)│   │ (200K context)│
-│               │   │               │   │ Per task!     │
-│ Fresh context │   │ Fresh context │   │ Fresh context │
-└───────┬───────┘   └───────┬───────┘   └───────┬───────┘
-        │                    │                    │
-        ▼                    ▼                    ▼
-   research.md           plan.md            progress.md
-```
+The workflow pauses at key points:
 
-Benefits:
-- **No context pollution** from exploration bleeding into implementation
-- **No prompt bloat** from accumulated file reads
-- **Each task starts fresh** with only what it needs
-- **Phases communicate via files**, not shared context
+| After Phase | Checkpoint |
+|-------------|------------|
+| Ideation | "Does this PRD capture your requirements?" |
+| Research | "Does this research cover the necessary context?" |
+| Planning | "Does this plan look correct? Ready to implement?" |
+
+User can:
+- Approve and continue
+- Request modifications
+- Stop the workflow
 
 ---
 
-## Example Usage
+## Context Folder Structure
+
+After workflow completion:
+
+```
+/context/{nnn}-$1/
+├── prd-001.md          # Product requirements
+├── research-001.md     # Technical findings
+├── plan-001.md         # TDD task breakdown
+└── progress-001.md     # Implementation status
+```
+
+---
+
+## Usage Patterns
+
+### From Idea (Full Pipeline)
+
+```bash
+/spice:workflow user-auth "Users can log in with email and password"
+```
+
+Runs: Ideation → Research → Planning → Implementation
+
+### From Existing PRD
+
+```bash
+/spice:workflow payment-flow /docs/payment-prd.md
+```
+
+Runs: Research → Planning → Implementation
+
+### From Ticket
+
+```bash
+/spice:workflow feature-x JIRA-1234
+```
+
+Runs: Research (fetches ticket) → Planning → Implementation
+
+---
+
+## Partial Runs
+
+If workflow is interrupted, resume from any phase:
+
+```bash
+# Resume from research
+/spice:research /context/001-feature/ "topic"
+
+# Resume from planning
+/spice:plan /context/001-feature/prd-001.md /context/001-feature/research-001.md
+
+# Resume from implementation
+/spice:iterate /context/001-feature/
+```
+
+---
+
+## Examples
 
 ```bash
 # Full workflow from idea
 /spice:workflow user-auth "Users can log in with email and password"
 
-# From a Jira ticket
-/spice:workflow payment-flow JIRA-1234
+# From detailed description
+/spice:workflow notifications "Real-time notification system with email digests and in-app alerts"
+
+# From existing PRD
+/spice:workflow payment-processing /context/payments/prd.md
+
+# From Jira ticket
+/spice:workflow api-rate-limiting JIRA-5678
 ```

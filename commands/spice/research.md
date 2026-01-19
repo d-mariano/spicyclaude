@@ -1,19 +1,27 @@
 ---
 allowed-tools: Task, Read, Glob, Grep
-argument-hint: [topic-or-ticket] [context-folder]
-description: SPICE research phase — spawn isolated subagent to explore codebase and gather context
+argument-hint: [topic-or-prd] [context-folder?]
+description: SPICE research — spawn isolated subagent to explore codebase and gather context (web search ENABLED)
 ---
 
-# SPICE Research
+# SPICE Research (Online)
 
 **Topic**: $1
-**Context folder**: $2 (default: `/context/current/`)
+**Context folder**: $2 (default: auto-detect or `/context/current/`)
 
-This command spawns an **isolated subagent** to conduct research without polluting the main context.
+This command spawns an **isolated subagent** with web search enabled.
 
 ---
 
 ## Process
+
+### 1. Determine Context Folder
+
+- If $2 is provided, use it
+- If $1 is a path to a PRD, use its parent folder
+- Otherwise, find or create appropriate folder in `/context/`
+
+### 2. Spawn Researcher Subagent
 
 **Use the Task tool** to spawn the `spice-researcher` agent:
 
@@ -21,41 +29,58 @@ This command spawns an **isolated subagent** to conduct research without polluti
 Task tool:
   agent: spice-researcher
   prompt: |
+    Mode: Online (web search enabled)
     Topic: $1
-    Context folder: $2
+    Context folder: {context_folder}
     
     Execute the researcher protocol.
-    Write output to: $2/research-001.md
     
-    MUST include a **Skills Detected** section:
+    1. Understand the request (read PRD if path given)
+    2. Detect languages and skills in codebase
+    3. Explore codebase for patterns
+    4. Conduct web searches for external docs (cite sources)
+    5. Identify third-party capabilities
+    
+    Write output to: {context_folder}/research-001.md
+    
+    CRITICAL: Include a **Skills Detected** section:
     ```
     ## Skills Detected
     
-    Languages involved:
-    - **spice/python** — Backend uses FastAPI
-    - **spice/typescript** — Frontend uses React
+    ### Languages Involved
+    - **spice/languages/python** — {where/why}
     
-    Skills to load: spice/python, spice/typescript, test-driven-development
+    ### Skills for Implementation
+    - `spice/languages/python`
+    - `test-driven-development`
     ```
-    
-    The planner uses this section to assign skills per task.
 ```
+
+### 3. Review Output
+
+After subagent completes:
+- Summarize key findings
+- Highlight skills detected
+- Suggest next step: `/spice:plan`
 
 ---
 
-## Output
+## When to Use Online vs Offline
 
-Research saved to: `$2/research-{nnn}.md`
-
-The subagent runs in isolation — its exploration doesn't pollute your main context.
+| Use **Online** (`/spice:research`) | Use **Offline** (`/spice:research-offline`) |
+|-----------------------------------|---------------------------------------------|
+| Need framework documentation | Air-gapped environment |
+| Using unfamiliar libraries | Already know the tech stack |
+| API specs or protocols | Pure codebase refactoring |
+| Best practices research | Sensitive/restricted network |
 
 ---
 
 ## Next Step
 
-After research completes, run planning:
-```
-/spice:plan $2/prd.md $2/research-001.md
+After research approval:
+```bash
+/spice:plan {context_folder}/prd-001.md {context_folder}/research-001.md
 ```
 
 ---
@@ -63,7 +88,15 @@ After research completes, run planning:
 ## Examples
 
 ```bash
+# Research a topic
 /spice:research "user authentication" /context/001-auth/
-/spice:research JIRA-1234 /context/002-payment/
-/spice:research /docs/feature-prd.md /context/003-feature/
+
+# Research from PRD
+/spice:research /context/001-payments/prd-001.md
+
+# Research a Jira ticket
+/spice:research JIRA-1234 /context/002-feature/
+
+# Default folder
+/spice:research "payment processing"
 ```

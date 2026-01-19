@@ -24,13 +24,13 @@ Read the plan at $1 to find:
 
 ### 2. Extract Skills
 
-Parse the task's skills:
+Parse the task's skills field:
 ```markdown
 ### Task 2.1: Implement validation
-**Skills**: spice/python, test-driven-development
+**Skills**: spice/languages/python, test-driven-development
 ```
 
-Extract: `spice/python`, `test-driven-development`
+Extract: `spice/languages/python`, `test-driven-development`
 
 **Fallback** if no Skills field: detect from file extensions in **Files:** field.
 
@@ -47,12 +47,22 @@ Task tool:
     Context folder: {derived from plan path}
     
     **Skills to load for this task:**
-    - .claude/skills/spice/{language}.md (from task's Skills field)
-    - test-driven-development skill (ALWAYS)
+    - {skills from task's Skills field}
+    - test-driven-development (ALWAYS)
     
-    Load ONLY these skills. Execute TDD protocol.
-    Update progress. Mark task [x] complete.
-    Commit if parent task complete.
+    Read these skill files:
+    - .claude/skills/spice/languages/{language}.md
+    - .claude/skills/test-driven-development/SKILL.md
+    
+    Execute TDD protocol:
+    1. RED: Write tests, verify they FAIL
+    2. GREEN: Minimal code, verify tests PASS
+    3. REFACTOR: Clean up while green
+    
+    After completion:
+    1. Mark task [x] complete in plan
+    2. Update progress file
+    3. Commit if parent task complete
     
     Return: tests passing, files modified, any issues.
 ```
@@ -60,9 +70,17 @@ Task tool:
 ### 4. Report Results
 
 After subagent completes:
-- Show what was accomplished
-- Show test results
-- Suggest next task or report completion
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Task 2.1 Complete: Implement email validation
+   Skills: spice/languages/python, test-driven-development
+   Tests: 3 passing
+   Files: src/validators/email.py, tests/test_email.py
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Next: Task 2.2 — Add validation error messages
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
 ---
 
@@ -78,7 +96,20 @@ Benefits:
 - No accumulated context from previous tasks
 - Each task loads only the skills it needs
 - Failed tasks don't pollute subsequent attempts
-- Parallel execution possible (future)
+- Clean retry on failure
+
+---
+
+## Handling Failures
+
+If the subagent reports failure (tests don't pass):
+
+1. Review the error in progress file
+2. Retry with fresh context:
+   ```bash
+   /spice:execute $1 {task-number}
+   ```
+3. If still failing, break task into smaller pieces
 
 ---
 
@@ -91,6 +122,6 @@ Benefits:
 # Execute specific task
 /spice:execute /context/001-auth/plan-001.md 2.1
 
-# Execute after a failure (fresh context, retry)
+# Retry a failed task (fresh context)
 /spice:execute /context/001-auth/plan-001.md 2.1
 ```
