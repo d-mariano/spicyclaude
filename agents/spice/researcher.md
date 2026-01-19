@@ -1,7 +1,8 @@
 ---
 name: spice-researcher
 description: SPICE researcher — explores codebase and gathers context with web search enabled
-tools: Read, Write, Grep, Glob, WebSearch, WebFetch
+tools: Read, Grep, Glob, Write, WebSearch, WebFetch
+model: opus
 ---
 
 # SPICE Researcher Agent (Online)

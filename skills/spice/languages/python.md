@@ -5,6 +5,127 @@
 
 ---
 
+### Project Setup (CRITICAL)
+
+#### Detect Existing Package Manager FIRST
+
+**Before doing anything, detect the existing setup and use it:**
+
+```bash
+# Check what exists
+ls -la pyproject.toml poetry.lock uv.lock Pipfile Pipfile.lock requirements.txt .venv/ venv/ 2>/dev/null
+```
+
+| Found | Package Manager | Use These Commands |
+|-------|-----------------|-------------------|
+| `poetry.lock` | Poetry | `poetry install`, `poetry run pytest` |
+| `uv.lock` | uv | `uv sync`, `uv run pytest` |
+| `Pipfile.lock` | Pipenv | `pipenv install`, `pipenv run pytest` |
+| `requirements.txt` + `.venv/` | pip + venv | `source .venv/bin/activate`, `pip install` |
+| `pyproject.toml` only | Check for `[tool.poetry]` → Poetry, else try `uv sync` |
+| Nothing | New project — use `uv init` |
+
+#### Respect Existing Environment
+
+**NEVER switch package managers on an existing project.** Use what's already there.
+
+```bash
+# ✅ CORRECT: Detect and use existing
+if [ -f "poetry.lock" ]; then
+    poetry install
+    poetry run pytest
+elif [ -f "uv.lock" ]; then
+    uv sync
+    uv run pytest
+elif [ -f "Pipfile.lock" ]; then
+    pipenv install
+    pipenv run pytest
+elif [ -f "requirements.txt" ]; then
+    # Activate existing venv or create one
+    [ -d ".venv" ] && source .venv/bin/activate || (python -m venv .venv && source .venv/bin/activate)
+    pip install -r requirements.txt
+    pytest
+fi
+
+# ❌ WRONG: Ignore existing setup
+uv init  # Don't do this if poetry.lock exists!
+```
+
+#### New Projects Only: Use `uv`
+
+**Only for NEW projects with no existing package manager:**
+
+```bash
+# Verify nothing exists first
+[ ! -f pyproject.toml ] && [ ! -f requirements.txt ] && [ ! -f Pipfile ] && [ ! -f poetry.lock ]
+
+# Then initialize with uv
+uv init
+uv venv
+source .venv/bin/activate
+uv add pydantic httpx
+uv add --dev pytest pytest-asyncio ruff mypy
+```
+
+#### NEVER Do This
+
+```bash
+# ❌ NEVER install globally (without active venv)
+pip install package-name
+
+# ❌ NEVER ignore existing package manager
+uv init  # when poetry.lock already exists
+
+# ❌ NEVER mix package managers
+poetry add package && uv add another-package
+```
+
+---
+
+### Commands by Package Manager
+
+#### Poetry Projects
+```bash
+poetry install                 # Install deps
+poetry add package-name        # Add dependency
+poetry add --group dev pytest  # Add dev dependency
+poetry run pytest              # Run tests
+poetry run mypy src/           # Type check
+poetry run ruff check .        # Lint
+```
+
+#### uv Projects
+```bash
+uv sync                        # Install deps
+uv add package-name            # Add dependency  
+uv add --dev pytest            # Add dev dependency
+uv run pytest                  # Run tests
+uv run mypy src/               # Type check
+uv run ruff check .            # Lint
+```
+
+#### pip/venv Projects
+```bash
+source .venv/bin/activate      # Activate venv (or: . venv/bin/activate)
+pip install -r requirements.txt # Install deps
+pip install package-name       # Add dependency (update requirements.txt!)
+pytest                         # Run tests
+mypy src/                      # Type check
+ruff check .                   # Lint
+```
+
+#### Pipenv Projects
+```bash
+pipenv install                 # Install deps
+pipenv install package-name    # Add dependency
+pipenv install --dev pytest    # Add dev dependency
+pipenv run pytest              # Run tests
+pipenv run mypy src/           # Type check
+pipenv run ruff check .        # Lint
+```
+
+---
+
 ### Type System
 
 #### Type Hints (Required)
@@ -244,30 +365,6 @@ async def test_fetch_user_returns_user() -> None:
     service = UserService(FakeRepository())
     result = await service.fetch_user(1)
     assert result.id == 1
-```
-
----
-
-### Commands
-
-```bash
-# Testing
-pytest                        # Run all
-pytest -x                     # Stop on first failure
-pytest -v                     # Verbose
-pytest --cov=src              # With coverage
-pytest -k "test_user"         # Filter by name
-
-# Formatting
-ruff format .                 # Format (or black .)
-ruff check . --fix            # Lint and auto-fix
-
-# Type checking
-mypy src/                     # Check types
-mypy src/ --strict            # Strict mode
-
-# All validation
-ruff check . && mypy src/ && pytest
 ```
 
 ---

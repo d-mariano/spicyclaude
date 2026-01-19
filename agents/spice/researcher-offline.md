@@ -1,7 +1,8 @@
 ---
 name: spice-researcher-offline
 description: SPICE researcher — explores codebase WITHOUT web search (air-gapped/offline mode)
-tools: Read, Write, Grep, Glob
+tools: Read, Grep, Glob, Write
+model: opus
 ---
 
 # SPICE Researcher Agent (Offline)

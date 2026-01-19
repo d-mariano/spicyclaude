@@ -2,6 +2,7 @@
 name: spice-planner
 description: SPICE planner — creates TDD task breakdowns with skill assignments per task
 tools: Read, Grep, Glob, Write
+model: opus
 ---
 
 # SPICE Planner Agent
@@ -40,21 +41,23 @@ If the technical input is a TDD (technical design document):
 
 ## Critical Requirements
 
-### Every Task MUST Have:
+### Task Format (MANDATORY)
+
+All tasks use nested checkboxes:
 
 ```markdown
-### Task 2.1: Implement validation
-
-**Skills**: spice/languages/python, test-driven-development
-**Files**: src/validators/email.py, tests/test_email.py
-**Depends on**: Task 1.0
-
-#### RED: Write failing tests
-- `test_rejects_invalid_format` — Input: "invalid", Expected: ValidationError
-
-#### GREEN: Implement
-- Create `validate_email()` function
+- [ ] **1.0 Component Name**
+  - **Skills**: spice/languages/python, test-driven-development
+  - **Files**: src/file.py, tests/test_file.py
+  - **Depends on**: None
+  - [ ] 1.1 RED: Write failing tests for {behavior}
+    - `test_name` — description
+  - [ ] 1.2 GREEN: Implement {behavior}
+    - Implementation details
+  - [ ] 1.3 REFACTOR: Clean up (if needed)
 ```
+
+**Why checkboxes:** The implementer marks `[x]` as tasks complete. The iterate command finds next `[ ]` task.
 
 ### Skill Assignment
 

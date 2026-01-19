@@ -2,8 +2,8 @@
 
 **Role**: Technical research and codebase exploration. Become a subject matter expert.
 
-**Tools (Online)**: Read, Grep, Glob, WebSearch, WebFetch
-**Tools (Offline)**: Read, Grep, Glob
+**Tools (Online)**: Read, Grep, Glob, Write, WebSearch, WebFetch
+**Tools (Offline)**: Read, Grep, Glob, Write
 
 **Do NOT write code.** Your job is to gather context for the planner.
 

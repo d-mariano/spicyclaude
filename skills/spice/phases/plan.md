@@ -27,9 +27,9 @@ You will receive:
   - **If Research**: Use skills detected, patterns, and third-party analysis
 - Identify which type of input you have (TDD is preferred when available)
 
-#### 2. Leverage Technical Design (if Technical Design Document provided)
+#### 2. Leverage Technical Design (if TDD provided)
 
-When a Technical Design Document is provided, use it to inform task breakdown:
+When a TDD is provided, use it to inform task breakdown:
 
 | TDD Section | Planning Use |
 |-------------|--------------|
@@ -46,14 +46,14 @@ When a Technical Design Document is provided, use it to inform task breakdown:
 - Identify public interfaces
 - Note which files will be created/modified
 
-#### 3. Plan Test-Driven Development Workflow
+#### 3. Plan TDD Workflow
 
 For each component:
 1. Define what tests will prove it works (RED)
 2. Define minimum implementation to pass (GREEN)
 3. Identify refactoring opportunities
 
-**Test-Driven Development is mandatory** — every implementation task must have RED and GREEN phases.
+**TDD is mandatory** — every implementation task must have RED and GREEN phases.
 
 #### 4. Assign Skills Per Task
 
@@ -83,7 +83,7 @@ Write to `{context_folder}/plan-{nnn}.md`:
 # Plan: {Feature Name}
 
 **PRD**: {prd path}
-**Research**: {research path}
+**Technical Input**: {tdd or research path}
 **Date**: {YYYY-MM-DD}
 
 ## Overview
@@ -92,9 +92,8 @@ Write to `{context_folder}/plan-{nnn}.md`:
 
 ## Skills Required
 
-From research detection:
+From research/TDD detection:
 - `spice/languages/python`
-- `spice/languages/typescript`
 - `test-driven-development`
 
 ---
@@ -114,105 +113,54 @@ From research detection:
 |------|--------|---------|
 | `src/user/service.py` | Create | User service |
 | `tests/user/test_service.py` | Create | Unit tests |
-| `src/user/repository.py` | Modify | Add method |
 
 ---
 
 ## Tasks
 
-### Task 1.0: {Component Name}
+- [ ] **1.0 UserService**
+  - **Skills**: spice/languages/python, test-driven-development
+  - **Files**: src/user/service.py, tests/user/test_service.py
+  - **Depends on**: None
+  - [ ] 1.1 RED: Write failing tests for user creation
+    - `test_creates_user_with_valid_data` — valid input returns User with ID
+    - `test_rejects_duplicate_email` — existing email raises DuplicateEmailError
+  - [ ] 1.2 GREEN: Implement UserService.create_user()
+    - Create `UserService` class with `create_user(data) -> User`
+    - Handle duplicate email validation
+  - [ ] 1.3 REFACTOR: Clean up (if needed)
 
-**Skills**: spice/languages/python, test-driven-development
-**Files**: src/user/service.py, tests/user/test_service.py
-**Depends on**: None
+- [ ] **2.0 UserRepository**
+  - **Skills**: spice/languages/python, test-driven-development
+  - **Files**: src/user/repository.py, tests/user/test_repository.py
+  - **Depends on**: None
+  - [ ] 2.1 RED: Write failing tests for repository
+    - `test_save_persists_user` — saves and retrieves user
+    - `test_find_by_email_returns_none_when_missing` — returns None for unknown email
+  - [ ] 2.2 GREEN: Implement UserRepository
+    - Create `UserRepository` class
+    - Implement `save()`, `find_by_id()`, `find_by_email()`
 
-#### 1.1 RED: Write failing tests
-
-Write tests for the public interface:
-
-- `test_creates_user_with_valid_data`
-  - Input: valid user data
-  - Expected: User object returned with ID
-  
-- `test_rejects_duplicate_email`
-  - Input: email already exists
-  - Expected: raises DuplicateEmailError
-
-**Gate**: Tests MUST fail (function doesn't exist yet)
-
-#### 1.2 GREEN: Implement UserService
-
-Implement minimum code to pass tests:
-
-- Create `UserService` class
-- Implement `create_user(data: CreateUserRequest) -> User`
-- Handle duplicate email check
-
-**Gate**: All tests from 1.1 MUST pass
-
-#### 1.3 REFACTOR: Clean up (if needed)
-
-- Extract validation if complex
-- Improve naming
-- Remove duplication
-
-**Gate**: Tests remain green
-
----
-
-### Task 2.0: {Next Component}
-
-**Skills**: spice/languages/python, test-driven-development
-**Files**: {files}
-**Depends on**: Task 1.0
-
-#### 2.1 RED: Write failing tests
-...
-
-#### 2.2 GREEN: Implement
-...
-
----
-
-## Task Checklist
-
-- [ ] 1.0 {Component Name}
-  - [ ] 1.1 RED: Tests for {behavior}
-  - [ ] 1.2 GREEN: Implement {behavior}
-  - [ ] 1.3 REFACTOR: Clean up
-- [ ] 2.0 {Next Component}
-  - [ ] 2.1 RED: Tests
-  - [ ] 2.2 GREEN: Implement
+- [ ] **3.0 Integration**
+  - **Skills**: spice/languages/python, test-driven-development
+  - **Files**: src/user/service.py, tests/user/test_integration.py
+  - **Depends on**: 1.0, 2.0
+  - [ ] 3.1 RED: Write integration tests
+  - [ ] 3.2 GREEN: Wire components together
 
 ---
 
 ## Implementation Notes
 
 ### Patterns to Follow
-
-From research, use these patterns:
-- {Pattern}: {where to find example}
+- {Pattern from research}: {location}
 
 ### Third-Party Usage
-
-Use existing types/utilities:
 - `pydantic.EmailStr` for email validation
-- `httpx.AsyncClient` for HTTP calls
+- Existing types from packages — don't reinvent
 
 ### Common Pitfalls
-
-- {Pitfall 1}: {how to avoid}
-- {Pitfall 2}: {how to avoid}
-
----
-
-## Validation Checklist
-
-After each task:
-- [ ] Tests pass
-- [ ] Linter passes (`ruff check .` / `eslint .`)
-- [ ] Type checker passes (`mypy` / `tsc`)
-- [ ] No unused imports or code
+- {Pitfall}: {how to avoid}
 
 ---
 
@@ -221,44 +169,71 @@ After each task:
 Execute implementation:
 ```bash
 /spice:iterate {context_folder}/
-# or task-by-task:
-/spice:execute {context_folder}/plan-001.md 1.1
 ```
 ```
 
 ---
 
+### Task Format (CRITICAL)
+
+**All tasks MUST use this checkbox format:**
+
+```markdown
+- [ ] **1.0 Component Name**
+  - **Skills**: spice/languages/python, test-driven-development
+  - **Files**: path/to/file.py, path/to/test.py
+  - **Depends on**: None (or task numbers)
+  - [ ] 1.1 RED: Write failing tests for {behavior}
+    - `test_name` — description of test
+  - [ ] 1.2 GREEN: Implement {behavior}
+    - Implementation details
+  - [ ] 1.3 REFACTOR: Clean up (if needed)
+```
+
+**Why checkboxes matter:**
+- The implementer marks subtasks `[x]` as complete
+- The iterate command finds next pending `[ ]` task
+- Progress is tracked by checkbox state
+
+**DO NOT create a separate "Task Checklist" section.** The Tasks section IS the checklist.
+
+---
+
 ### Task Structure Rules
 
-#### Every Task MUST Have:
+#### Checkbox Format (MANDATORY)
 
-1. **Skills field**: Which skills to load
-   ```markdown
-   **Skills**: spice/languages/python, test-driven-development
-   ```
+Every task uses nested checkboxes:
 
-2. **Files field**: Which files are involved
-   ```markdown
-   **Files**: src/user/service.py, tests/user/test_service.py
-   ```
+```markdown
+- [ ] **1.0 Component Name**
+  - **Skills**: spice/languages/python, test-driven-development
+  - **Files**: src/file.py, tests/test_file.py
+  - **Depends on**: None
+  - [ ] 1.1 RED: Write failing tests
+    - `test_name` — description
+  - [ ] 1.2 GREEN: Implement
+    - Implementation detail
+  - [ ] 1.3 REFACTOR: Clean up (if needed)
+```
 
-3. **Depends on field**: Task dependencies
-   ```markdown
-   **Depends on**: Task 1.0
-   ```
+#### Required Metadata
 
-4. **TDD Phases**: RED, GREEN, REFACTOR structure
+Each parent task (1.0, 2.0, etc.) MUST have:
+- **Skills**: Which skills the implementer loads
+- **Files**: Which files are involved
+- **Depends on**: Task dependencies or "None"
 
 #### Task Granularity
 
-Each subtask should be:
+Each subtask (1.1, 1.2, etc.) should be:
 - Completable in 15-30 minutes
 - One RED/GREEN cycle
 - Independently testable
 - Atomic (can be committed alone)
 
 Bad: "Implement entire user system"
-Good: "1.1 RED: Tests for user creation"
+Good: "1.1 RED: Write failing tests for user creation"
 
 ---
 
@@ -266,43 +241,33 @@ Good: "1.1 RED: Tests for user creation"
 
 #### RED Phase (Tests First)
 
-- List specific test names
-- Describe input and expected output
-- Tests define the public interface
-- Include edge cases and error conditions
+List tests with descriptions:
 
 ```markdown
-#### 1.1 RED: Write failing tests
-
-- `test_creates_user_with_valid_email`
-  - Input: `{"email": "user@test.com", "name": "Test"}`
-  - Expected: `User(id=any, email="user@test.com")`
-
-- `test_raises_on_invalid_email`
-  - Input: `{"email": "not-an-email", "name": "Test"}`
-  - Expected: `ValidationError`
+- [ ] 1.1 RED: Write failing tests for user creation
+  - `test_creates_user_with_valid_email` — valid input returns User with ID
+  - `test_raises_on_invalid_email` — "not-an-email" raises ValidationError
+  - `test_rejects_duplicate_email` — existing email raises DuplicateEmailError
 ```
 
 #### GREEN Phase (Minimum Implementation)
 
-- List functions/classes to create
-- Describe only what's needed to pass tests
-- No features beyond what's tested
+List what to implement:
 
 ```markdown
-#### 1.2 GREEN: Implement
-
-- Create `create_user(data: CreateUserRequest) -> User`
-- Validate email format
-- Store in repository
+- [ ] 1.2 GREEN: Implement UserService.create_user()
+  - Create `UserService` class
+  - Implement `create_user(data: CreateUserRequest) -> User`
+  - Validate email format, check for duplicates
 ```
 
 #### REFACTOR Phase (Optional)
 
-Only if there's clear improvement needed:
-- Extract methods
-- Improve naming
-- Remove duplication
+Only include if there's clear improvement needed:
+
+```markdown
+- [ ] 1.3 REFACTOR: Clean up (if needed)
+```
 
 ---
 

@@ -53,21 +53,21 @@ Task tool:
     
     Write output to: {context_folder}/plan-001.md
     
-    CRITICAL: Every task MUST have these fields:
+    CRITICAL: Use this checkbox format for ALL tasks:
     
     ```markdown
-    ### Task 2.1: {Title}
-    
-    **Skills**: {language skill}, test-driven-development
-    **Files**: {files involved}
-    **Depends on**: {task dependency or "None"}
-    
-    #### RED: Write failing tests
-    - `test_name` — Description
-    
-    #### GREEN: Implement
-    - What to implement
+    - [ ] **1.0 Component Name**
+      - **Skills**: spice/languages/python, test-driven-development
+      - **Files**: src/file.py, tests/test_file.py
+      - **Depends on**: None
+      - [ ] 1.1 RED: Write failing tests
+        - `test_name` — description
+      - [ ] 1.2 GREEN: Implement
+        - Implementation details
     ```
+    
+    DO NOT create separate "Task Checklist" section.
+    The Tasks section IS the checklist with checkboxes.
     
     If using TDD, reference:
     - API contracts for test expectations
