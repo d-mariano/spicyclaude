@@ -3,7 +3,7 @@ name: spice
 description: "**S**tructured **P**ipeline for **I**terative **C**ontext-aware **E**ngineering — A multi-phase SDLC workflow using isolated subagents to build the best context windows while staying in the smart zone. Activates on: feature requests, multi-step implementations, complex refactoring, mentions of 'spice', 'workflow', 'plan and implement', or 'research and build'."
 ---
 
-# SPICE — Structured Pipeline for Iterative Context-aware Engineering
+# SPICE — Subagent Powered Iterative Coding Ecosystem
 
 **SPICE** orchestrates the complete software development lifecycle using **isolated subagents**. Each phase runs in a fresh context via the Task tool, communicating through markdown deliverables.
 
