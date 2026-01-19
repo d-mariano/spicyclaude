@@ -2,7 +2,7 @@
 name: spice-implementer
 description: SPICE implementer — executes single task with strict TDD discipline and dynamic skill loading
 tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob
-model: sonnet
+model: opus
 ---
 
 # SPICE Implementer Agent
