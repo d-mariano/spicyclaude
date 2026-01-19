@@ -16,9 +16,9 @@ description: "****S**ubagent-**P**owered **I**terative **C**oding **E**ngine —
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         ORCHESTRATOR (Main Context)                          │
-│             Reads deliverables, spawns subagents, reports progress           │
-│                          Does NOT do actual work                             │
+│                         ORCHESTRATOR (Main Context)                         │
+│             Reads deliverables, spawns subagents, reports progress          │
+│                          Does NOT do actual work                            │
 └────────┬──────────────┬──────────────┬──────────────┬──────────────┬────────┘
          │              │              │              │              │
    ┌─────▼─────┐  ┌─────▼─────┐  ┌─────▼─────┐  ┌─────▼─────┐  ┌─────▼─────┐
