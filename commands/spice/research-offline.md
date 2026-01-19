@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, Read, Glob, Grep
+allowed-tools: Task, Read, Write, Glob, Grep
 argument-hint: [topic-or-prd] [context-folder?]
 description: SPICE research offline — spawn isolated subagent for codebase-only research (NO web search)
 ---

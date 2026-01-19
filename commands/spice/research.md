@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, Read, Glob, Grep
+allowed-tools: Task, Read, Write, Glob, Grep
 argument-hint: [topic-or-prd] [context-folder?]
 description: SPICE research — spawn isolated subagent to explore codebase and gather context (web search ENABLED)
 ---
