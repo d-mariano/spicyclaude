@@ -1,6 +1,6 @@
 ---
 name: python-development
-description: Python implementation with strict typing and modern patterns. Use when writing Python code, modules, APIs, or applications. Enforces dataclasses/Pydantic over generic dicts, proper error handling, and pytest testing.
+description: Python implementation with strict typing and modern patterns. Use when writing or designing and planning to write Python code, modules, APIs, or applications. Enforces dataclasses/Pydantic over generic dicts, proper error handling, and pytest testing.
 ---
 
 # Python Development
