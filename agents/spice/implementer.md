@@ -2,6 +2,8 @@
 name: spice-implementer
 description: SPICE implementer — executes one or more tasks with strict TDD discipline
 tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob
+skills: test-driven-development
+model: opus
 ---
 
 # SPICE Implementer Agent

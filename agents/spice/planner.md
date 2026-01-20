@@ -2,6 +2,7 @@
 name: spice-planner
 description: SPICE planner — creates TDD task breakdowns with skill assignments
 tools: Read, Grep, Glob, Write
+skills: test-driven-development
 model: opus
 ---
 
