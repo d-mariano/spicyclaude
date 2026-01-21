@@ -1,40 +1,45 @@
 ---
 allowed-tools: Task, Read, Write, Glob, Grep
-argument-hint: [plan-path] [task(s)]
+argument-hint: [plan-path] [task(s)?]
 description: SPICE execute — spawn isolated subagent to implement task(s) with TDD
 ---
 
 # SPICE Execute
 
 **Plan**: $1
-**Task(s)**: $2 (single: `2.1`, batch: `2.1,2.2,2.3`, parent: `2.0`, or omit for next pending)
+**Task(s)**: $2 (optional — parent task, subtask, or comma-separated batch)
 
-This command spawns an **isolated subagent** for the task(s). Each invocation gets a fresh 200K context.
+This command spawns an **isolated subagent** for the task(s).
+
+---
+
+## Task Specification
+
+| Format | Behavior |
+|--------|----------|
+| `1.0` | Parent task — execute ALL subtasks (1.1, 1.2, 1.3) |
+| `1.1` | Single subtask |
+| `1.1,1.2,1.3` | Batch of specific subtasks |
+| (omitted) | Next pending parent task |
 
 ---
 
 ## Process
 
-### 1. Read Plan and Identify Tasks
+### 1. Read Plan and Find Task(s)
 
 Read the plan at $1 to find:
-- If $2 is a subtask (e.g., `2.1`): that specific task
-- If $2 is a parent (e.g., `2.0`): all subtasks (2.1, 2.2, 2.3)
-- If $2 is a list (e.g., `2.1,2.2,2.3`): those specific tasks
-- If $2 is omitted: next pending task
+- The target task(s) (specified $2 or next pending parent task)
+- The **Skills:** field for the task(s)
+- All subtasks if it's a parent task
 
-### 2. Extract Skills
+### 2. Determine Scope
 
-Collect **Skills:** from all tasks in batch (union):
-```markdown
-### Task 2.1
-**Skills**: spice/python, test-driven-development
-
-### Task 2.2  
-**Skills**: spice/python, test-driven-development
-```
-
-Skills to load: `spice/python`, `test-driven-development`
+| Input | Scope |
+|-------|-------|
+| `1.0`, `2.0` | Parent task — all its subtasks |
+| `1.1`, `2.3` | Single subtask |
+| `1.1,1.2,1.3` | Batch — those specific subtasks |
 
 ### 3. Spawn Implementer Subagent
 
@@ -45,58 +50,68 @@ Task tool:
   agent: spice-implementer
   prompt: |
     Plan: $1
-    Tasks to implement: {task list}
+    Task(s) to implement: {task spec}
     Context folder: {derived from plan path}
     
     **Skills to load:**
-    - .claude/skills/spice/{language}.md
-    - test-driven-development skill
+    - {skills from task's Skills field}
+    - test-driven-development (ALWAYS)
     
-    Execute TDD for each task in order.
-    Mark each task [x] as completed.
-    Commit after batch complete.
+    **Scope:**
+    - Parent task (X.0): Complete ALL subtasks (X.1, X.2, X.3...)
+    - Single subtask (X.Y): Complete just this subtask
+    - Batch (X.1,X.2,X.3): Complete these specific subtasks in order
     
-    Return: tasks completed, tests passing, files modified.
+    Execute TDD protocol for each subtask:
+    1. RED: Write tests, verify they FAIL
+    2. GREEN: Minimal code, verify tests PASS
+    3. REFACTOR: Clean up while green
+    
+    After each subtask:
+    - Mark subtask [x] complete in plan
+    
+    After all assigned subtasks:
+    - If parent task is fully complete, mark it [x]
+    - Run full test suite
+    - Commit with conventional message
+    
+    Return: tests passing, files modified, any issues.
 ```
 
 ### 4. Report Results
 
 After subagent completes:
-- Show tasks accomplished
-- Show test results
-- Suggest next task/batch or report completion
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Task 1.0 Complete: UserService
+   Skills: spice/languages/python, test-driven-development
+   Subtasks: 1.1 ✓, 1.2 ✓, 1.3 ✓
+   Tests: 8 passing
+   Files: src/user/service.py, tests/user/test_service.py
+   Commit: feat: implement UserService
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Next: Task 2.0 — UserRepository
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
 ---
 
 ## Examples
 
 ```bash
-# Next pending task (single)
+# Execute next pending parent task (default)
 /spice:execute /context/001-auth/plan-001.md
 
-# Specific subtask
-/spice:execute /context/001-auth/plan-001.md 2.1
-
-# All subtasks under parent 2.0
+# Execute specific parent task (all its subtasks)
 /spice:execute /context/001-auth/plan-001.md 2.0
 
-# Explicit batch
-/spice:execute /context/001-auth/plan-001.md 2.1,2.2,2.3
+# Execute specific subtask only (for debugging)
+/spice:execute /context/001-auth/plan-001.md 2.1
 
-# Three tasks starting from 2.1
-/spice:execute /context/001-auth/plan-001.md 2.1,2.2,2.3
+# Execute batch of specific subtasks
+/spice:execute /context/001-auth/plan-001.md 1.1,1.2,1.3
+
+# Retry a failed parent task (fresh context)
+/spice:execute /context/001-auth/plan-001.md 1.0
 ```
-
----
-
-## When to Use Execute vs Iterate
-
-| Command | Use Case |
-|---------|----------|
-| `/spice:execute` | Manual control, debugging, specific tasks |
-| `/spice:iterate` | Automated execution of remaining plan |
-
-Use `/spice:execute` when you want to:
-- Run a specific task or batch
-- Debug a failing task with fresh context
-- Control exactly what gets executed

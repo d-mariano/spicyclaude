@@ -1,29 +1,36 @@
 ---
 allowed-tools: Task, Read, Write, Glob, Grep
 argument-hint: [context-folder] [batch-size?]
-description: SPICE iterate — spawn fresh subagent per batch of tasks until all complete
+description: SPICE iterate — spawn fresh subagent for each batch of work until all complete
 ---
 
 # SPICE Iterate
 
 **Context folder**: $1
-**Batch size**: $2 (default: `parent` — one high-level task at a time)
+**Batch size**: $2 (optional — `parent` (default), `subtask`/`1`, or number like `3` for N subtasks)
 
-This command implements a **delegator pattern**: it reads the plan, then spawns a **fresh implementer subagent for each batch of tasks**.
+This command implements a **delegator pattern**: reads the plan, then spawns implementer subagents.
 
 ---
 
-## Batch Modes
+## Batch Options
 
-| $2 Value | Behavior |
-|----------|----------|
-| `parent` (default) | One parent task at a time (e.g., all of Task 2.0: 2.1, 2.2, 2.3) |
-| `1` | One subtask at a time (slowest, most isolated) |
-| `3` | Three subtasks at a time |
-| `5` | Five subtasks at a time |
-| `all` | All remaining tasks in one subagent (fastest, least isolated) |
+| Option | Behavior | Use When |
+|--------|----------|----------|
+| `parent` (default) | One subagent per parent task (1.0 with all subtasks) | Most cases — balanced |
+| `3`, `5`, etc. | One subagent per N consecutive subtasks | Large parent tasks |
+| `subtask` or `1` | One subagent per subtask | Debugging, max isolation |
 
-**Recommended**: Start with `parent` (default). If tasks are very small, try `3` or `5`.
+```bash
+# Default: one subagent per parent task
+/spice:iterate /context/001-auth/
+
+# Batch 3 subtasks together
+/spice:iterate /context/001-auth/ 3
+
+# Single subtask (slowest, most isolated)
+/spice:iterate /context/001-auth/ subtask
+```
 
 ---
 
@@ -33,87 +40,97 @@ This command implements a **delegator pattern**: it reads the plan, then spawns 
 
 Read the most recent plan: `$1/plan-*.md`
 
-### 2. Iteration Loop
+If multiple plans exist, use the latest (highest number).
+
+### 2. Iteration Loop (Parent Mode — Default)
+
+**Spawn a NEW subagent for EACH parent task (1.0, 2.0, etc.):**
 
 ```
-WHILE tasks with [ ] status exist:
+WHILE parent tasks with unchecked subtasks exist:
 
-    1. Read plan, collect next batch of pending tasks:
-       - If batch=parent: all subtasks under next incomplete parent (2.1, 2.2, 2.3)
-       - If batch=N: next N pending subtasks
-       - If batch=all: all remaining tasks
+    1. Read plan, find next parent task with pending subtasks
+       (e.g., "- [ ] **1.0 UserService**" with unchecked children)
     
     2. If no pending tasks → STOP, report completion
     
-    3. Extract **Skills:** from tasks (union of all skills needed)
+    3. Extract the task's **Skills:** field
     
     4. **SPAWN `spice-implementer` AGENT** via Task tool:
     
-       ```
        Task tool:
          agent: spice-implementer
          prompt: |
            Plan: $1/plan-001.md
-           Tasks to implement: {task list, e.g., "2.1, 2.2, 2.3"}
+           Task: 1.0 (complete ALL subtasks: 1.1, 1.2, 1.3)
            Context folder: $1
            
-           **Skills to load** (union from all tasks):
-           - .claude/skills/spice/{language}.md
-           - test-driven-development skill
+           **Skills to load:**
+           - {language skill from task}
+           - test-driven-development
            
-           Execute TDD for EACH task in order:
-           - Complete 2.1 (RED → GREEN → REFACTOR)
-           - Complete 2.2 (RED → GREEN → REFACTOR)
-           - Complete 2.3 (RED → GREEN → REFACTOR)
+           Execute TDD for ALL subtasks in this parent task:
+           - 1.1 RED: Write failing tests
+           - 1.2 GREEN: Implement
+           - 1.3 REFACTOR: Clean up
            
-           Update progress after each task.
-           Mark each task [x] as completed.
-           Commit after batch complete.
+           Mark each subtask [x] as you complete it.
+           Mark parent task [x] when all subtasks done.
+           Commit when parent task complete.
            
-           Return: tasks completed, tests passing, files modified.
-       ```
+           Return: tests passing, files modified, any issues.
     
-    5. Wait for subagent to complete
+    5. Wait for subagent completion
     
-    6. Report progress: "✅ Batch complete: Tasks 2.1, 2.2, 2.3"
+    6. Report progress:
+       "✅ Task 1.0 Complete: UserService (3 subtasks)"
     
-    7. CONTINUE to next batch (new subagent)
+    7. CONTINUE to next parent task
 ```
 
----
+### 3. Iteration Loop (Numeric Batch Mode)
 
-## Examples
+If `$2` is a number (e.g., `3`), batch N subtasks together:
 
-```bash
-# Default: one parent task at a time (recommended)
-/spice:iterate /context/001-auth/
+```
+WHILE subtasks with [ ] exist:
 
-# Explicit parent batching
-/spice:iterate /context/001-auth/ parent
-
-# Three subtasks at a time
-/spice:iterate /context/001-auth/ 3
-
-# Five subtasks at a time (faster, less isolation)
-/spice:iterate /context/001-auth/ 5
-
-# All remaining in one shot (fastest, use for small plans)
-/spice:iterate /context/001-auth/ all
+    1. Find next N pending subtasks (e.g., 1.1, 1.2, 1.3 for batch=3)
+       - Can span across parent tasks if needed
+    
+    2. Collect all skills needed for this batch
+    
+    3. Spawn implementer for the batch:
+    
+       Task tool:
+         agent: spice-implementer
+         prompt: |
+           Plan: $1/plan-001.md
+           Subtasks to complete: 1.1, 1.2, 1.3
+           Context folder: $1
+           
+           **Skills to load:**
+           - {union of all skills needed}
+           - test-driven-development
+           
+           Execute each subtask in order.
+           Mark each [x] as complete.
+           Commit after batch.
+    
+    4. Wait, report, continue with next batch
 ```
 
----
+### 4. Iteration Loop (Single Subtask Mode)
 
-## Trade-offs
+If `$2` is `subtask` or `1`:
 
-| Batch Size | Speed | Isolation | Context Usage | Best For |
-|------------|-------|-----------|---------------|----------|
-| `1` | Slowest | Highest | ~10% per task | Debugging, complex tasks |
-| `3` | Medium | High | ~25% per batch | General use |
-| `parent` | Medium | High | ~30% per parent | **Recommended default** |
-| `5` | Fast | Medium | ~40% per batch | Small, simple tasks |
-| `all` | Fastest | Lowest | Full context | Small plans, quick iteration |
+```
+WHILE subtasks with [ ] exist:
 
-**Rule of thumb**: If tasks are failing, reduce batch size. If tasks are trivial, increase it.
+    1. Find next single pending subtask
+    2. Spawn implementer for JUST that subtask
+    3. Wait, report, continue
+```
 
 ---
 
@@ -122,31 +139,68 @@ WHILE tasks with [ ] status exist:
 After each batch:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Batch Complete: Task 2.0 (User Validation)
-   Subtasks: 2.1, 2.2, 2.3
-   Skills: spice/python, test-driven-development
-   Tests: 8 passed
-   Files: src/validators/user.py, tests/test_user.py
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Progress: 6/12 tasks complete
-Next batch: Task 3.0 (Password Validation)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Task 1.0 Complete: UserService
+   Skills: spice/languages/python, test-driven-development
+   Subtasks: 3/3 complete
+   Tests: 8 passing
+   Files: src/user/service.py, tests/user/test_service.py
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Progress: 2/5 parent tasks complete
+Next: Task 2.0 — UserRepository
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ---
 
 ## Handling Failures
 
-If any task in a batch fails:
+If a subagent reports failure:
 
 1. **STOP iteration** — don't proceed to next batch
-2. Report which task failed and why
-3. Suggest retry with smaller batch:
+2. Report the failure with details
+3. Suggest retry options:
+   ```bash
+   # Retry the whole parent task
+   /spice:execute $1/plan-001.md 1.0
+   
+   # Or retry with single subtask for debugging
+   /spice:iterate $1 1
    ```
-   /spice:execute $1/plan-001.md 2.2
-   ```
-4. After fix, continue:
-   ```
-   /spice:iterate $1/
-   ```
+
+---
+
+## Batch Size Comparison
+
+| Batch | Subagent Calls (12 subtasks, 4 parents) | Speed |
+|-------|----------------------------------------|-------|
+| `parent` (default) | 4 calls | ⚡ Fast |
+| `3` | 4 calls | ⚡ Fast |
+| `2` | 6 calls | Medium |
+| `subtask`/`1` | 12 calls | Slow |
+
+**Recommended starting points:**
+- `parent` — Default, keeps RED/GREEN/REFACTOR together
+- `3` — Good if parent tasks have 5+ subtasks each
+
+---
+
+## Examples
+
+```bash
+# Default: one subagent per parent task (recommended)
+/spice:iterate /context/001-auth/
+
+# Batch 3 subtasks at a time
+/spice:iterate /context/001-auth/ 3
+
+# Batch 5 subtasks at a time (for large plans)
+/spice:iterate /context/001-auth/ 5
+
+# Single subtask (maximum isolation, debugging)
+/spice:iterate /context/001-auth/ subtask
+/spice:iterate /context/001-auth/ 1
+
+# After fixing a failure, continue
+/spice:iterate /context/001-auth/
+```

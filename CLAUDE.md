@@ -52,7 +52,6 @@ After writing any code:
 
 ### Test Quality
 
-- See test-driven-development skill
 - Test public interfaces and core business logic
 - Avoid testing implementation details
 - Use fixtures for large expected outputs

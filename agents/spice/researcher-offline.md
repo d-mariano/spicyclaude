@@ -1,7 +1,7 @@
 ---
 name: spice-researcher-offline
 description: SPICE researcher — explores codebase WITHOUT web search (air-gapped/offline mode)
-tools: Read, Grep, Glob, Write, mcp__atlassian__getJiraIssue
+tools: Read, Grep, Glob, Write
 model: opus
 ---
 
