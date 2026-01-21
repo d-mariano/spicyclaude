@@ -136,11 +136,11 @@ Skills are loaded **per-task**, not globally:
 
 ```markdown
 ### Task 2.1: Implement validation
-**Skills**: spice/languages/python, test-driven-development
+**Skills**: python-development, test-driven-development
 ```
 
 The implementer loads only:
-1. `.claude/skills/spice/languages/python.md`
+1. `.claude/skills/python-development.md`
 2. `.claude/skills/test-driven-development/SKILL.md`
 
 This keeps each subagent's context focused.

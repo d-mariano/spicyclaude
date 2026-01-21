@@ -39,11 +39,11 @@ You will receive:
 ## Skills Detected
 
 ### Languages Involved
-- **spice/languages/python** — Backend services use FastAPI
+- **python-development** — Backend services use FastAPI
 - **spice/languages/typescript** — Frontend uses React/Next.js
 
 ### Skills for Implementation
-- `spice/languages/python`
+- `python-development`
 - `spice/languages/typescript`
 - `test-driven-development` (always required)
 ```
@@ -112,11 +112,11 @@ Write to `{context_folder}/research-{nnn}.md`:
 ## Skills Detected
 
 ### Languages Involved
-- **spice/languages/python** — {where/why}
+- **python-development** — {where/why}
 - **spice/languages/typescript** — {where/why}
 
 ### Skills for Implementation
-- `spice/languages/python`
+- `python-development`
 - `spice/languages/typescript`
 - `test-driven-development`
 

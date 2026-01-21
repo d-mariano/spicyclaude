@@ -60,7 +60,7 @@ For each component:
 From the research's Skills Detected section, assign relevant skills:
 
 ```markdown
-**Skills**: spice/languages/python, test-driven-development
+**Skills**: python-development, test-driven-development
 ```
 
 Every task MUST have:
@@ -93,7 +93,7 @@ Write to `{context_folder}/plan-{nnn}.md`:
 ## Skills Required
 
 From research/TDD detection:
-- `spice/languages/python`
+- `python-development`
 - `test-driven-development`
 
 ---
@@ -119,7 +119,7 @@ From research/TDD detection:
 ## Tasks
 
 - [ ] **1.0 UserService**
-  - **Skills**: spice/languages/python, test-driven-development
+  - **Skills**: python-development, test-driven-development
   - **Files**: src/user/service.py, tests/user/test_service.py
   - **Depends on**: None
   - [ ] 1.1 RED: Write failing tests for user creation
@@ -131,7 +131,7 @@ From research/TDD detection:
   - [ ] 1.3 REFACTOR: Clean up (if needed)
 
 - [ ] **2.0 UserRepository**
-  - **Skills**: spice/languages/python, test-driven-development
+  - **Skills**: python-development, test-driven-development
   - **Files**: src/user/repository.py, tests/user/test_repository.py
   - **Depends on**: None
   - [ ] 2.1 RED: Write failing tests for repository
@@ -142,7 +142,7 @@ From research/TDD detection:
     - Implement `save()`, `find_by_id()`, `find_by_email()`
 
 - [ ] **3.0 Integration**
-  - **Skills**: spice/languages/python, test-driven-development
+  - **Skills**: python-development, test-driven-development
   - **Files**: src/user/service.py, tests/user/test_integration.py
   - **Depends on**: 1.0, 2.0
   - [ ] 3.1 RED: Write integration tests
@@ -180,7 +180,7 @@ Execute implementation:
 
 ```markdown
 - [ ] **1.0 Component Name**
-  - **Skills**: spice/languages/python, test-driven-development
+  - **Skills**: python-development, test-driven-development
   - **Files**: path/to/file.py, path/to/test.py
   - **Depends on**: None (or task numbers)
   - [ ] 1.1 RED: Write failing tests for {behavior}
@@ -207,7 +207,7 @@ Every task uses nested checkboxes:
 
 ```markdown
 - [ ] **1.0 Component Name**
-  - **Skills**: spice/languages/python, test-driven-development
+  - **Skills**: python-development, test-driven-development
   - **Files**: src/file.py, tests/test_file.py
   - **Depends on**: None
   - [ ] 1.1 RED: Write failing tests
@@ -307,7 +307,7 @@ Based on files involved:
 
 | File Extension | Skill to Assign |
 |----------------|-----------------|
-| `.py` | `spice/languages/python` |
+| `.py` | `python-development` |
 | `.ts`, `.tsx` | `spice/languages/typescript` |
 | `.go` | `spice/languages/go` |
 | All implementation | `test-driven-development` |

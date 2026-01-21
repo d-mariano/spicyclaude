@@ -48,7 +48,7 @@ All tasks use nested checkboxes:
 
 ```markdown
 - [ ] **1.0 Component Name**
-  - **Skills**: spice/languages/python, test-driven-development
+  - **Skills**: python-development, test-driven-development
   - **Files**: src/file.py, tests/test_file.py
   - **Depends on**: None
   - [ ] 1.1 RED: Write failing tests for {behavior}
@@ -64,7 +64,7 @@ All tasks use nested checkboxes:
 
 | File Extension | Skill |
 |----------------|-------|
-| `.py` | `spice/languages/python` |
+| `.py` | `python-development` |
 | `.ts`, `.tsx` | `spice/languages/typescript` |
 | `.go` | `spice/languages/go` |
 | All | `test-driven-development` (always) |

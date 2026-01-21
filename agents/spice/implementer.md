@@ -24,11 +24,11 @@ Read your detailed instructions from the SPICE skill:
 
 You will be told which skills to load. Example:
 ```
-Skills to load: spice/languages/python, test-driven-development
+Skills to load: python-development, test-driven-development
 ```
 
 Read ONLY those skill files:
-- `.claude/skills/spice/languages/python.md` (if specified)
+- `.claude/skills/python-development.md` (if specified)
 - `.claude/skills/spice/languages/typescript.md` (if specified)
 - `.claude/skills/spice/languages/go.md` (if specified)
 - `.claude/skills/test-driven-development/SKILL.md` (always)

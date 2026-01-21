@@ -41,11 +41,11 @@ You will receive:
 
 You will be told which skills:
 ```
-Skills to load: spice/languages/python, test-driven-development
+Skills to load: python-development, test-driven-development
 ```
 
 For SPICE language skills, read:
-- `spice/languages/python` → `.claude/skills/spice/languages/python.md`
+- `python-development` → `.claude/skills/python-development.md`
 - `spice/languages/typescript` → `.claude/skills/spice/languages/typescript.md`
 - `spice/languages/go` → `.claude/skills/spice/languages/go.md`
 
@@ -258,7 +258,7 @@ tests/user/test_service.py ...                                    [100%]
 ## Next Task
 
 **2.1 RED**: Tests for email validation
-**Skills**: spice/languages/python, test-driven-development
+**Skills**: python-development, test-driven-development
 
 ## Notes
 
@@ -372,10 +372,10 @@ If tests still fail after implementation:
 
 ```
 Task: 1.2 GREEN - Implement user creation
-Skills: spice/languages/python, test-driven-development
+Skills: python-development, test-driven-development
 
 Loading skills...
-- .claude/skills/spice/languages/python.md ✓
+- .claude/skills/python-development.md ✓
 - .claude/skills/test-driven-development/SKILL.md ✓
 
 Reading task 1.2 from plan...

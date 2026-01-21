@@ -42,10 +42,10 @@ The **Skills Detected** section is MANDATORY:
 ## Skills Detected
 
 ### Languages Involved
-- **spice/languages/python** — {where/why}
+- **python-development** — {where/why}
 
 ### Skills for Implementation
-- `spice/languages/python`
+- `python-development`
 - `test-driven-development`
 ```
 

@@ -85,7 +85,7 @@ After subagent completes:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ Task 1.0 Complete: UserService
-   Skills: spice/languages/python, test-driven-development
+   Skills: python-development, test-driven-development
    Subtasks: 1.1 ✓, 1.2 ✓, 1.3 ✓
    Tests: 8 passing
    Files: src/user/service.py, tests/user/test_service.py

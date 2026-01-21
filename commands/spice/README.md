@@ -111,11 +111,11 @@ Skills are loaded **per-task**, not globally:
 
 ```markdown
 ### Task 2.1: Implement validation
-**Skills**: spice/languages/python, test-driven-development
+**Skills**: python-development, test-driven-development
 ```
 
 The implementer loads only:
-- `.claude/skills/spice/languages/python.md`
+- `.claude/skills/python-development.md`
 - `.claude/skills/test-driven-development/SKILL.md`
 
 ## Directory Structure
@@ -209,7 +209,7 @@ Executes tasks with strict TDD.
 
 | Skill | Purpose |
 |-------|---------|
-| `spice/languages/python` | Python patterns, types, pytest |
+| `python-development` | Python patterns, types, pytest |
 | `spice/languages/typescript` | TypeScript patterns, types, vitest/jest |
 | `spice/languages/go` | Go patterns, idioms, testing |
 

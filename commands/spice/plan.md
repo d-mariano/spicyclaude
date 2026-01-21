@@ -57,7 +57,7 @@ Task tool:
     
     ```markdown
     - [ ] **1.0 Component Name**
-      - **Skills**: spice/languages/python, test-driven-development
+      - **Skills**: python-development, test-driven-development
       - **Files**: src/file.py, tests/test_file.py
       - **Depends on**: None
       - [ ] 1.1 RED: Write failing tests
@@ -75,7 +75,7 @@ Task tool:
     - Interfaces for implementation signatures
     
     Valid skill references:
-    - spice/languages/python
+    - python-development
     - spice/languages/typescript
     - spice/languages/go
     - test-driven-development (always include)
