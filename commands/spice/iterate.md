@@ -1,14 +1,29 @@
 ---
 allowed-tools: Task, Read, Write, Glob, Grep
-argument-hint: [context-folder]
-description: SPICE iterate — spawn fresh subagent for each task until all complete
+argument-hint: [context-folder] [batch-size?]
+description: SPICE iterate — spawn fresh subagent per batch of tasks until all complete
 ---
 
 # SPICE Iterate
 
 **Context folder**: $1
+**Batch size**: $2 (default: `parent` — one high-level task at a time)
 
-This command implements a **delegator pattern**: reads the plan, then spawns a **fresh implementer subagent for each task**.
+This command implements a **delegator pattern**: it reads the plan, then spawns a **fresh implementer subagent for each batch of tasks**.
+
+---
+
+## Batch Modes
+
+| $2 Value | Behavior |
+|----------|----------|
+| `parent` (default) | One parent task at a time (e.g., all of Task 2.0: 2.1, 2.2, 2.3) |
+| `1` | One subtask at a time (slowest, most isolated) |
+| `3` | Three subtasks at a time |
+| `5` | Five subtasks at a time |
+| `all` | All remaining tasks in one subagent (fastest, least isolated) |
+
+**Recommended**: Start with `parent` (default). If tasks are very small, try `3` or `5`.
 
 ---
 
@@ -18,145 +33,51 @@ This command implements a **delegator pattern**: reads the plan, then spawns a *
 
 Read the most recent plan: `$1/plan-*.md`
 
-If multiple plans exist, use the latest (highest number).
-
 ### 2. Iteration Loop
 
-**CRITICAL**: Use the Task tool to spawn a NEW subagent for EACH task.
-
 ```
-WHILE tasks with [ ] status exist in plan:
+WHILE tasks with [ ] status exist:
 
-    1. Read plan, find next pending task (by number order)
+    1. Read plan, collect next batch of pending tasks:
+       - If batch=parent: all subtasks under next incomplete parent (2.1, 2.2, 2.3)
+       - If batch=N: next N pending subtasks
+       - If batch=all: all remaining tasks
     
     2. If no pending tasks → STOP, report completion
     
-    3. Extract the task's **Skills:** field
-       Example: "**Skills**: spice/languages/python, test-driven-development"
+    3. Extract **Skills:** from tasks (union of all skills needed)
     
     4. **SPAWN `spice-implementer` AGENT** via Task tool:
     
+       ```
        Task tool:
          agent: spice-implementer
          prompt: |
            Plan: $1/plan-001.md
-           Task: {task number}
+           Tasks to implement: {task list, e.g., "2.1, 2.2, 2.3"}
            Context folder: $1
            
-           **Skills to load:**
-           - {language skill from task}
-           - test-driven-development
+           **Skills to load** (union from all tasks):
+           - .claude/skills/spice/{language}.md
+           - test-driven-development skill
            
-           Execute TDD for this ONE task.
-           Update progress in: $1/progress-001.md
-           Mark task [x] complete in plan.
+           Execute TDD for EACH task in order:
+           - Complete 2.1 (RED → GREEN → REFACTOR)
+           - Complete 2.2 (RED → GREEN → REFACTOR)
+           - Complete 2.3 (RED → GREEN → REFACTOR)
            
-           Return: tests passing, files modified, any issues.
+           Update progress after each task.
+           Mark each task [x] as completed.
+           Commit after batch complete.
+           
+           Return: tasks completed, tests passing, files modified.
+       ```
     
-    5. Wait for subagent completion
+    5. Wait for subagent to complete
     
-    6. Check result:
-       - If SUCCESS: Report progress, continue to next task
-       - If FAILURE: STOP iteration, report failure
+    6. Report progress: "✅ Batch complete: Tasks 2.1, 2.2, 2.3"
     
-    7. Report progress to user:
-       "✅ Task 2.1 Complete: {title}"
-       "Progress: 4/10 tasks"
-    
-    8. CONTINUE to next task (new subagent)
-```
-
-### 3. Completion
-
-When all tasks show `[x]`:
-1. Report summary of all changes
-2. List files created/modified
-3. Show final test count
-4. Suggest next steps
-
----
-
-## Progress Reporting
-
-After each task:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Task 2.1 Complete: Implement email validation
-   Skills: spice/languages/python, test-driven-development
-   Tests: 3 passing
-   Files: src/validators/email.py, tests/test_email.py
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Progress: 4/10 tasks complete
-Next: Task 2.2 — Add validation error messages
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
----
-
-## Handling Failures
-
-If a subagent reports failure:
-
-1. **STOP iteration** — don't proceed to next task
-2. Report the failure clearly with error details
-3. Suggest manual investigation or retry:
-   ```bash
-   # Review progress file for details
-   cat $1/progress-001.md
-   
-   # Retry the failed task
-   /spice:execute $1/plan-001.md {task-number}
-   ```
-4. After fixing, resume:
-   ```bash
-   /spice:iterate $1
-   ```
-
----
-
-## Why Fresh Subagent Per Task?
-
-```
-Orchestrator (this command)
-     │
-     ├──► Task tool ──► [Subagent: Task 1.1] ──► Done, returns
-     │
-     ├──► Task tool ──► [Subagent: Task 1.2] ──► Done, returns
-     │
-     ├──► Task tool ──► [Subagent: Task 2.1] ──► Done, returns
-     │
-     └──► ... continues until plan complete
-```
-
-Each subagent:
-- **Fresh 200K context** — no accumulated bloat
-- **Loads only its skills** — not everything
-- **Isolated failure** — if it fails, retry with clean slate
-- **Focused work** — one task, one goal
-
----
-
-## Anti-Pattern: DON'T Do This
-
-```
-❌ WRONG: Implementing tasks in main context
-
-for each task in plan:
-    read task
-    write tests      ← DON'T do this here
-    write code       ← This pollutes main context
-    run tests        ← Context grows with each task
-```
-
-```
-✅ CORRECT: Spawn subagent for each task
-
-for each task in plan:
-    read task metadata (skills, files)
-    USE TASK TOOL to spawn implementer
-    wait for subagent completion
-    report progress
+    7. CONTINUE to next batch (new subagent)
 ```
 
 ---
@@ -164,12 +85,68 @@ for each task in plan:
 ## Examples
 
 ```bash
-# Iterate through all remaining tasks
+# Default: one parent task at a time (recommended)
 /spice:iterate /context/001-auth/
 
-# After fixing a failure, continue
-/spice:iterate /context/001-auth/
+# Explicit parent batching
+/spice:iterate /context/001-auth/ parent
 
-# Different context folder
-/spice:iterate /context/002-payments/
+# Three subtasks at a time
+/spice:iterate /context/001-auth/ 3
+
+# Five subtasks at a time (faster, less isolation)
+/spice:iterate /context/001-auth/ 5
+
+# All remaining in one shot (fastest, use for small plans)
+/spice:iterate /context/001-auth/ all
 ```
+
+---
+
+## Trade-offs
+
+| Batch Size | Speed | Isolation | Context Usage | Best For |
+|------------|-------|-----------|---------------|----------|
+| `1` | Slowest | Highest | ~10% per task | Debugging, complex tasks |
+| `3` | Medium | High | ~25% per batch | General use |
+| `parent` | Medium | High | ~30% per parent | **Recommended default** |
+| `5` | Fast | Medium | ~40% per batch | Small, simple tasks |
+| `all` | Fastest | Lowest | Full context | Small plans, quick iteration |
+
+**Rule of thumb**: If tasks are failing, reduce batch size. If tasks are trivial, increase it.
+
+---
+
+## Progress Reporting
+
+After each batch:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Batch Complete: Task 2.0 (User Validation)
+   Subtasks: 2.1, 2.2, 2.3
+   Skills: spice/python, test-driven-development
+   Tests: 8 passed
+   Files: src/validators/user.py, tests/test_user.py
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Progress: 6/12 tasks complete
+Next batch: Task 3.0 (Password Validation)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+---
+
+## Handling Failures
+
+If any task in a batch fails:
+
+1. **STOP iteration** — don't proceed to next batch
+2. Report which task failed and why
+3. Suggest retry with smaller batch:
+   ```
+   /spice:execute $1/plan-001.md 2.2
+   ```
+4. After fix, continue:
+   ```
+   /spice:iterate $1/
+   ```
