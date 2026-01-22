@@ -2,7 +2,7 @@
 
 **S**ubagent-**P**owered **I**terative **C**oding **E**ngine
 
-A Claude Code skill for multi-phase software development using isolated subagents and dynamic skill loading.
+A Claude Code workflow for multi-phase software development using isolated subagents and dynamic skill loading.
 
 ## Philosophy
 
