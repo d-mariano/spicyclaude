@@ -94,7 +94,7 @@ EXPLORATION (Subagents)                      IMPLEMENTATION (Main Context)
 
 **Why this matters:**
 - Subagents handle exploration → clean markdown output
-- Main context handles implementation → skills work properly
+- Main context handles implementation → lower latency, better skill support
 - `/clear` between tasks keeps context fresh
 - All state in markdown → safe to clear anytime
 
