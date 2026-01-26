@@ -25,8 +25,20 @@ You will receive:
 - Read the research document
 - Note existing patterns and constraints from research
 - Understand the Skills Detected section
+- **Extract brownfield context for Codebase Integration section**
 
-#### 2. Define System Architecture
+#### 2. Extract Codebase Integration (from Research)
+
+Pull forward from research document:
+- Relevant existing files that will be modified or referenced
+- Existing patterns to follow (naming, structure, conventions)
+- Integration points with current codebase
+- Third-party packages already available
+- Skills/languages detected
+
+**This section ensures the planner has all brownfield context without re-reading research.**
+
+#### 3. Define System Architecture
 
 Identify:
 - Components and their responsibilities
@@ -53,17 +65,24 @@ For each endpoint or interface:
 
 #### 5. Identify Technical Decisions
 
-Document key decisions:
+Document key decisions with **source tags**:
 - Technology choices and rationale
 - Trade-offs considered
 - Performance considerations
 - Security considerations
 - Scalability approach
 
+**Source Tags** (required for every decision):
+- `✓ PRD` — Explicitly required in PRD
+- `✓ Research` — Found in research (cite section)
+- `⚠️ ASSUMPTION` — Not in PRD or research, designer's recommendation
+
+Decisions tagged `⚠️ ASSUMPTION` will be collected in a confirmation section for user approval.
+
 #### 6. Define Interfaces and Protocols
 
 Specify:
-- Public interfaces (classes, functions, APIs)
+- Public interfaces (abstractions/classes, functions, APIs)
 - Internal contracts between components
 - Event schemas (if event-driven)
 - Message formats (if messaging involved)
@@ -85,6 +104,49 @@ Write to `{context_folder}/tdd-{nnn}.md`:
 ## Overview
 
 Brief technical summary of what we're building and how.
+
+---
+
+## Codebase Integration
+
+*Extracted from research — provides brownfield context for planning.*
+
+### Relevant Existing Files
+
+| File | Purpose | Action |
+|------|---------|--------|
+| `src/services/base_service.py` | Base class for services | Extend |
+| `src/repositories/base_repo.py` | Repository pattern base | Extend |
+| `src/api/routes.py` | API route registration | Modify |
+| `tests/conftest.py` | Test fixtures | Modify |
+
+### Patterns to Follow
+
+From existing codebase:
+- Services inherit from `BaseService` with dependency injection
+- Repositories use SQLAlchemy with async sessions
+- API routes use FastAPI with Pydantic models
+- Tests use pytest with `@pytest.fixture` for setup
+
+### Integration Points
+
+| System | Integration | Notes |
+|--------|-------------|-------|
+| Auth middleware | Validate session token | Use existing `get_current_user` |
+| Database | PostgreSQL via SQLAlchemy | Connection pool in `db.py` |
+| Logging | Structured logging | Use `logger` from `core.logging` |
+
+### Available Third-Party Packages
+
+From `pyproject.toml` / `package.json`:
+- `bcrypt` — Password hashing (already installed)
+- `pydantic` — Validation (already installed)
+- `sqlalchemy` — ORM (already installed)
+
+### Skills Detected
+
+- `python-development` — Primary language
+- `test-driven-development` — Required for all tasks
 
 ---
 
@@ -314,6 +376,7 @@ class DuplicateEmailError(Exception):
 ### Decision 1: Password Hashing
 
 **Choice**: bcrypt with cost factor 12
+**Source**: ⚠️ ASSUMPTION (not specified in PRD or research)
 
 **Rationale**:
 - Industry standard for password hashing
@@ -327,6 +390,7 @@ class DuplicateEmailError(Exception):
 ### Decision 2: Session Storage
 
 **Choice**: Redis with JWT fallback
+**Source**: ✓ Research (Redis already in stack per Codebase Integration)
 
 **Rationale**:
 - Fast session lookups
@@ -403,6 +467,33 @@ class DuplicateEmailError(Exception):
 
 ---
 
+## Decisions Requiring Confirmation
+
+*These decisions were not specified in the PRD or research. Please confirm or adjust before planning.*
+
+### 1. Password Hashing Algorithm
+
+**Recommended**: bcrypt with cost factor 12
+
+**Alternatives**:
+- [ ] Confirm bcrypt (cost 12)
+- [ ] Argon2id (more secure, less portable)
+- [ ] Other: ___
+
+### 2. API Versioning Strategy
+
+**Recommended**: `/api/v1/` prefix
+
+**Alternatives**:
+- [ ] Confirm `/api/v1/` prefix
+- [ ] No versioning (internal API only)
+- [ ] Header-based versioning
+- [ ] Other: ___
+
+*After confirmation, update the relevant Technical Decisions sections and proceed to planning.*
+
+---
+
 ## Dependencies
 
 ### New Dependencies
@@ -429,7 +520,9 @@ class DuplicateEmailError(Exception):
 
 ## Next Steps
 
-Ready for planning:
+1. **Review assumptions** in "Decisions Requiring Confirmation" section above
+2. After user confirms or adjusts, ready for planning:
+
 ```bash
 /spice:plan {context_folder}/prd-001.md {context_folder}/tdd-001.md
 ```
@@ -446,13 +539,17 @@ Ready for planning:
 - Show concrete examples
 - Consider security implications
 - Reference existing patterns from research
+- **Tag every decision with its source** (✓ PRD, ✓ Research, ⚠️ ASSUMPTION)
+- **Collect all assumptions** in "Decisions Requiring Confirmation" section
 
 #### Don't:
 - Write implementation code
 - Over-engineer for scale not needed
 - Skip error scenarios
-- Assume technologies not in research
+- Make decisions without source tags
 - Add features beyond PRD scope
+- Proceed to planning with unconfirmed assumptions
+- Create any unnecessary abstractions
 
 ---
 
@@ -472,4 +569,7 @@ After TDD approval, the planner uses it to create tasks:
 /spice:plan {context_folder}/prd-001.md {context_folder}/tdd-001.md
 ```
 
-Note: The planner should read BOTH the PRD and TDD to create the implementation plan.
+The TDD is **self-contained** for planning — it includes:
+- Technical design (architecture, contracts, interfaces)
+- Codebase integration (files, patterns, integration points from research)
+- Skills detected (for task skill assignments)

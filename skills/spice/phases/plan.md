@@ -23,9 +23,9 @@ You will receive:
 
 - Read the PRD document
 - Read the technical input document:
-  - **If TDD**: Use architecture, API contracts, data models, and interfaces
-  - **If Research**: Use skills detected, patterns, and third-party analysis
-- Identify which type of input you have (TDD is preferred when available)
+  - **If TDD**: Use architecture, API contracts, data models, interfaces, AND **Codebase Integration** (existing files, patterns, skills)
+  - **If Research**: Use skills detected, patterns, and third-party analysis (fallback when design phase skipped)
+- TDD is preferred — it's self-contained with both design and brownfield context
 
 #### 2. Leverage Technical Design (if TDD provided)
 
@@ -33,6 +33,7 @@ When a TDD is provided, use it to inform task breakdown:
 
 | TDD Section | Planning Use |
 |-------------|--------------|
+| **Codebase Integration** | Existing files, patterns to follow, skills |
 | Architecture | Component tasks, service boundaries |
 | Data Models | Entity creation tasks, migration tasks |
 | API Contracts | Test expectations, endpoint tasks |
@@ -57,14 +58,14 @@ For each component:
 
 #### 4. Assign Skills Per Task
 
-From the research's Skills Detected section, assign relevant skills:
+From the TDD's **Codebase Integration** section (or research if no TDD), assign relevant skills:
 
 ```markdown
 **Skills**: python-development, test-driven-development
 ```
 
 Every task MUST have:
-- Language skill (from research)
+- Language skill (from TDD's Codebase Integration or research)
 - `test-driven-development` (always)
 
 #### 5. Order by Dependencies
@@ -92,7 +93,7 @@ Write to `{context_folder}/plan-{nnn}.md`:
 
 ## Skills Required
 
-From research/TDD detection:
+From TDD's Codebase Integration (or research):
 - `python-development`
 - `test-driven-development`
 
@@ -153,7 +154,7 @@ From research/TDD detection:
 ## Implementation Notes
 
 ### Patterns to Follow
-- {Pattern from research}: {location}
+- {Pattern from TDD's Codebase Integration}: {location}
 
 ### Third-Party Usage
 - `pydantic.EmailStr` for email validation
@@ -278,7 +279,7 @@ Only include if there's clear improvement needed:
 - Keep tasks small and independently testable
 - Order by dependencies
 - Include specific file paths
-- Reference patterns from research
+- Reference patterns from TDD's Codebase Integration
 - Load TDD skill for writing plans
 
 #### Don't:

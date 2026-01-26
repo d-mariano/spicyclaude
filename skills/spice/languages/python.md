@@ -1,249 +1,413 @@
+## Python Conventions
+
+> Load this skill for Python implementation tasks.
+> For TDD discipline, see the `test-driven-development` skill.
+
 ---
-name: python-development
-description: Python implementation with strict typing and modern patterns. Use when writing or designing and planning to write Python code, modules, APIs, or applications. Enforces dataclasses/Pydantic over generic dicts, proper error handling, and pytest testing.
----
 
-# Python Development
+### Project Setup (CRITICAL)
 
-## Project Setup
+#### Detect Existing Package Manager FIRST
 
-**Detect existing package manager first:**
+**Before doing anything, detect the existing setup and use it:**
+
 ```bash
-ls -la pyproject.toml poetry.lock uv.lock Pipfile* requirements.txt .venv/ 2>/dev/null
+# Check what exists
+ls -la pyproject.toml poetry.lock uv.lock Pipfile Pipfile.lock requirements.txt .venv/ venv/ 2>/dev/null
 ```
 
-| Found | Use |
-|-------|-----|
-| `uv.lock` | `uv sync && uv run pytest` |
-| `poetry.lock` | `poetry install && poetry run pytest` |
-| `requirements.txt` | `source .venv/bin/activate && pip install -r requirements.txt` |
-| Nothing | `uv init && uv venv && source .venv/bin/activate` |
+| Found | Package Manager | Use These Commands |
+|-------|-----------------|-------------------|
+| `poetry.lock` | Poetry | `poetry install`, `poetry run pytest` |
+| `uv.lock` | uv | `uv sync`, `uv run pytest` |
+| `Pipfile.lock` | Pipenv | `pipenv install`, `pipenv run pytest` |
+| `requirements.txt` + `.venv/` | pip + venv | `source .venv/bin/activate`, `pip install` |
+| `pyproject.toml` only | Check for `[tool.poetry]` → Poetry, else try `uv sync` |
+| Nothing | New project — use `uv init` |
 
-**Never** switch package managers. **Never** install globally.
+#### Respect Existing Environment
 
-When using `uv`, avoid `uv pip install` and use commands like `uv add` and `uv sync` instead.
+**NEVER switch package managers on an existing project.** Use what's already there.
+
+```bash
+# ✅ CORRECT: Detect and use existing
+if [ -f "poetry.lock" ]; then
+    poetry install
+    poetry run pytest
+elif [ -f "uv.lock" ]; then
+    uv sync
+    uv run pytest
+elif [ -f "Pipfile.lock" ]; then
+    pipenv install
+    pipenv run pytest
+elif [ -f "requirements.txt" ]; then
+    # Activate existing venv or create one
+    [ -d ".venv" ] && source .venv/bin/activate || (python -m venv .venv && source .venv/bin/activate)
+    pip install -r requirements.txt
+    pytest
+fi
+
+# ❌ WRONG: Ignore existing setup
+uv init  # Don't do this if poetry.lock exists!
+```
+
+#### New Projects Only: Use `uv`
+
+**Only for NEW projects with no existing package manager:**
+
+```bash
+# Verify nothing exists first
+[ ! -f pyproject.toml ] && [ ! -f requirements.txt ] && [ ! -f Pipfile ] && [ ! -f poetry.lock ]
+
+# Then initialize with uv
+uv init
+uv venv
+source .venv/bin/activate
+uv add pydantic httpx
+uv add --dev pytest pytest-asyncio ruff mypy
+```
+
+#### NEVER Do This
+
+```bash
+# ❌ NEVER install globally (without active venv)
+pip install package-name
+
+# ❌ NEVER ignore existing package manager
+uv init  # when poetry.lock already exists
+
+# ❌ NEVER mix package managers
+poetry add package && uv add another-package
+```
 
 ---
 
-## Type System
+### Commands by Package Manager
 
-**Avoid `Any` and generic dicts. Use structured types.**
+#### Poetry Projects
+```bash
+poetry install                 # Install deps
+poetry add package-name        # Add dependency
+poetry add --group dev pytest  # Add dev dependency
+poetry run pytest              # Run tests
+poetry run mypy src/           # Type check
+poetry run ruff check .        # Lint
+```
+
+#### uv Projects
+```bash
+uv sync                        # Install deps
+uv add package-name            # Add dependency  
+uv add --dev pytest            # Add dev dependency
+uv run pytest                  # Run tests
+uv run mypy src/               # Type check
+uv run ruff check .            # Lint
+```
+
+#### pip/venv Projects
+```bash
+source .venv/bin/activate      # Activate venv (or: . venv/bin/activate)
+pip install -r requirements.txt # Install deps
+pip install package-name       # Add dependency (update requirements.txt!)
+pytest                         # Run tests
+mypy src/                      # Type check
+ruff check .                   # Lint
+```
+
+#### Pipenv Projects
+```bash
+pipenv install                 # Install deps
+pipenv install package-name    # Add dependency
+pipenv install --dev pytest    # Add dev dependency
+pipenv run pytest              # Run tests
+pipenv run mypy src/           # Type check
+pipenv run ruff check .        # Lint
+```
+
+---
+
+### Type System
+
+#### Type Hints (Required)
+
+All function signatures must have complete type hints:
 
 ```python
 from __future__ import annotations
 
-# ✗ AVOID
-def process(data: dict[str, Any]) -> dict[str, Any]: ...
-
-# ✓ PREFER
-@dataclass(frozen=True, slots=True)
-class User:
-    id: int
-    email: str
-    name: str
-
-def process(user: User) -> User: ...
+def process_user(
+    user_id: int, 
+    options: dict[str, str] | None = None
+) -> User:
+    ...
 ```
 
-### Type Selection
+**Rules:**
+- Use `from __future__ import annotations` for forward refs
+- Modern syntax: `list[str]` not `List[str]`, `str | None` not `Optional[str]`
+- Target `mypy --strict` compatibility
+- Explicit return types always
 
-| Data Origin | Use |
-|-------------|-----|
-| API input/output | Pydantic `BaseModel` |
-| Internal objects | `@dataclass(frozen=True, slots=True)` |
-| External JSON you don't control | `TypedDict` |
-| Interface contracts | `Protocol` |
-
-### Pydantic (External Data)
+#### Common Patterns
 
 ```python
-from pydantic import BaseModel, Field, EmailStr, field_validator
+# Protocol for interfaces (dependency inversion)
+from typing import Protocol
+
+class Repository(Protocol):
+    def get(self, id: int) -> Model | None: ...
+    def save(self, model: Model) -> None: ...
+
+# TypedDict for structured dicts (external data)
+from typing import TypedDict
+
+class UserData(TypedDict):
+    name: str
+    email: str
+    age: int | None
+
+# Dataclass for internal data objects
+from dataclasses import dataclass
+
+@dataclass(frozen=True, slots=True)
+class UserId:
+    value: int
+```
+
+---
+
+### Code Style
+
+#### Formatting (Automated)
+- **black** — Code formatting (line length 88)
+- **isort** — Import sorting (black profile)
+- **ruff** — Linting (replaces flake8, pylint)
+
+#### Naming
+- `snake_case` — functions, variables, modules
+- `PascalCase` — classes, type aliases
+- `SCREAMING_SNAKE_CASE` — constants
+- `_private` — leading underscore for private
+
+#### Import Order
+```python
+# Standard library
+from collections.abc import Sequence
+from pathlib import Path
+
+# Third-party
+import httpx
+from pydantic import BaseModel
+
+# Local
+from .models import User
+from .utils import validate
+```
+
+---
+
+### Patterns
+
+#### Data Validation (Pydantic)
+
+```python
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 class CreateUserRequest(BaseModel):
     email: EmailStr
     name: str = Field(min_length=1, max_length=100)
-    roles: list[str] = Field(default_factory=list)
+    age: int | None = Field(default=None, ge=0, le=150)
 
-    @field_validator("name")
+    @field_validator('name')
     @classmethod
-    def normalize(cls, v: str) -> str:
+    def normalize_name(cls, v: str) -> str:
         return v.strip().title()
 ```
 
-### Dataclass (Domain Objects)
+#### Error Handling
 
 ```python
-@dataclass(frozen=True, slots=True)
-class UserId:
-    value: int
+# Fail fast — specific exceptions, preserve chain
+try:
+    result = external_api.fetch(id)
+except httpx.HTTPError as e:
+    raise ServiceUnavailableError(f"API failed for {id}") from e
 
-@dataclass(frozen=True, slots=True)
-class User:
-    id: UserId
-    email: str
-    active: bool = False
-
-    def activate(self) -> User:
-        return User(id=self.id, email=self.email, active=True)
+# Custom exceptions with context
+class UserNotFoundError(Exception):
+    def __init__(self, user_id: int) -> None:
+        self.user_id = user_id
+        super().__init__(f"User {user_id} not found")
 ```
 
-### Protocol (Interfaces)
+**Don't:**
+```python
+# Silent failure — NEVER DO THIS
+try:
+    result = risky_operation()
+except Exception:
+    result = None
+```
+
+#### Dependency Injection
 
 ```python
 from typing import Protocol
 
 class UserRepository(Protocol):
-    def get(self, id: UserId) -> User | None: ...
+    def get(self, user_id: int) -> User | None: ...
     def save(self, user: User) -> None: ...
 
-# Any class with matching methods satisfies the Protocol
+class UserService:
+    def __init__(self, repo: UserRepository) -> None:
+        self._repo = repo
+
+    def activate(self, user_id: int) -> User:
+        user = self._repo.get(user_id)
+        if user is None:
+            raise UserNotFoundError(user_id)
+        user.active = True
+        self._repo.save(user)
+        return user
 ```
 
-### Other Useful Types
-
-`Literal["pending", "active"]` for constrained strings, `NewType("UserId", int)` to prevent mixing IDs.
-
----
-
-## Error Handling
+#### Async Patterns
 
 ```python
-# Custom exceptions with context
-class NotFoundError(Exception):
-    def __init__(self, resource: str, id: int | str) -> None:
-        self.resource, self.id = resource, id
-        super().__init__(f"{resource} {id} not found")
+import asyncio
+from collections.abc import AsyncIterator
 
-# Always preserve exception chain
-try:
-    result = api.fetch(id)
-except httpx.HTTPError as e:
-    raise ServiceError("API failed") from e
-
-# Fail fast — validate early
-def process(order: Order) -> Receipt:
-    if not order.items:
-        raise ValidationError("Order must have items")
-    return _process_valid_order(order)
-```
-
-**Never** silently swallow: `except Exception: pass`
-
----
-
-## Async Patterns
-
-```python
-# Concurrent execution with TaskGroup
-async def fetch_dashboard(user_id: UserId) -> Dashboard:
+async def fetch_all(ids: list[int]) -> list[Result]:
     async with asyncio.TaskGroup() as tg:
-        user = tg.create_task(get_user(user_id))
-        orders = tg.create_task(get_orders(user_id))
-    return Dashboard(user.result(), orders.result())
+        tasks = [tg.create_task(fetch_one(id)) for id in ids]
+    return [task.result() for task in tasks]
 
 # Async context manager
-@asynccontextmanager
 async def get_connection() -> AsyncIterator[Connection]:
     conn = await pool.acquire()
     try:
         yield conn
     finally:
         await pool.release(conn)
-
-# Rate-limited concurrency
-async def process_batch(items: list[T], fn: Callable, limit: int = 10) -> list[R]:
-    sem = asyncio.Semaphore(limit)
-    async def limited(item: T) -> R:
-        async with sem:
-            return await fn(item)
-    return await asyncio.gather(*[limited(i) for i in items])
 ```
 
 ---
 
-## Testing
+### Testing
 
-### Fixtures
+#### Framework
+- **pytest** — Test framework
+- **pytest-asyncio** — Async testing
+- **pytest-mock** — Mocking via `mocker` fixture
+
+#### Project Structure
+```
+src/
+└── myapp/
+    ├── __init__.py
+    ├── service.py
+    └── repository.py
+tests/
+├── conftest.py           # Shared fixtures
+├── unit/
+│   └── test_service.py
+├── integration/
+│   └── test_api.py
+└── fixtures/
+    └── users.json
+```
+
+#### Fixtures Over Setup
 
 ```python
+import pytest
+from unittest.mock import Mock
+
 @pytest.fixture
 def mock_repo() -> Mock:
     repo = Mock(spec=UserRepository)
-    repo.get.return_value = User(id=UserId(1), email="test@example.com", name="Test")
+    repo.get.return_value = User(id=1, name="Test", active=False)
     return repo
 
 @pytest.fixture
 def user_service(mock_repo: Mock) -> UserService:
     return UserService(repo=mock_repo)
 
-# Factory fixture for flexible creation
-@pytest.fixture
-def user_factory() -> Callable[..., User]:
-    def _create(id: int = 1, **kwargs) -> User:
-        return User(id=UserId(id), email=kwargs.get("email", "test@example.com"), **kwargs)
-    return _create
+def test_activate_user_sets_active_true(user_service: UserService) -> None:
+    result = user_service.activate(1)
+    assert result.active is True
 ```
 
-### Fake Over Mock (for complex logic)
+#### Parametrized Tests
 
 ```python
-@dataclass
-class FakeUserRepository:
-    _users: dict[UserId, User] = field(default_factory=dict)
+import pytest
 
-    def get(self, id: UserId) -> User | None:
-        return self._users.get(id)
-
-    def save(self, user: User) -> None:
-        self._users[user.id] = user
-```
-
-### Parametrized Tests
-
-```python
 @pytest.mark.parametrize("email,valid", [
     ("user@example.com", True),
     ("user@test.co.uk", True),
     ("invalid", False),
     ("@missing.com", False),
+    ("spaces @test.com", False),
 ])
 def test_email_validation(email: str, valid: bool) -> None:
-    assert validate_email(email) == valid
+    result = validate_email(email)
+    assert result == valid
 ```
 
-### Async Tests
+#### Async Tests
 
 ```python
+import pytest
+
 @pytest.mark.asyncio
-async def test_fetch_user() -> None:
+async def test_fetch_user_returns_user() -> None:
     service = UserService(FakeRepository())
-    result = await service.fetch(UserId(1))
-    assert result.id == UserId(1)
-```
-
-### Testing Exceptions
-
-```python
-def test_raises_not_found() -> None:
-    with pytest.raises(NotFoundError) as exc:
-        service.get_user(UserId(999))
-    assert exc.value.id == 999
+    result = await service.fetch_user(1)
+    assert result.id == 1
 ```
 
 ---
 
-## Anti-Patterns
+### Anti-Patterns
 
-| ✗ Don't | ✓ Do |
-|---------|------|
-| `dict[str, Any]` | Dataclass, Pydantic, or TypedDict |
-| `def f(x=[])` | `def f(x: list \| None = None)` |
-| `except:` / `except Exception: pass` | `except SpecificError:` + handle |
-| `raise NewError()` | `raise NewError() from e` |
+| Don't | Do Instead |
+|-------|------------|
+| Mutable default args `def f(x=[])` | `def f(x=None): x = x or []` |
+| Bare `except:` | `except SpecificError:` |
+| `%` or `.format()` | f-strings |
 | `from module import *` | Explicit imports |
 | Global mutable state | Dependency injection |
-| `time.sleep()` in async | `await asyncio.sleep()` |
-| `requests.get()` in async | `await httpx.get()` |
-| Sequential awaits | `asyncio.TaskGroup` for concurrent |
-| Excessive mocking | Fakes for complex logic |
-| Tests without assertions | Explicit `assert` statements |
+| `isinstance` chains | Polymorphism or match |
+| `type: ignore` everywhere | Fix the type issue |
+| Nested try/except | Single handler, re-raise |
+
+---
+
+### Quick Reference
+
+```python
+# Modern Python patterns
+from __future__ import annotations
+from dataclasses import dataclass
+from typing import Protocol
+from pydantic import BaseModel
+
+# Pattern matching (3.10+)
+match command:
+    case ["quit"]:
+        return
+    case ["load", filename]:
+        load_file(filename)
+    case _:
+        print("Unknown command")
+
+# Structural pattern matching with types
+match user:
+    case User(role="admin"):
+        grant_admin_access()
+    case User(role="user", verified=True):
+        grant_user_access()
+    case _:
+        deny_access()
+```

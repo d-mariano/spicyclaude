@@ -1,35 +1,48 @@
-## Implementer Subagent Protocol
+## Implementation Protocol
 
-**Role**: Execute tasks following strict TDD discipline with dynamic skill loading.
+**Role**: Execute tasks following strict TDD discipline in main context.
+
+**Approach**: Main context execution (no subagents) — skills load properly, progressive disclosure works, context from earlier work helps.
 
 **Tools**: Read, Write, Edit, MultiEdit, Bash, Grep, Glob
 
 ---
 
+### Context Management
+
+Implementation runs in main context. Benefits:
+- Skills load correctly with progressive disclosure
+- Accumulated understanding from earlier work
+- No cold-start overhead
+
+Trade-off: Context grows. Manage with `/clear` between parent tasks.
+
+**Context threshold**: ~45%
+- After completing a parent task, check context usage
+- If >= 45%, pause and suggest `/clear`
+- All state is preserved in markdown files — safe to clear
+
+---
+
 ### Inputs
 
-You will receive:
-1. Path to the plan document
-2. Context folder path
-3. Task(s) to implement:
-   - **Parent task (1.0, 2.0)**: Execute ALL subtasks within it
-   - **Single subtask (1.1, 2.3)**: Execute just that subtask
-   - **Batch (1.1,1.2,1.3)**: Execute these specific subtasks in order
-4. **Skills to load** for the task(s)
+From the context folder (`/context/{nnn}-{feature}/`):
+1. **plan-*.md** — Task list with `[ ]` / `[x]` checkboxes
+2. **progress-*.md** — Completion tracking
+3. **research-*.md** or **tdd-*.md** — Patterns and design decisions
+4. **prd-*.md** — Original requirements
 
 ---
 
 ### Task Scope
 
+Implement ONE parent task at a time (all its subtasks):
+
 | Task Format | What to Do |
 |-------------|------------|
 | `1.0`, `2.0` (parent) | Execute all subtasks 1.1, 1.2, 1.3... in sequence |
-| `1.1`, `2.3` (single) | Execute just that one subtask |
-| `1.1,1.2,1.3` (batch) | Execute those specific subtasks in order |
 
-**Parent task execution is the default and recommended approach** — it keeps the full TDD cycle (RED/GREEN/REFACTOR) in one context.
-
-**Batch execution** is useful when you want to run N subtasks together (e.g., from `/spice:iterate folder 3`).
+Parent task execution keeps the full TDD cycle (RED/GREEN/REFACTOR) in one context.
 
 ---
 
@@ -290,19 +303,40 @@ Use conventional commits: `feat:`, `fix:`, `refactor:`, `test:`, `docs:`
 
 ---
 
-### Return Summary
+### Completion Report
 
-When complete, return to orchestrator:
+After completing a parent task, report:
 
 ```
-Task 1.2 Complete: Implement user creation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Task 1.0 Complete: UserService
 
-Tests: 3 passing
+Subtasks: 1.1 ✓, 1.2 ✓, 1.3 ✓
+Tests: 8 passing
 Files: 
   - src/user/service.py (created)
   - tests/user/test_service.py (created)
 Validation: All checks pass
-Next: Task 2.1 - Tests for email validation
+Commit: feat: implement UserService
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Progress: 1/5 parent tasks complete
+Next: Task 2.0 — UserRepository
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💾 Context: ~{n}%
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**If context >= 45%**, add:
+
+```
+⚠️  Context threshold reached — recommend /clear before next task
+
+All state preserved in:
+- plan-001.md (task completion status)
+- progress-001.md (detailed log)
+
+After /clear, resume with:
+/spice:implement {context-folder}
 ```
 
 ---

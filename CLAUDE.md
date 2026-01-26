@@ -7,6 +7,7 @@ Project configuration for Claude Code with SPICE integration.
 - Delete more than you add — complexity compounds into disasters
 - Follow SOLID principles (Single Responsibility, Open-Closed, Liskov Substitution, Interface Segregation, Dependency Inversion)
 - Follow KISS (Keep It Simple, Stupid)
+- Do not create unnecessary abstractions
 - Assume an MVP of a rapidly iterating startup, not an enterprise
 - Be pragmatic — don't follow patterns for their own sake
 - Fail fast and loud, not silently
@@ -24,9 +25,9 @@ For new features and complex changes, use the SPICE workflow:
 
 This ensures:
 - Research before implementation
+- Technical design with API contracts
 - TDD task breakdown
-- Context isolation between phases
-- Proper validation at each step
+- Main context implementation with `/clear` discipline
 
 ### Quick Changes
 
@@ -83,6 +84,7 @@ All SPICE artifacts go in `/context/`:
 └── {nnn}-{feature}/
     ├── prd-001.md          # Product requirements
     ├── research-001.md     # Technical findings
+    ├── tdd-001.md          # Technical design (architecture, contracts)
     ├── plan-001.md         # TDD task breakdown
     └── progress-001.md     # Implementation status
 ```

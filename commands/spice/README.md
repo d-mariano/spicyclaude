@@ -2,16 +2,16 @@
 
 **S**ubagent-**P**owered **I**terative **C**oding **E**ngine
 
-A Claude Code workflow for multi-phase software development using isolated subagents and dynamic skill loading.
+A Claude Code skill for multi-phase software development with optimal context management.
 
 ## Philosophy
 
 SPICE is built on four core principles:
 
-1. **Build the best context windows** — Stay in the smart zone (~40% utilization)
-2. **Subagent isolation** — Prevent context pollution between phases
-3. **Knowledge compaction** — Share context via structured markdown deliverables
-4. **Iterate and validate** — Each step is tested before proceeding
+1. **Build the best context windows** — Stay in the smart zone (~45% utilization)
+2. **Subagents for exploration** — Research/planning noise doesn't pollute implementation
+3. **Main context for implementation** — Skills load properly, progressive disclosure works
+4. **Knowledge compaction** — All state in markdown, safe to `/clear` and resume
 
 ## Installation
 
@@ -45,11 +45,13 @@ SPICE requires the **`test-driven-development`** skill:
 # Full workflow from an idea
 /spice:workflow user-auth "Users can log in with email and password"
 
-# Or run phases individually
-/spice:ideate "notification system for user events"
-/spice:research "payment processing" /context/001-payments/
-/spice:plan /context/001-payments/prd-001.md /context/001-payments/research-001.md
-/spice:iterate /context/001-payments/
+# After planning completes, clear context and implement
+/clear
+/spice:iterate /context/001-user-auth/
+
+# When prompted, clear and continue
+/clear
+/spice:iterate /context/001-user-auth/
 ```
 
 ## Commands
@@ -57,39 +59,44 @@ SPICE requires the **`test-driven-development`** skill:
 | Command | Purpose |
 |---------|---------|
 | `/spice:ideate [idea]` | Generate PRD from an idea |
-| `/spice:research [topic] [folder?]` | Research with web search |
-| `/spice:research-offline [topic] [folder?]` | Research codebase only |
+| `/spice:research [prd-path]` | Research with web search |
+| `/spice:research-offline [prd-path]` | Research codebase only |
 | `/spice:design [prd] [research]` | Create technical design document |
 | `/spice:plan [prd] [tdd-or-research]` | Create TDD task breakdown |
-| `/spice:execute [plan] [task?]` | Implement single task |
-| `/spice:iterate [folder]` | Implement all remaining tasks |
+| `/spice:status [folder]` | Show progress, suggest next action |
+| `/spice:implement [folder] [task?]` | Implement one parent task |
+| `/spice:iterate [folder]` | Implement all tasks with /clear prompts |
 | `/spice:workflow [name] [input]` | Full pipeline |
 
 ## How It Works
 
-### Isolated Subagents
-
-SPICE spawns **fresh subagents** for each phase and each task:
+### Two-Phase Architecture
 
 ```
-Main Context (Orchestrator)
-     │
-     ├──► Task tool ──► [Ideator Subagent]     ──► prd.md
-     │
-     ├──► Task tool ──► [Researcher Subagent]  ──► research.md
-     │
-     ├──► Task tool ──► [Planner Subagent]     ──► plan.md
-     │
-     ├──► Task tool ──► [Implementer: Task 1]  ──► progress.md
-     │
-     └──► Task tool ──► [Implementer: Task 2]  ──► progress.md
+EXPLORATION (Subagents)                      IMPLEMENTATION (Main Context)
+───────────────────────                      ────────────────────────────
+
+┌────────┐  ┌────────┐  ┌────────┐          ┌──────────────────────────┐
+│ IDEATE │─►│RESEARCH│─►│ DESIGN │          │     /clear               │
+└───┬────┘  └───┬────┘  └───┬────┘          │         ↓                │
+    │           │           │               │  Task 1.0 (main ctx)     │
+    ▼           ▼           ▼               │         ↓                │
+ prd.md    research.md   tdd.md             │     /clear               │
+                            │               │         ↓                │
+                            ▼               │  Task 2.0 (main ctx)     │
+                     ┌──────────┐           │         ↓                │
+                     │   PLAN   │ ────────► │     ...                  │
+                     └────┬─────┘   /clear  └──────────────────────────┘
+                          │
+                          ▼
+                      plan.md
 ```
 
 **Why this matters:**
-- Each subagent gets fresh 200K context
-- No pollution from exploration phases
-- Failed tasks can retry with clean slate
-- Focused context = better results
+- Subagents handle exploration → clean markdown output
+- Main context handles implementation → skills work properly
+- `/clear` between tasks keeps context fresh
+- All state in markdown → safe to clear anytime
 
 ### Context Sharing
 
@@ -107,16 +114,51 @@ All phases communicate via markdown in `/context/`:
 
 ### Dynamic Skill Loading
 
-Skills are loaded **per-task**, not globally:
+Skills are loaded **per-task** during implementation:
 
 ```markdown
-### Task 2.1: Implement validation
-**Skills**: python-development, test-driven-development
+- [ ] **2.0 UserService**
+  - **Skills**: python-developer, test-driven-development
 ```
 
-The implementer loads only:
-- `.claude/skills/python-development.md`
-- `.claude/skills/test-driven-development/SKILL.md`
+Because implementation runs in **main context**, skills load properly with progressive disclosure.
+
+### Minimal Agent Pattern
+
+Agents are thin wrappers that reference skills:
+
+```yaml
+---
+name: spice-designer
+model: opus
+description: SPICE designer — creates technical design documents
+tools: Read, Grep, Glob, Write, WebSearch, WebFetch
+skills:
+  - spice
+---
+
+Load and follow: `.claude/skills/spice/phases/design.md`
+```
+
+### Minimal Command Pattern
+
+Commands are orchestration only — spawn agent or reference skill:
+
+```yaml
+---
+allowed-tools: Task, Read, Glob
+argument-hint: [prd-path] [research-path]
+description: SPICE design — create Technical Design Document
+---
+
+# SPICE Design
+
+1. Verify inputs exist
+2. Spawn `spice-designer` agent with PRD + Research paths
+3. After completion, suggest next command
+```
+
+All protocol details live in skills, not in commands or agents.
 
 ## Directory Structure
 
@@ -124,38 +166,48 @@ The implementer loads only:
 .claude/
 ├── skills/spice/
 │   ├── SKILL.md              # Main entry point
-│   ├── phases/
+│   ├── phases/               # Full protocols (source of truth)
 │   │   ├── ideate.md         # PRD generation protocol
 │   │   ├── research.md       # Research protocol
 │   │   ├── design.md         # Technical design protocol
 │   │   ├── plan.md           # Planning protocol
 │   │   └── execute.md        # Implementation protocol
-│   └── languages/
-│       ├── python.md         # Python conventions
-│       ├── typescript.md     # TypeScript conventions
-│       └── go.md             # Go conventions
+│   └── languages/            # Language conventions (loaded per-task)
+│       ├── python.md
+│       ├── typescript.md
+│       └── go.md
 │
-├── agents/spice/
-│   ├── ideator.md            # PRD generation agent
-│   ├── researcher.md         # Research agent (online)
-│   ├── researcher-offline.md # Research agent (no web)
-│   ├── designer.md           # Technical design agent
-│   ├── planner.md            # Planning agent
-│   └── implementer.md        # Implementation agent
+├── agents/spice/             # Minimal configs → reference skills
+│   ├── ideator.md
+│   ├── researcher.md
+│   ├── researcher-offline.md
+│   ├── designer.md
+│   └── planner.md
 │
-├── commands/spice/
-│   ├── ideate.md             # /spice:ideate
-│   ├── research.md           # /spice:research
-│   ├── research-offline.md   # /spice:research-offline
-│   ├── design.md             # /spice:design
-│   ├── plan.md               # /spice:plan
-│   ├── execute.md            # /spice:execute
-│   ├── iterate.md            # /spice:iterate
-│   └── workflow.md           # /spice:workflow
+├── commands/spice/           # User-facing slash commands
+│   ├── ideate.md
+│   ├── research.md
+│   ├── research-offline.md
+│   ├── design.md
+│   ├── plan.md
+│   ├── status.md
+│   ├── implement.md
+│   ├── iterate.md
+│   └── workflow.md
 │
 └── hooks/
     └── spice-post-task.sh    # Optional validation hook
 ```
+
+### Component Roles
+
+| Component | Purpose | Size |
+|-----------|---------|------|
+| **Skills** | Full protocols, templates, examples | 200-500 lines |
+| **Agents** | YAML config + skill reference | 6-10 lines |
+| **Commands** | User trigger, spawn agent or load skill | 30-65 lines |
+
+Skills are the **single source of truth**. Agents and commands are minimal orchestration.
 
 ## Phases
 
@@ -163,69 +215,51 @@ The implementer loads only:
 
 Transforms ideas into structured PRDs through interactive conversation.
 
-- Asks clarifying questions
-- Generates comprehensive PRD
-- Iterates based on feedback
-
 ### 2. Research (`/spice:research` / `/spice:research-offline`)
 
-Explores codebase and gathers context.
-
-- Detects languages and skills needed
-- Finds existing patterns
-- Researches external documentation (online mode)
-- Identifies third-party capabilities
+Explores codebase and gathers context. Outputs clean markdown.
 
 ### 3. Design (`/spice:design`)
 
-Creates technical design document (TDD) from PRD and research.
-
-- Defines system architecture
-- Designs data models and schemas
-- Specifies API contracts
-- Documents technical decisions
-- Defines interfaces and protocols
+Creates technical design document (TDD) with architecture, data models, API contracts.
 
 ### 4. Planning (`/spice:plan`)
 
-Creates TDD task breakdown.
+Creates TDD task breakdown with skills per task.
 
-- Breaks work into testable increments
-- Assigns skills to each task
-- Defines RED/GREEN phases
-- Orders by dependencies
-- Uses TDD contracts for test expectations
+### 5. Implementation (`/spice:implement` / `/spice:iterate`)
 
-### 5. Implementation (`/spice:execute` / `/spice:iterate`)
+Executes tasks with strict TDD **in main context**:
+- Skills load properly
+- `/clear` between tasks keeps context fresh
+- All state in markdown for safe resume
 
-Executes tasks with strict TDD.
+## Typical Session
 
-- Fresh subagent per task
-- RED → GREEN → REFACTOR cycle
-- Updates progress after each task
-- Commits when parent tasks complete
+```bash
+# 1. Plan the feature (subagents handle this)
+/spice:workflow user-auth "email/password authentication"
+
+# 2. After planning completes, clear context
+/clear
+
+# 3. Start implementation
+/spice:iterate /context/001-user-auth/
+
+# 4. When prompted (~45% context), clear and continue
+/clear
+/spice:iterate /context/001-user-auth/
+
+# 5. Repeat until complete
+```
 
 ## Language Skills
 
 | Skill | Purpose |
 |-------|---------|
-| `python-development` | Python patterns, types, pytest |
+| `python-developer` | Python patterns, types, pytest |
 | `spice/languages/typescript` | TypeScript patterns, types, vitest/jest |
 | `spice/languages/go` | Go patterns, idioms, testing |
-
-## Hooks (Optional)
-
-SPICE supports post-task hooks for deterministic validation:
-
-```bash
-# Make hook executable
-chmod +x .claude/hooks/spice-post-task.sh
-```
-
-The hook receives:
-- `$1` — Context folder path
-- `$2` — Task number completed
-- `$3` — Test exit code
 
 ## When to Use SPICE
 
@@ -243,20 +277,21 @@ The hook receives:
 
 ## Troubleshooting
 
+### Context Growing Too Fast
+1. Check `/spice:status` for current usage
+2. Use `/clear` more frequently
+3. Implement smaller parent tasks
+
 ### Task Fails Repeatedly
 1. Review progress file for errors
-2. Retry with fresh context: `/spice:execute [plan] [task]`
+2. Run `/clear` and retry: `/spice:implement [folder] [task]`
 3. Break task into smaller pieces
 
-### Research Misses Key Files
-1. Run with explicit topic
-2. Try offline mode for codebase focus
-3. Check file extensions are recognized
+### Skills Not Loading
+Skills require main context — this is why implementation doesn't use subagents.
 
-### Plan Tasks Too Large
-1. Each subtask should be one RED/GREEN cycle
-2. Target 15-30 minutes per subtask
-3. Break parent tasks into more subtasks
+### Lost Track of Progress
+Run `/spice:status /context/folder/` — shows current state and next action.
 
 ## License
 
