@@ -59,14 +59,29 @@ SPICE requires the **`test-driven-development`** skill:
 | Command | Purpose |
 |---------|---------|
 | `/spice:ideate [idea]` | Generate PRD from an idea |
-| `/spice:research [prd-path]` | Research with web search |
-| `/spice:research-offline [prd-path]` | Research codebase only |
+| `/spice:research [input...]` | Analyze inputs, explore codebase, identify gaps |
+| `/spice:web-research [folder]` | Fill research gaps with targeted web searches |
 | `/spice:design [prd] [research]` | Create technical design document |
-| `/spice:plan [prd] [tdd-or-research]` | Create TDD task breakdown |
-| `/spice:status [folder]` | Show progress, suggest next action |
+| `/spice:plan [prd] [tdd-or-research]` | Create TDD task breakdown with coverage analysis |
+| `/spice:review-plan [folder]` | Critical external plan review (optional) |
 | `/spice:implement [folder] [task?]` | Implement one parent task |
 | `/spice:iterate [folder]` | Implement all tasks with /clear prompts |
+| `/spice:review [folder]` | Comprehensive implementation review |
+| `/spice:status [folder]` | Show progress, suggest next action |
 | `/spice:workflow [name] [input]` | Full pipeline |
+
+### Flexible Research Inputs
+
+```bash
+# Single file (PRD, external research, or idea)
+/spice:research /context/001-auth/prd-001.md
+
+# Multiple files (PRD + Gemini deep-dive)
+/spice:research /docs/prd.md /docs/gemini-research.md
+
+# Folder (reads all .md files)
+/spice:research /context/001-auth/
+```
 
 ## How It Works
 
@@ -94,7 +109,7 @@ EXPLORATION (Subagents)                      IMPLEMENTATION (Main Context)
 
 **Why this matters:**
 - Subagents handle exploration → clean markdown output
-- Main context handles implementation → lower latency, better skill support
+- Main context handles implementation → skills work properly
 - `/clear` between tasks keeps context fresh
 - All state in markdown → safe to clear anytime
 
@@ -106,10 +121,11 @@ All phases communicate via markdown in `/context/`:
 /context/
 └── 001-user-auth/
     ├── prd-001.md          # Product requirements
-    ├── research-001.md     # Technical findings (skills detected)
+    ├── research-001.md     # Technical findings + gaps + web research
     ├── tdd-001.md          # Technical design (architecture, contracts)
     ├── plan-001.md         # TDD task breakdown (skills per task)
-    └── progress-001.md     # Implementation status
+    ├── progress-001.md     # Implementation status
+    └── lessons-learned.md  # Captured improvements (optional)
 ```
 
 ### Dynamic Skill Loading
@@ -137,7 +153,7 @@ skills:
   - spice
 ---
 
-Load and follow: `.claude/skills/spice/phases/design.md`
+Load and follow: `~/.claude/skills/spice/phases/design.md`
 ```
 
 ### Minimal Command Pattern
@@ -168,10 +184,13 @@ All protocol details live in skills, not in commands or agents.
 │   ├── SKILL.md              # Main entry point
 │   ├── phases/               # Full protocols (source of truth)
 │   │   ├── ideate.md         # PRD generation protocol
-│   │   ├── research.md       # Research protocol
+│   │   ├── research.md       # Codebase analysis + gap identification
+│   │   ├── web-research.md   # Targeted web searches
 │   │   ├── design.md         # Technical design protocol
-│   │   ├── plan.md           # Planning protocol
-│   │   └── execute.md        # Implementation protocol
+│   │   ├── plan.md           # Planning + coverage analysis
+│   │   ├── review-plan.md    # Critical plan review
+│   │   ├── execute.md        # Implementation + lessons learned
+│   │   └── review.md         # Implementation review
 │   └── languages/            # Language conventions (loaded per-task)
 │       ├── python.md
 │       ├── typescript.md
@@ -180,19 +199,22 @@ All protocol details live in skills, not in commands or agents.
 ├── agents/spice/             # Minimal configs → reference skills
 │   ├── ideator.md
 │   ├── researcher.md
-│   ├── researcher-offline.md
+│   ├── web-researcher.md
 │   ├── designer.md
-│   └── planner.md
+│   ├── planner.md
+│   └── plan-reviewer.md
 │
 ├── commands/spice/           # User-facing slash commands
 │   ├── ideate.md
 │   ├── research.md
-│   ├── research-offline.md
+│   ├── web-research.md
 │   ├── design.md
 │   ├── plan.md
-│   ├── status.md
+│   ├── review-plan.md
 │   ├── implement.md
 │   ├── iterate.md
+│   ├── review.md
+│   ├── status.md
 │   └── workflow.md
 │
 └── hooks/
@@ -215,24 +237,59 @@ Skills are the **single source of truth**. Agents and commands are minimal orche
 
 Transforms ideas into structured PRDs through interactive conversation.
 
-### 2. Research (`/spice:research` / `/spice:research-offline`)
+### 2. Research (`/spice:research`)
 
-Explores codebase and gathers context. Outputs clean markdown.
+Analyzes inputs (PRD, external research, ideas), explores codebase, identifies research gaps.
+- Accepts flexible inputs: file, folder, or multiple files
+- Auto-detects input types (PRD, external research, idea)
+- Outputs gaps and recommended web research plan
 
-### 3. Design (`/spice:design`)
+### 3. Web Research (`/spice:web-research`) — Optional
 
-Creates technical design document (TDD) with architecture, data models, API contracts.
+Fills knowledge gaps with targeted web searches.
+- Reads gaps from research file
+- Executes targeted searches
+- Updates research file with findings
 
-### 4. Planning (`/spice:plan`)
+### 4. Design (`/spice:design`)
 
-Creates TDD task breakdown with skills per task.
+Creates technical design document (TDD) with:
+- Architecture and component contracts
+- Data models and API contracts
+- Research gap validation
+- Scope assessment (flags if PRD is too large)
 
-### 5. Implementation (`/spice:implement` / `/spice:iterate`)
+### 5. Planning (`/spice:plan`)
+
+Creates TDD task breakdown with:
+- Skills per task
+- **Coverage analysis** — maps requirements/components to tasks
+- Flags gaps and asks for confirmation
+
+### 5.5 Plan Review (`/spice:review-plan`) — Optional
+
+Critical external review by a separate agent:
+- Fresh perspective (not the plan author)
+- Explicitly looks for problems
+- Checks traceability, dependencies, risks
+- Verdicts: 🔴 Major Issues / 🟡 Minor Issues / 🟢 Ready
+
+### 6. Implementation (`/spice:implement` / `/spice:iterate`)
 
 Executes tasks with strict TDD **in main context**:
 - Skills load properly
 - `/clear` between tasks keeps context fresh
 - All state in markdown for safe resume
+- Captures lessons learned from unexpected failures
+
+### 7. Implementation Review (`/spice:review`)
+
+Comprehensive review before declaring "done":
+- Runs all automated checks (tests, lint, types)
+- Verifies requirements coverage
+- Verifies component delivery
+- Documents open items
+- Verdicts: ✅ Complete / ⚠️ Caveats / ❌ Incomplete
 
 ## Typical Session
 
@@ -240,17 +297,23 @@ Executes tasks with strict TDD **in main context**:
 # 1. Plan the feature (subagents handle this)
 /spice:workflow user-auth "email/password authentication"
 
-# 2. After planning completes, clear context
+# 2. (Optional) Critical review of the plan
+/spice:review-plan /context/001-user-auth/
+
+# 3. After planning completes, clear context
 /clear
 
-# 3. Start implementation
+# 4. Start implementation
 /spice:iterate /context/001-user-auth/
 
-# 4. When prompted (~45% context), clear and continue
+# 5. When prompted (~45% context), clear and continue
 /clear
 /spice:iterate /context/001-user-auth/
 
-# 5. Repeat until complete
+# 6. When implementation complete, review
+/spice:review /context/001-user-auth/
+
+# 7. If review passes, done!
 ```
 
 ## Language Skills

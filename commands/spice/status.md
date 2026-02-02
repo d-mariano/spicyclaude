@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read, Glob, Grep, AskUserQuestion
+allowed-tools: Read, Glob, Grep
 argument-hint: [context-folder]
 description: SPICE status — show progress and suggest next action
 ---

@@ -24,7 +24,13 @@ Task tool:
     Output: {folder}/plan-001.md
 ```
 
-4. After completion, suggest: `/spice:iterate {folder}/`
+4. **Handle question forwarding** (if needed):
+   - If response contains `AWAITING_INPUT: true`:
+     - Extract questions from "Questions Before Proceeding" section
+     - Use `AskUserQuestion` tool to get answers from user
+     - Re-invoke agent with original prompt + "Previous questions answered:" section
+
+5. After completion, suggest: `/spice:iterate {folder}/`
 
 ## With TDD vs Without
 

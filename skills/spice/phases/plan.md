@@ -8,6 +8,42 @@
 
 ---
 
+### Question Forwarding
+
+Subagents cannot directly ask users questions. If you need clarification on planning:
+
+1. Output a `## Questions Before Proceeding` section
+2. List your questions with clear options where helpful
+3. End with the marker `AWAITING_INPUT: true`
+4. The caller will get answers and re-invoke you with them
+
+**When to ask:**
+- Unclear task granularity (how small to break things)
+- Phased delivery questions (MVP vs full feature)
+- Ambiguous priority ordering
+
+**Format:**
+```markdown
+## Questions Before Proceeding
+
+I have questions about how to structure the implementation plan:
+
+1. **Delivery Phases**: Should this be delivered incrementally?
+   - Single release (all tasks, then ship)
+   - Phased (MVP first, then enhancements)
+   
+2. **Task Granularity**: The TDD shows 5 API endpoints.
+   - One task per endpoint (5 parent tasks)
+   - Group related endpoints (2-3 parent tasks)
+
+---
+AWAITING_INPUT: true
+```
+
+**Note**: Most planning can proceed using TDD/research context. Only ask if genuinely ambiguous.
+
+---
+
 ### Inputs
 
 You will receive:
@@ -61,7 +97,7 @@ For each component:
 From the TDD's **Codebase Integration** section (or research if no TDD), assign relevant skills:
 
 ```markdown
-**Skills**: python-development, test-driven-development
+**Skills**: python-developer, test-driven-development
 ```
 
 Every task MUST have:
@@ -73,6 +109,27 @@ Every task MUST have:
 - Independent tasks first
 - Foundation before features
 - Tests inform interface design
+
+#### 6. Coverage Analysis
+
+**Map tasks back to requirements and components to verify completeness.**
+
+Extract from PRD:
+- All functional requirements (FR-01, FR-02, etc.)
+- All user stories
+- All explicit acceptance criteria
+
+Extract from TDD (if provided):
+- All components defined in architecture
+- All API endpoints
+- All data models
+
+For each requirement/component, identify which task(s) address it.
+
+**Flag gaps:**
+- Requirements with no task coverage
+- Components with no implementation task
+- API endpoints with no test task
 
 ---
 
@@ -94,7 +151,7 @@ Write to `{context_folder}/plan-{nnn}.md`:
 ## Skills Required
 
 From TDD's Codebase Integration (or research):
-- `python-development`
+- `python-developer`
 - `test-driven-development`
 
 ---
@@ -120,7 +177,7 @@ From TDD's Codebase Integration (or research):
 ## Tasks
 
 - [ ] **1.0 UserService**
-  - **Skills**: python-development, test-driven-development
+  - **Skills**: python-developer, test-driven-development
   - **Files**: src/user/service.py, tests/user/test_service.py
   - **Depends on**: None
   - [ ] 1.1 RED: Write failing tests for user creation
@@ -132,7 +189,7 @@ From TDD's Codebase Integration (or research):
   - [ ] 1.3 REFACTOR: Clean up (if needed)
 
 - [ ] **2.0 UserRepository**
-  - **Skills**: python-development, test-driven-development
+  - **Skills**: python-developer, test-driven-development
   - **Files**: src/user/repository.py, tests/user/test_repository.py
   - **Depends on**: None
   - [ ] 2.1 RED: Write failing tests for repository
@@ -143,7 +200,7 @@ From TDD's Codebase Integration (or research):
     - Implement `save()`, `find_by_id()`, `find_by_email()`
 
 - [ ] **3.0 Integration**
-  - **Skills**: python-development, test-driven-development
+  - **Skills**: python-developer, test-driven-development
   - **Files**: src/user/service.py, tests/user/test_integration.py
   - **Depends on**: 1.0, 2.0
   - [ ] 3.1 RED: Write integration tests
@@ -165,11 +222,75 @@ From TDD's Codebase Integration (or research):
 
 ---
 
+## Coverage Analysis
+
+*Traceability from requirements/design to tasks*
+
+### Requirements Coverage
+
+| Requirement | Description | Task(s) | Status |
+|-------------|-------------|---------|--------|
+| FR-01 | User registration | 1.0, 1.1, 1.2 | ✅ Covered |
+| FR-02 | User login | 2.0, 2.1 | ✅ Covered |
+| FR-03 | Password reset | - | ⚠️ Not covered |
+
+### Component Coverage
+
+| Component (from TDD) | Task(s) | Status |
+|---------------------|---------|--------|
+| UserService | 1.0 | ✅ Covered |
+| UserRepository | 2.0 | ✅ Covered |
+| PasswordHasher | - | ⚠️ Not covered |
+
+### API Endpoint Coverage
+
+| Endpoint | Task(s) | Status |
+|----------|---------|--------|
+| POST /users | 1.0 | ✅ Covered |
+| POST /auth/login | 2.0 | ✅ Covered |
+| POST /auth/reset | - | ⚠️ Not covered |
+
+### Coverage Gaps
+
+*Items not addressed in this plan*
+
+| Item | Type | Notes |
+|------|------|-------|
+| FR-03: Password reset | Requirement | Deferred to Phase 2? |
+| PasswordHasher | Component | Deferred to Phase 2? |
+| POST /auth/reset | Endpoint | Deferred to Phase 2? |
+
+**If gaps exist above:**
+```markdown
+## Coverage Gaps Detected
+
+The following items from the PRD/TDD are not covered by this plan:
+
+| Item | Type | 
+|------|------|
+| FR-03: Password reset | Requirement |
+| PasswordHasher | Component |
+
+Please confirm:
+1. These are intentionally deferred (out of scope for this iteration)
+2. Or the plan should be updated to include them
+
+---
+AWAITING_INPUT: true
+```
+
+---
+
 ## Next Steps
 
 Execute implementation:
 ```bash
 /spice:iterate {context_folder}/
+```
+
+For rigorous external review (optional):
+```bash
+/spice:review-plan {context_folder}/
 ```
 ```
 
@@ -181,7 +302,7 @@ Execute implementation:
 
 ```markdown
 - [ ] **1.0 Component Name**
-  - **Skills**: python-development, test-driven-development
+  - **Skills**: python-developer, test-driven-development
   - **Files**: path/to/file.py, path/to/test.py
   - **Depends on**: None (or task numbers)
   - [ ] 1.1 RED: Write failing tests for {behavior}
@@ -208,7 +329,7 @@ Every task uses nested checkboxes:
 
 ```markdown
 - [ ] **1.0 Component Name**
-  - **Skills**: python-development, test-driven-development
+  - **Skills**: python-developer, test-driven-development
   - **Files**: src/file.py, tests/test_file.py
   - **Depends on**: None
   - [ ] 1.1 RED: Write failing tests
@@ -289,6 +410,39 @@ Only include if there's clear improvement needed:
 - Create redundant tests
 - Include unnecessary error handling
 - Skip the Skills field
+- Proceed with unconfirmed coverage gaps
+
+---
+
+### Coverage Gap Handling
+
+If the Coverage Analysis reveals gaps (requirements, components, or endpoints not covered):
+
+1. **List all gaps** in the Coverage Gaps section
+2. **Ask for confirmation** before completing the plan:
+
+```markdown
+## Coverage Gaps Detected
+
+The following items from PRD/TDD are not covered by this plan:
+
+| Item | Type | Suggested Action |
+|------|------|------------------|
+| FR-03: Password reset | Requirement | Defer to Phase 2? |
+| PasswordHasher | Component | Include or defer? |
+
+**Please confirm:**
+1. Are these gaps intentional (deferred scope)?
+2. Should any be added to this plan?
+
+---
+AWAITING_INPUT: true
+```
+
+3. After user confirms, update the Coverage Analysis to note confirmed deferrals
+4. Only then output the final plan
+
+**If no gaps detected**, no confirmation needed — proceed directly.
 
 ---
 
@@ -308,7 +462,7 @@ Based on files involved:
 
 | File Extension | Skill to Assign |
 |----------------|-----------------|
-| `.py` | `python-development` |
+| `.py` | `python-developer` |
 | `.ts`, `.tsx` | `spice/languages/typescript` |
 | `.go` | `spice/languages/go` |
 | All implementation | `test-driven-development` |

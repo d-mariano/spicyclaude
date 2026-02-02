@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob, AskUserQuestion
+allowed-tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob
 argument-hint: [context-folder] [task?]
 description: SPICE implement — execute one parent task with TDD (main context)
 ---
@@ -11,7 +11,7 @@ description: SPICE implement — execute one parent task with TDD (main context)
 
 Implements ONE parent task in main context. Load the full protocol:
 
-`.claude/skills/spice/phases/execute.md`
+`~/.claude/skills/spice/phases/execute.md`
 
 ## Quick Reference
 

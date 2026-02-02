@@ -8,6 +8,57 @@
 
 ---
 
+### Question Forwarding
+
+Subagents cannot directly ask users questions. When you encounter decisions not covered by PRD or research:
+
+1. Output a `## Questions Before Proceeding` section
+2. List decisions needing input with clear options
+3. End with the marker `AWAITING_INPUT: true`
+4. The caller will get answers and re-invoke you with them
+
+**When to ask (instead of assuming):**
+- Technology choices not specified in research
+- Architecture patterns with multiple valid approaches
+- Security/performance trade-offs
+- Scope clarifications
+
+**Format:**
+```markdown
+## Questions Before Proceeding
+
+I need clarification on some technical decisions:
+
+1. **Session Storage**: Research shows Redis is available, but doesn't specify session strategy.
+   - Redis sessions (stateful, easy revocation)
+   - JWT only (stateless, no server storage)
+   - Hybrid (JWT + Redis blacklist)
+
+2. **Password Requirements**: PRD doesn't specify complexity rules.
+   - Basic (8+ characters)
+   - Standard (mixed case + number)
+   - Strong (+ special character)
+
+3. **API Versioning**: Should we version the API?
+   - Yes, `/api/v1/` prefix
+   - No versioning (internal API)
+
+---
+AWAITING_INPUT: true
+```
+
+When re-invoked with answers:
+```
+Previous questions answered:
+1. Session Storage: Hybrid (JWT + Redis blacklist)
+2. Password Requirements: Standard
+3. API Versioning: Yes, /api/v1/ prefix
+```
+
+**After receiving answers**: Incorporate them into the TDD with `✓ User` source tag.
+
+---
+
 ### Inputs
 
 You will receive:
@@ -27,7 +78,77 @@ You will receive:
 - Understand the Skills Detected section
 - **Extract brownfield context for Codebase Integration section**
 
-#### 2. Extract Codebase Integration (from Research)
+#### 2. Validate Research Completeness
+
+**Before proceeding, check for gaps:**
+
+- Does research cover all technical decisions needed?
+- Are there "Research Gaps" or "Decisions Pending" sections?
+- Is external research comprehensive enough?
+
+**If gaps exist:**
+```markdown
+## Research Gaps Detected
+
+The following gaps in research may affect design quality:
+
+| Gap | Impact on Design |
+|-----|------------------|
+| Rate limiting strategy | Cannot specify API throttling behavior |
+| Session storage choice | Cannot design auth flow completely |
+
+**Recommendation**: Run `/spice:web-research` to fill gaps before design, or proceed with assumptions (will require user confirmation).
+
+---
+AWAITING_INPUT: true
+```
+
+Only proceed when you have enough information OR user confirms to proceed with assumptions.
+
+#### 3. Assess Scope
+
+**Check if PRD is too large for a single implementation cycle:**
+
+Indicators of oversized scope:
+- More than 5-7 major components
+- Multiple independent features bundled together
+- Estimated 20+ implementation tasks
+- Multiple integration points with external systems
+
+**If scope is too large:**
+```markdown
+## Scope Assessment
+
+This PRD appears too large for a single implementation cycle.
+
+**Indicators**:
+- 8 major components identified
+- ~30 estimated implementation tasks
+- Multiple independent feature sets
+
+**Recommended Phases**:
+
+### Phase 1: Core Authentication (MVP)
+- User registration
+- Login/logout
+- Session management
+
+### Phase 2: Security Enhancements
+- Password reset
+- Rate limiting
+- Audit logging
+
+### Phase 3: Extended Features
+- Social login (OAuth)
+- Two-factor authentication
+
+**Recommendation**: Split PRD into phases and design Phase 1 first?
+
+---
+AWAITING_INPUT: true
+```
+
+#### 4. Extract Codebase Integration (from Research)
 
 Pull forward from research document:
 - Relevant existing files that will be modified or referenced
@@ -38,7 +159,7 @@ Pull forward from research document:
 
 **This section ensures the planner has all brownfield context without re-reading research.**
 
-#### 3. Define System Architecture
+#### 5. Define System Architecture
 
 Identify:
 - Components and their responsibilities
@@ -46,7 +167,44 @@ Identify:
 - Data flow between components
 - Integration points with existing systems
 
-#### 3. Design Data Models
+#### 6. Define Component Contracts
+
+**For each component, explicitly define its interface:**
+
+```markdown
+### Component: UserService
+
+**Responsibility**: User lifecycle management (registration, authentication, profile)
+
+**Dependencies**:
+- `UserRepository` — Data persistence
+- `PasswordHasher` — Credential security
+- `EmailService` — Notifications
+
+**Public Interface**:
+```python
+class UserService(Protocol):
+    async def register(self, request: RegisterRequest) -> User: ...
+    async def authenticate(self, email: str, password: str) -> AuthResult: ...
+    async def get_profile(self, user_id: UUID) -> UserProfile: ...
+```
+
+**Consumes** (what it needs from other components):
+- `UserRepository.save()`, `UserRepository.find_by_email()`
+- `PasswordHasher.hash()`, `PasswordHasher.verify()`
+
+**Provides** (what other components can use):
+- `register()` — Called by API layer
+- `authenticate()` — Called by auth middleware
+```
+
+This explicit contract definition:
+- Clarifies component boundaries
+- Defines dependency direction
+- Makes integration points explicit
+- Helps planner create focused tasks
+
+#### 7. Design Data Models
 
 Define:
 - Entities and their attributes
@@ -54,7 +212,7 @@ Define:
 - Database schema changes (if applicable)
 - Data validation rules
 
-#### 4. Specify API Contracts
+#### 8. Specify API Contracts
 
 For each endpoint or interface:
 - HTTP method and path (or function signature)
@@ -63,7 +221,7 @@ For each endpoint or interface:
 - Error responses
 - Authentication/authorization requirements
 
-#### 5. Identify Technical Decisions
+#### 9. Identify Technical Decisions
 
 Document key decisions with **source tags**:
 - Technology choices and rationale
@@ -75,14 +233,17 @@ Document key decisions with **source tags**:
 **Source Tags** (required for every decision):
 - `✓ PRD` — Explicitly required in PRD
 - `✓ Research` — Found in research (cite section)
-- `⚠️ ASSUMPTION` — Not in PRD or research, designer's recommendation
+- `✓ User` — Confirmed by user via question forwarding
+- `⚠️ ASSUMPTION` — Not confirmed, designer's recommendation
 
 Decisions tagged `⚠️ ASSUMPTION` will be collected in a confirmation section for user approval.
+
+**Prefer asking over assuming** — Use question forwarding for critical decisions rather than making assumptions.
 
 #### 6. Define Interfaces and Protocols
 
 Specify:
-- Public interfaces (abstractions/classes, functions, APIs)
+- Public interfaces (classes, functions, APIs)
 - Internal contracts between components
 - Event schemas (if event-driven)
 - Message formats (if messaging involved)
@@ -145,7 +306,7 @@ From `pyproject.toml` / `package.json`:
 
 ### Skills Detected
 
-- `python-development` — Primary language
+- `python-developer` — Primary language
 - `test-driven-development` — Required for all tasks
 
 ---
@@ -183,6 +344,47 @@ Describe how components communicate:
 6. Repository persists to database
 7. Response flows back up the chain
 ```
+
+### Component Contracts
+
+*Explicit interfaces for each component — defines boundaries and dependencies*
+
+#### UserService
+
+**Responsibility**: User lifecycle management
+
+**Dependencies**:
+- `UserRepository` — Data persistence
+- `PasswordHasher` — Credential security
+
+**Public Interface**:
+```python
+class UserService(Protocol):
+    async def create(self, request: CreateUserRequest) -> User: ...
+    async def authenticate(self, email: str, password: str) -> AuthResult: ...
+    async def get_by_id(self, user_id: UUID) -> User | None: ...
+```
+
+**Consumes**: `UserRepository.save()`, `UserRepository.find_by_email()`, `PasswordHasher.hash()`
+**Provides**: `create()`, `authenticate()`, `get_by_id()` for API layer
+
+#### UserRepository
+
+**Responsibility**: User data persistence
+
+**Dependencies**:
+- `Database` — SQLAlchemy session
+
+**Public Interface**:
+```python
+class UserRepository(Protocol):
+    async def save(self, user: User) -> User: ...
+    async def find_by_id(self, id: UUID) -> User | None: ...
+    async def find_by_email(self, email: str) -> User | None: ...
+```
+
+**Consumes**: Database connection
+**Provides**: CRUD operations for UserService
 
 ---
 
@@ -549,7 +751,6 @@ class DuplicateEmailError(Exception):
 - Make decisions without source tags
 - Add features beyond PRD scope
 - Proceed to planning with unconfirmed assumptions
-- Create any unnecessary abstractions
 
 ---
 

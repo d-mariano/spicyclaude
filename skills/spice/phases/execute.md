@@ -54,13 +54,15 @@ Parent task execution keeps the full TDD cycle (RED/GREEN/REFACTOR) in one conte
 
 You will be told which skills:
 ```
-Skills to load: python-development, test-driven-development
+Skills to load, i.e: python-developer, terraform-developer, test-driven-development
 ```
 
 For SPICE language skills, read:
-- `python-development` → `.claude/skills/python-development.md`
-- `spice/languages/typescript` → `.claude/skills/spice/languages/typescript.md`
-- `spice/languages/go` → `.claude/skills/spice/languages/go.md`
+- `python-developer` → `~/.claude/skills/python-developer.md`
+- `terraform-developer` → `~/.claude/skills/terraform-developer.md`
+- `frontend-developer` → `~/.claude/skills/frontend-developer.md`
+- `spice/languages/typescript` → `~/.claude/skills/spice/languages/typescript.md`
+- `spice/languages/go` → `~/.claude/skills/spice/languages/go.md`
 
 For `test-driven-development`, load that skill's full protocol.
 
@@ -271,7 +273,7 @@ tests/user/test_service.py ...                                    [100%]
 ## Next Task
 
 **2.1 RED**: Tests for email validation
-**Skills**: python-development, test-driven-development
+**Skills**: python-developer, test-driven-development
 
 ## Notes
 
@@ -390,6 +392,81 @@ If tests still fail after implementation:
 
 ---
 
+### Capturing Lessons Learned
+
+When unexpected failures occur, document them to improve future workflows.
+
+**When to capture a lesson:**
+- Unexpected test failure due to missing context
+- Design assumption was wrong
+- Research gap caused implementation issue
+- Plan was missing a dependency
+- Skill guidance was insufficient
+
+**Process:**
+
+1. **Identify root cause** — What went wrong and why?
+2. **Determine improvement area** — Where should this be fixed?
+3. **Document in lessons-learned.md** — Structured format below
+4. **Optionally apply fix** — If simple, fix it now
+
+**Create/append to `{context_folder}/lessons-learned.md`:**
+
+```markdown
+## Lesson: {YYYY-MM-DD HH:MM}
+
+### What Happened
+Task 2.1 (UserService.authenticate) failed unexpectedly.
+Test passed but integration failed due to missing database transaction.
+
+### Root Cause
+Design (TDD) didn't specify transaction boundaries for auth operations.
+Research didn't cover transaction patterns in the existing codebase.
+
+### Impact
+Lost 20 minutes debugging. Had to research transaction handling mid-implementation.
+
+### Suggested Improvement
+
+**Area**: Design Phase (phases/design.md)
+**Type**: Template Addition
+**Suggestion**: Add "Transaction Boundaries" section to TDD template
+
+```markdown
+## Transaction Boundaries
+
+| Operation | Transaction Scope | Notes |
+|-----------|------------------|-------|
+| User creation | Single transaction | Rollback on validation failure |
+| Authentication | Read-only | No transaction needed |
+```
+
+### Status
+- [ ] Pending review
+- [ ] Applied to project CLAUDE.md
+- [ ] Applied to global CLAUDE.md
+- [ ] Applied to SPICE skill
+```
+
+**Improvement areas:**
+
+| Area | When to Suggest |
+|------|-----------------|
+| **Project CLAUDE.md** | Project-specific patterns, conventions |
+| **Global CLAUDE.md** | Universal lessons, coding standards |
+| **Research skill** | Missing codebase analysis, gaps |
+| **Design skill** | Missing template sections, contracts |
+| **Plan skill** | Task breakdown issues, dependencies |
+| **Execute skill** | TDD guidance, validation steps |
+| **Language skill** | Language-specific patterns |
+
+**At end of implementation**, review lessons-learned.md and decide:
+- Apply to appropriate area?
+- Flag for human review?
+- Defer to next iteration?
+
+---
+
 ### Anti-Patterns to Avoid
 
 | Anti-Pattern | Problem | Do Instead |
@@ -406,10 +483,10 @@ If tests still fail after implementation:
 
 ```
 Task: 1.2 GREEN - Implement user creation
-Skills: python-development, test-driven-development
+Skills: python-developer, test-driven-development
 
 Loading skills...
-- .claude/skills/python-development.md ✓
+- .claude/skills/python-developer.md ✓
 - .claude/skills/test-driven-development/SKILL.md ✓
 
 Reading task 1.2 from plan...
