@@ -207,7 +207,7 @@ Language-specific conventions loaded during implementation:
 
 ### External Skills
 
-SPICE integrates with skills in your `.claude/skills/` directory:
+SPICE integrates with skills in your `~/.claude/skills/` directory:
 - **`test-driven-development`** — TDD cycle, test structure, anti-patterns (required)
 - **`python-development`** — Python patterns, types, testing
 - **`terraform-development`** - Terraform best practices and validation instructions
@@ -223,7 +223,7 @@ Skills are loaded **per-task** during implementation:
 ```
 
 During implementation, the main context loads:
-1. `~/.claude/skills/python-developer/SKILL.md`
-2. `~/.claude/skills/test-driven-development/SKILL.md`
+1. The `python-developer` skill
+2. The `test-driven-developer` skill
 
 Because implementation runs in **main context**, skills load properly with progressive disclosure.

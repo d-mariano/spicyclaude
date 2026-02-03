@@ -58,11 +58,12 @@ Skills to load, i.e: python-developer, terraform-developer, test-driven-developm
 ```
 
 For SPICE language skills, read:
-- `python-developer` → `~/.claude/skills/python-developer.md`
-- `terraform-developer` → `~/.claude/skills/terraform-developer.md`
-- `frontend-developer` → `~/.claude/skills/frontend-developer.md`
 - `spice/languages/typescript` → `~/.claude/skills/spice/languages/typescript.md`
 - `spice/languages/go` → `~/.claude/skills/spice/languages/go.md`
+
+- `python-developer` → load full `python-developer` skill protocol
+- `terraform-developer` → load full `terraform-developer` skill protocol
+- `frontend-developer` → load full `frontend-developer` skill protocol
 
 For `test-driven-development`, load that skill's full protocol.
 
