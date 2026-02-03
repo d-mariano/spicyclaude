@@ -224,6 +224,6 @@ Skills are loaded **per-task** during implementation:
 
 During implementation, the main context loads:
 1. The `python-development` skill
-2. The `test-driven-developer` skill
+2. The `test-driven-development` skill
 
 Because implementation runs in **main context**, skills load properly with progressive disclosure.
