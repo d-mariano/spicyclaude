@@ -59,7 +59,7 @@ async def test_fetch_user() -> None:
     assert result.id == UserId(1)
 ```
 
-## Test Doubles
+## Test Doubles and Mocking
 
 ```python
 # Mock with spec (catches typos)
