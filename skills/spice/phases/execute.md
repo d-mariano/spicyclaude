@@ -54,14 +54,14 @@ Parent task execution keeps the full TDD cycle (RED/GREEN/REFACTOR) in one conte
 
 You will be told which skills:
 ```
-Skills to load, i.e: python-developer, terraform-developer, test-driven-development
+Skills to load, i.e: python-development, terraform-developer, test-driven-development
 ```
 
 For SPICE language skills, read:
 - `spice/languages/typescript` → `~/.claude/skills/spice/languages/typescript.md`
 - `spice/languages/go` → `~/.claude/skills/spice/languages/go.md`
 
-- `python-developer` → load full `python-developer` skill protocol
+- `python-development` → load full `python-development` skill protocol
 - `terraform-developer` → load full `terraform-developer` skill protocol
 - `frontend-developer` → load full `frontend-developer` skill protocol
 
@@ -274,7 +274,7 @@ tests/user/test_service.py ...                                    [100%]
 ## Next Task
 
 **2.1 RED**: Tests for email validation
-**Skills**: python-developer, test-driven-development
+**Skills**: python-development, test-driven-development
 
 ## Notes
 
@@ -484,11 +484,11 @@ Lost 20 minutes debugging. Had to research transaction handling mid-implementati
 
 ```
 Task: 1.2 GREEN - Implement user creation
-Skills: python-developer, test-driven-development
+Skills: python-development, test-driven-development
 
 Loading skills...
-- .claude/skills/python-developer.md ✓
-- .claude/skills/test-driven-development/SKILL.md ✓
+- python-development ✓
+- test-driven-development ✓
 
 Reading task 1.2 from plan...
 

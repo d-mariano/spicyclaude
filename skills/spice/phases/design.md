@@ -306,7 +306,7 @@ From `pyproject.toml` / `package.json`:
 
 ### Skills Detected
 
-- `python-developer` — Primary language
+- `python-development` — Primary language
 - `test-driven-development` — Required for all tasks
 
 ---

@@ -72,7 +72,7 @@ If external research is provided, extract key findings into "External Research S
 ```markdown
 ## Skills Detected
 
-- `python-developer` — Backend (FastAPI)
+- `python-development` — Backend (FastAPI)
 - `spice/languages/typescript` — Frontend (React)
 - `test-driven-development` — Always required
 ```
@@ -196,7 +196,7 @@ Write to `{context_folder}/research-{nnn}.md`:
 
 ## Skills Detected
 
-- `python-developer` — Backend services
+- `python-development` — Backend services
 - `spice/languages/typescript` — Frontend
 - `test-driven-development` — Required
 

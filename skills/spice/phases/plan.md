@@ -97,7 +97,7 @@ For each component:
 From the TDD's **Codebase Integration** section (or research if no TDD), assign relevant skills:
 
 ```markdown
-**Skills**: python-developer, test-driven-development
+**Skills**: python-development, test-driven-development
 ```
 
 Every task MUST have:
@@ -151,7 +151,7 @@ Write to `{context_folder}/plan-{nnn}.md`:
 ## Skills Required
 
 From TDD's Codebase Integration (or research):
-- `python-developer`
+- `python-development`
 - `test-driven-development`
 
 ---
@@ -177,7 +177,7 @@ From TDD's Codebase Integration (or research):
 ## Tasks
 
 - [ ] **1.0 UserService**
-  - **Skills**: python-developer, test-driven-development
+  - **Skills**: python-development, test-driven-development
   - **Files**: src/user/service.py, tests/user/test_service.py
   - **Depends on**: None
   - [ ] 1.1 RED: Write failing tests for user creation
@@ -189,7 +189,7 @@ From TDD's Codebase Integration (or research):
   - [ ] 1.3 REFACTOR: Clean up (if needed)
 
 - [ ] **2.0 UserRepository**
-  - **Skills**: python-developer, test-driven-development
+  - **Skills**: python-development, test-driven-development
   - **Files**: src/user/repository.py, tests/user/test_repository.py
   - **Depends on**: None
   - [ ] 2.1 RED: Write failing tests for repository
@@ -200,7 +200,7 @@ From TDD's Codebase Integration (or research):
     - Implement `save()`, `find_by_id()`, `find_by_email()`
 
 - [ ] **3.0 Integration**
-  - **Skills**: python-developer, test-driven-development
+  - **Skills**: python-development, test-driven-development
   - **Files**: src/user/service.py, tests/user/test_integration.py
   - **Depends on**: 1.0, 2.0
   - [ ] 3.1 RED: Write integration tests
@@ -302,7 +302,7 @@ For rigorous external review (optional):
 
 ```markdown
 - [ ] **1.0 Component Name**
-  - **Skills**: python-developer, test-driven-development
+  - **Skills**: python-development, test-driven-development
   - **Files**: path/to/file.py, path/to/test.py
   - **Depends on**: None (or task numbers)
   - [ ] 1.1 RED: Write failing tests for {behavior}
@@ -329,7 +329,7 @@ Every task uses nested checkboxes:
 
 ```markdown
 - [ ] **1.0 Component Name**
-  - **Skills**: python-developer, test-driven-development
+  - **Skills**: python-development, test-driven-development
   - **Files**: src/file.py, tests/test_file.py
   - **Depends on**: None
   - [ ] 1.1 RED: Write failing tests
@@ -462,7 +462,7 @@ Based on files involved:
 
 | File Extension | Skill to Assign |
 |----------------|-----------------|
-| `.py` | `python-developer` |
+| `.py` | `python-development` |
 | `.ts`, `.tsx` | `spice/languages/typescript` |
 | `.go` | `spice/languages/go` |
 | All implementation | `test-driven-development` |

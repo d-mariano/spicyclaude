@@ -25,7 +25,7 @@ Comprehensive review of completed implementation. Run this when you think implem
 
 1. Load the review protocol:
    ```
-   Read: .claude/skills/spice/phases/review.md
+   Read: ~/.claude/skills/spice/phases/review.md
    ```
 
 2. Load context files:

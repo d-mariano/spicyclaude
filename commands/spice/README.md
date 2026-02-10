@@ -134,7 +134,7 @@ Skills are loaded **per-task** during implementation:
 
 ```markdown
 - [ ] **2.0 UserService**
-  - **Skills**: python-developer, test-driven-development
+  - **Skills**: python-development, test-driven-development
 ```
 
 Because implementation runs in **main context**, skills load properly with progressive disclosure.
@@ -320,7 +320,7 @@ Comprehensive review before declaring "done":
 
 | Skill | Purpose |
 |-------|---------|
-| `python-developer` | Python patterns, types, pytest |
+| `python-development` | Python patterns, types, pytest |
 | `spice/languages/typescript` | TypeScript patterns, types, vitest/jest |
 | `spice/languages/go` | Go patterns, idioms, testing |
 

@@ -219,11 +219,11 @@ Skills are loaded **per-task** during implementation:
 
 ```markdown
 - [ ] **2.0 UserService**
-  - **Skills**: python-developer, test-driven-development
+  - **Skills**: python-development, test-driven-development
 ```
 
 During implementation, the main context loads:
-1. The `python-developer` skill
+1. The `python-development` skill
 2. The `test-driven-developer` skill
 
 Because implementation runs in **main context**, skills load properly with progressive disclosure.
