@@ -10,3 +10,5 @@ session-env/
 shell-snapshots/
 statsig/
 todos/
+stats-cache.json
+cache/

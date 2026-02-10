@@ -1,75 +1,135 @@
 ---
 name: test-driven-development
-description: ALWAYS use this skill when writing code. TDD is mandatory for all new code, features, bug fixes, and refactoring. Only exceptions are pure configuration files (JSON, YAML, env files) and documentation. Triggers on ANY code-related request. Enforces RED-GREEN-REFACTOR cycle without exception.
+description: >
+  Enforces test-driven development via RED-GREEN-REFACTOR when writing code.
+  Use when implementing features, fixing bugs, refactoring, or writing any
+  functional code. Triggers: 'write tests first', 'TDD', 'test-driven',
+  'red-green-refactor', new feature, bug fix, refactor. Does not apply to
+  pure config files (JSON, YAML, .env), type-only definitions, or documentation.
 ---
 
-# Test-Driven Development (TDD) — Mandatory Protocol
+# Test-Driven Development — Agent Protocol
 
-**TDD is not optional.** Every line of functional code must be driven by a test. This is non-negotiable.
+TDD is a design discipline. Tests drive the implementation, not the other way around.
+Every piece of functional code is preceded by a failing test. No exceptions unless
+the work is purely configuration, documentation, or type-only definitions.
 
-## When to Use TDD
+## Step 0: Discover the Project's Test Setup
 
-### ALWAYS Use TDD For:
-- New features or functionality
-- Bug fixes (write a failing test that reproduces the bug first)
-- Refactoring existing code
-- API endpoints
-- Business logic
-- Data transformations
-- Utility functions
-- Class methods
-- Database operations
-- Integration points
+Before writing anything, understand the existing test infrastructure.
 
-### The ONLY Exceptions:
-- Pure configuration files (JSON, YAML, .env, tsconfig, etc.)
-- Documentation and comments
-- Type definitions with no runtime behavior
-- Import/export statements only
+1. **Find the test framework.** Look for config files: `jest.config.*`, `vitest.config.*`, `pytest.ini`, `pyproject.toml [tool.pytest]`, `go.test`, `Cargo.toml`, `.rspec`, etc.
+2. **Find existing tests.** Search for test directories: `__tests__/`, `tests/`, `test/`, `spec/`, or co-located `*.test.*` / `*.spec.*` files. Match the existing convention.
+3. **Find the test command.** Check `package.json` scripts, `Makefile`, `Taskfile`, or README for how to run tests. Common commands: `npm test`, `pytest`, `go test ./...`, `cargo test`, `bundle exec rspec`.
+4. **If no test setup exists**, ask the user which framework to use or recommend the ecosystem default (Jest/Vitest for JS/TS, pytest for Python, `testing` for Go, cargo test for Rust). Set it up before proceeding.
 
-**Do not rationalize skipping TDD.** "It's too simple" is not an excuse. "I'll add tests later" is not acceptable. "This is just a quick fix" still requires a test first.
+Run the existing test suite once to confirm a clean baseline. If tests are failing
+before you start, stop and tell the user.
 
+## Step 1: RED — Write One Failing Test
 
-## Quick Reference: Good vs Bad Tests
+Pick the smallest behavior to implement. Write exactly one test for it.
 
-| Aspect | ✅ Good Test | ❌ Bad Test |
-|--------|-------------|-------------|
-| **Speed** | Runs in milliseconds | Uses sleep(), real network |
-| **Independence** | Creates own state | Depends on other tests |
-| **Determinism** | Same result every run | Random failures |
-| **Validation** | Clear assertions | console.log inspection |
-| **Scope** | One behavior | Entire workflow |
-| **Coupling** | Tests public interface | Tests private implementation |
-| **Mocking** | Only external boundaries | Everything mocked |
-| **Naming** | Describes behavior | Describes implementation |
-| **Cleanup** | Leaves no trace | Pollutes environment |
+**Test structure follows Arrange-Act-Assert:**
+```
+Arrange — set up the system under test and its dependencies
+Act     — execute exactly one behavior
+Assert  — verify the expected outcome
+```
 
+If you are acting on multiple things or asserting unrelated outcomes, split into
+separate tests.
 
-## TDD Workflow Summary
+**Name tests after behavior, not implementation:**
+```python
+# Good: describes what the system does
+test_expired_subscription_denies_access()
+test_empty_cart_shows_zero_total()
 
-1. **THINK**: What behavior do I need? What's the simplest test case?
-2. **RED**: Write ONE failing test that describes the behavior
-3. **GREEN**: Write MINIMAL code to pass the test
-4. **REFACTOR**: Clean up while tests stay green
-5. **REPEAT**: Next behavior, next test
+# Bad: describes how the code works
+test_check_expiry_returns_false()
+test_get_total_function()
+```
 
-**When stuck:** Take smaller steps. Even a hardcoded return value that passes is progress. The next test will force generalization.
+Run the test. It must fail. If it passes, either the behavior already exists or the
+test is wrong — investigate before continuing.
 
-**Remember:** TDD is a design discipline, not just verification. The test drives the design. If you're writing implementation first, you're not doing TDD.
+**Gate check:** The test fails for the right reason (missing functionality, not a
+syntax error or import failure). Fix setup issues before counting this as a valid red.
 
-## Mandatory Resources for Planning and Writing Tests
+## Step 2: GREEN — Write Minimum Code to Pass
 
-**The TDD Cycle: RED → GREEN → REFACTOR**: See [red-green-refactor.md](red-green-refactor.md)
+Write only enough production code to make the failing test pass. Nothing more.
 
-**Test Naming Conventions**: See [naming.md](naming.md)
+- Hardcoding a return value is acceptable if it passes. The next test forces generalization.
+- Do not add error handling, optimization, or features not demanded by a failing test.
+- Do not refactor yet.
 
+Run all tests. Every test must be green before proceeding.
 
-## Mandatory Resources for Writing Tests
+**Gate check:** All tests pass, including pre-existing ones. If a new test broke an
+old one, fix that first.
 
-**The FIRST Principles of Good Tests**: See [first-principles.md](first-principles.md)
+## Step 3: REFACTOR — Improve While Green
 
-**Anti-Patterns: The Seven Deadly Sins of Testing**: See [anti-patterns.md](anti-patterns.md)
+With all tests passing, clean up both production and test code:
 
-**Test Structure: Arrange-Act-Assert (AAA)**: See [aaa.md](aaa.md)
+- Remove duplication
+- Improve naming and clarity
+- Extract methods or classes if complexity warrants it
+- Simplify conditionals
 
-**Test Doubles and Mocks: When to Use What**: See [mocking.md](mocking.md)
+Run tests after every small change. If any test fails, revert immediately and
+take a smaller step.
+
+**Gate check:** All tests still pass. Code is cleaner than before.
+
+## Step 4: REPEAT
+
+Go back to Step 1 with the next behavior. Continue the cycle until the feature is
+complete.
+
+## Commit Strategy
+
+Commit at meaningful green points — typically after completing a full RED-GREEN-REFACTOR
+cycle or a coherent set of cycles. Each commit should leave the test suite green.
+
+## Bug Fix Protocol
+
+When fixing a bug, the cycle is the same but starts differently:
+
+1. Write a test that reproduces the bug (it should fail, confirming the bug exists)
+2. Fix the bug with minimum code (GREEN)
+3. Refactor if needed
+4. Verify no existing tests broke
+
+## When You're Stuck
+
+If you cannot get to green with a small change, the step was too big. Back up and
+write a simpler test. Even testing that a class can be instantiated or a function
+returns a hardcoded value is a valid first step. Small steps compound.
+
+## Edge Cases and User Overrides
+
+- **User says "skip tests":** Confirm with the user that they want to skip TDD for
+  this task. Comply if they insist, but note that tests were skipped.
+- **Massive untested codebase:** Do not try to retroactively test everything. Apply
+  TDD to the code you're changing now. Add tests around the seams where your changes
+  touch existing code.
+- **Prototyping / spike:** If the user is explicitly spiking or prototyping and will
+  throw the code away, TDD can be skipped. Confirm intent.
+
+## Reference Material
+
+Read these when writing tests — they contain patterns, anti-patterns, and examples
+that prevent common mistakes.
+
+**Testing principles and anti-patterns:** Covers fast, independent, repeatable,
+self-validating, and thorough tests, plus the seven most common testing mistakes
+with before/after examples. Read when planning test structure or reviewing test quality.
+→ [references/testing-principles.md](references/testing-principles.md)
+
+**Test doubles (mocks, stubs, fakes):** Covers when to use each type, what to mock
+vs. what to keep real, and the line between useful test doubles and over-mocking.
+Read when dealing with external dependencies, databases, APIs, or complex collaborators.
+→ [references/test-doubles.md](references/test-doubles.md)
