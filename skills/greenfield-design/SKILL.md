@@ -9,6 +9,12 @@ disable-model-invocation: true
 
 You are executing a multi-phase technical design workflow for a new system being built from scratch. The hard problem is making good architectural choices under maximum freedom.
 
+## Before You Start
+
+Read the example output at `.claude/skills/greenfield-design/examples/notification-system.md` to calibrate the expected depth, format, and level of concreteness. Your output should match this quality bar.
+
+If the user's task involves replacing or migrating from an existing system, also read `.claude/skills/refactor-modifier/SKILL.md` and apply its additions at each phase (look for "Phase 1 Addition", "Phase 2 Addition", etc.).
+
 ## Critical Rules
 
 1. **Pause after every phase.** Present your output, then ask the user to review, correct, and answer unknowns before proceeding.
@@ -16,6 +22,7 @@ You are executing a multi-phase technical design workflow for a new system being
 3. **Name things concretely.** Every type, interface, function, and file must have a real name. "SomeService", "DataProcessor", and "handleData" are banned.
 4. **Skip sections that don't apply.** Not every system needs DTOs. Not every design needs cross-cutting concerns. When you skip a section, add one line explaining why.
 5. **The output file must stand alone.** A downstream planner or engineer should be able to read it cold with no conversation context.
+6. **Save intermediate outputs.** Write Phase 1 and Phase 2 reports to `docs/design/<task-slug>/phase-1-discovery.md` and `docs/design/<task-slug>/phase-2-constraints.md` respectively. The final design goes to `docs/design/<task-slug>/design.md`.
 
 ## Phase 1: Landscape & Tradeoff Analysis
 
@@ -106,7 +113,7 @@ If any choices are inconsistent, under-specified, or likely to cause problems, p
 
 **Goal**: Produce the complete technical design document. Everything flows from Phase 2 decisions.
 
-Write the design document to `docs/design/<task-slug>.md` (or the user's preferred path). The document must include:
+Write the design document to `docs/design/<task-slug>/design.md` (or the user's preferred path). The document must include:
 
 ### 1. Goal
 3-5 sentences: what this system does, what problem it solves, what "done" looks like. Engineering goal, not product pitch.
@@ -198,10 +205,12 @@ Phase 1 is always the Walking Skeleton. Include a Mermaid Gantt chart.
 
 ## Phase 4: Design Review
 
-Delegate to the `design-reviewer` subagent:
+**Do not review the design yourself.** Use the Task tool to delegate to the `design-reviewer` agent. This ensures the review happens in a forked context with fresh eyes — no anchoring to the reasoning that produced the design.
+
+Task prompt:
 
 ```
 Review the technical design document at <file_path>. This is a greenfield system design. Evaluate it for structural integrity, contract consistency, feasibility, testability, error handling, naming quality, and security concerns. Produce a numbered issue list categorized by severity (Critical/Major/Minor), then produce a revised document with all Critical and Major issues fixed. Save the revised document to the same path.
 ```
 
-Present the review summary and final file path to the user.
+After the reviewer completes, present the review summary and final file path to the user.

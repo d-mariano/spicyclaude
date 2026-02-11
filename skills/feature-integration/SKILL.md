@@ -9,6 +9,12 @@ disable-model-invocation: true
 
 You are executing a multi-phase technical design workflow for adding a feature to an existing codebase. The hard problem is understanding what exists well enough to extend it without breaking it.
 
+## Before You Start
+
+Read the example output at `.claude/skills/feature-integration/examples/webhook-delivery.md` to calibrate the expected depth, format, and level of concreteness. Your output should match this quality bar.
+
+If the user's task involves significant restructuring or replacement of existing code, also read `.claude/skills/refactor-modifier/SKILL.md` and apply its additions at each phase (look for "Phase 1 Addition", "Phase 2 Addition", etc.).
+
 ## Critical Rules
 
 1. **Pause after every phase.** Present your output, then ask the user to review before proceeding.
@@ -16,6 +22,7 @@ You are executing a multi-phase technical design workflow for adding a feature t
 3. **Frame everything as deltas.** This is NOT a greenfield design. For existing components, describe what changes, not what they are. For new components, describe them fully but note which existing pattern they follow.
 4. **Follow existing conventions.** Match the naming, structure, and patterns of the codebase even if you'd do it differently. Consistency beats local perfection.
 5. **The output file must stand alone.** A downstream planner or engineer should be able to read it cold.
+6. **Save intermediate outputs.** Write Phase 1 and Phase 2 reports to `docs/design/<task-slug>/phase-1-recon.md` and `docs/design/<task-slug>/phase-2-strategy.md` respectively. The final design goes to `docs/design/<task-slug>/design.md`.
 
 ## Phase 1: Codebase Reconnaissance
 
@@ -121,7 +128,7 @@ Push back on corrections or decisions that are inconsistent or risky. Last cheap
 
 **Goal**: Produce the design document, framed entirely as changes to the existing system.
 
-Write the design to `docs/design/<task-slug>.md` (or user's preferred path).
+Write the design to `docs/design/<task-slug>/design.md` (or user's preferred path).
 
 ### 1. Goal
 3-5 sentences: what this feature adds, why it's needed, what success looks like from user and engineering perspectives.
@@ -203,7 +210,9 @@ Include a Mermaid Gantt chart.
 
 ## Phase 4: Design Review
 
-Delegate to the `design-reviewer` subagent:
+**Do not review the design yourself.** Use the Task tool to delegate to the `design-reviewer` agent. This ensures the review happens in a forked context with fresh eyes.
+
+Task prompt:
 
 ```
 Review the technical design document at <file_path>. This is a feature integration design for an existing codebase. In addition to standard review checks (structural integrity, contract consistency, feasibility, testability, error handling, naming), also verify:
@@ -216,4 +225,4 @@ Review the technical design document at <file_path>. This is a feature integrati
 Produce a numbered issue list by severity (Critical/Major/Minor), then a revised document with Critical and Major issues fixed. Save to the same path.
 ```
 
-Present the review summary and final file path to the user.
+After the reviewer completes, present the review summary and final file path to the user.
