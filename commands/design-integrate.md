@@ -1,4 +1,5 @@
 ---
+allowed-tools: AskUserQuestion, Read, Grep, Glob, Write, WebSearch, WebFetch
 argument-hint: <task description>
 description: Design a feature for an existing codebase — reconnaissance, strategy, integration design, review
 ---

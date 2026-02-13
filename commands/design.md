@@ -1,4 +1,5 @@
 ---
+allowed-tools: AskUserQuestion, Read, Grep, Glob, Write, WebSearch, WebFetch
 argument-hint: <task description>
 description: Design workflow router — detects your codebase and task, recommends the right workflow
 ---

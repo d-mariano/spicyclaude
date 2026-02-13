@@ -1,4 +1,5 @@
 ---
+allowed-tools: AskUserQuestion, Read, Grep, Glob, Write, WebSearch, WebFetch
 argument-hint: <task description>
 description: Design a new system from scratch — landscape analysis, decisions, full design, review
 ---
