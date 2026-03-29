@@ -15,6 +15,10 @@ You are going to read through related code and conduct any web searches.
 
 Gather enough context, become a subject matter expert and prepare to discuss.
 
+## Implementation
+Use the python-development skill for Python projects.
+Use the terraform-development skill for Terraform projects.
+
 ## Considerations
 - Conduct any web searches that you may need on frameworks in use, unless the usage examples in code are telling enough
 - Conduct any web searches on official protocols, APIs, or standards

@@ -12,6 +12,10 @@ Respect Core Philosophy, Development Lifecycle, Implementation, and Validation, 
 
 Refer to official docs and research in `/context/[nnn]-{feature|branch|question}/research-*` as needed.
 
+## Implementation
+Use the python-development skill for Python projects.
+Use the terraform-development skill for Terraform projects.
+
 ## Testing and Validation
 Use the test-driven-development skill.
 

@@ -20,6 +20,10 @@ Prioritize for rapid iteration and MVP development, do NOT add scope.
 - Reinforce CLAUDE.md rules when relevant, especially around code clarity, simplicity, reuse, and third-party usage
 - Include Tasks section at the end
 
+## Implementation
+Use the python-development skill for Python projects.
+Use the terraform-development skill for Terraform projects.
+
 ## Testing
 Use the test-driven-development skill.
 

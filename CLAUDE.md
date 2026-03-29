@@ -12,6 +12,19 @@ Project configuration for Claude Code with SPICE integration.
 - Be pragmatic — don't follow patterns for their own sake
 - Fail fast and loud, not silently
 - Do not add granular comments to self-explanatory code
+- Do NOT post-rationalize ignoring linting and typing rules
+- NEVER use `# type: ignore` to suppress type errors — fix the types instead:
+  - Import the correct type from the third-party library (use aliased imports to avoid name collisions, e.g. `from lib import Foo as LibFoo`)
+  - If the type doesn't exist, check if the library exports a TypedDict, Protocol, or base class you should use
+  - Only use `# type: ignore` as a last resort when the library's own type stubs are genuinely wrong, and add a comment explaining why
+- If you come across typing errors then work backwards to determine if:
+  - A greater code issue is at play, typing incompatibilities are a red flag
+  - An incorrect type hint was assigned to a variable or function definition
+- Only provide doc-blocks, avoid commenting over lines of code
+- Only comment over code blocks/lines when extra context is needed:
+  - TODO: This needs to be changed after x
+  - Solves problem according to x
+  - Explain reasoning for complex code
 
 ## Development Lifecycle
 
