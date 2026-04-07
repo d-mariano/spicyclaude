@@ -5,13 +5,8 @@ Project configuration for Claude Code with SPICE integration.
 ## Core Philosophy
 
 - Delete more than you add — complexity compounds into disasters
-- Follow SOLID principles (Single Responsibility, Open-Closed, Liskov Substitution, Interface Segregation, Dependency Inversion)
-- Follow KISS (Keep It Simple, Stupid)
-- Do not create unnecessary abstractions
+- Follow SOLID and KISS
 - Assume an MVP of a rapidly iterating startup, not an enterprise
-- Be pragmatic — don't follow patterns for their own sake
-- Fail fast and loud, not silently
-- Do not add granular comments to self-explanatory code
 - Do NOT post-rationalize ignoring linting and typing rules
 - NEVER use `# type: ignore` to suppress type errors — fix the types instead:
   - Import the correct type from the third-party library (use aliased imports to avoid name collisions, e.g. `from lib import Foo as LibFoo`)
@@ -20,77 +15,42 @@ Project configuration for Claude Code with SPICE integration.
 - If you come across typing errors then work backwards to determine if:
   - A greater code issue is at play, typing incompatibilities are a red flag
   - An incorrect type hint was assigned to a variable or function definition
-- Only provide doc-blocks, avoid commenting over lines of code
-- Only comment over code blocks/lines when extra context is needed:
-  - TODO: This needs to be changed after x
-  - Solves problem according to x
-  - Explain reasoning for complex code
 
 ## Development Lifecycle
 
-### Default: Use SPICE
+### Default: Research → Plan → Execute
 
-For new features and complex changes, use the SPICE workflow:
+Most tasks: features, fixes, refactors.
+
+```
+/research [topic]  →  /planner [prd] [research]  →  /execute [plan]
+```
+
+### Design-Heavy Changes
+
+When architecture decisions matter — new systems, complex integrations, significant refactors. Use `/design` to route to the right workflow (greenfield vs feature integration), or invoke directly:
+
+- `/design-greenfield` — new system from scratch
+- `/design-integrate` — adding to an existing codebase
+
+### Large Features: Use SPICE
+
+Multi-phase SDLC with subagent orchestration and `/clear` discipline. Use when the task needs ideation, research, design, planning, and iterative implementation:
 
 ```bash
 /spice:workflow [feature-name] [description]
 ```
 
-This ensures:
-- Research before implementation
-- Technical design with API contracts
-- TDD task breakdown
-- Main context implementation with `/clear` discipline
-
-### Quick Changes
-
-For simple changes that don't need SPICE:
-- Plan → Validate → Execute → Validate → Repeat
-- Use Test Driven Development
-- Validate both RED and GREEN phases
-
-## Validation
-
-### Every Code Change
-
-After writing any code:
-1. Lint: `ruff check .` / `eslint .` / `golangci-lint run`
-2. Type check: `mypy src/` / `tsc --noEmit` / `go vet`
-3. Test: `pytest` / `npm test` / `go test ./...`
-
-### TDD Requirements
-
-- RED Phase: Write tests first, validate they fail as expected
-- GREEN Phase: Implement minimum code, validate tests pass
-- REFACTOR Phase: Improve while keeping tests green
-
-### Test Quality
-
-- Test public interfaces and core business logic
-- Avoid testing implementation details
-- Use fixtures for large expected outputs
-- Delete redundant test code
-- Use correct types for mocks
-
 ## Implementation
 
-### Code Quality
-
-- Delete more code than you add (unused imports, dead code)
 - No backwards compatibility unless explicitly requested
-- Use SOLID but don't over-engineer abstractions
 - One class per file
-- Avoid unnecessary try/catch
 - Add docblocks to functions and classes
 - Check for existing third-party types before creating new ones
 
-### Simplification
+## Context Structure
 
-When refactoring, treat the new version as if it has no knowledge of the previous one.
-
-## SPICE Context Structure
-
-All SPICE artifacts go in `/context/`:
+All workflow artifacts go in `/context/`:
 
 ```
 /context/

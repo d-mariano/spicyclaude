@@ -127,9 +127,9 @@ that prevent common mistakes.
 **Testing principles and anti-patterns:** Covers fast, independent, repeatable,
 self-validating, and thorough tests, plus the seven most common testing mistakes
 with before/after examples. Read when planning test structure or reviewing test quality.
-→ [references/testing-principles.md](references/testing-principles.md)
+→ [testing-principles.md](testing-principles.md)
 
 **Test doubles (mocks, stubs, fakes):** Covers when to use each type, what to mock
 vs. what to keep real, and the line between useful test doubles and over-mocking.
 Read when dealing with external dependencies, databases, APIs, or complex collaborators.
-→ [references/test-doubles.md](references/test-doubles.md)
+→ [test-doubles.md](test-doubles.md)

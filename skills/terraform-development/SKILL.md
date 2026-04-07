@@ -1,6 +1,13 @@
 ---
 name: terraform-development
-description: Expert guidance for Terraform infrastructure as code development. Use when writing Terraform configurations, creating modules, managing state, structuring projects, or working with HCL. Covers best practices for naming, testing, workflows, and collaborative IaC.
+description: >
+  Guides Terraform/HCL configuration structure, module design, state
+  management, and provider usage during both planning and implementation.
+  Use when designing infrastructure, planning Terraform architecture, or
+  writing .tf files. Triggers: 'terraform', 'tofu', 'HCL', '.tf', 'tfvars',
+  'terraform plan', 'terraform apply', 'terraform module', 'provider',
+  'resource block', infrastructure as code design. Does not apply to Pulumi,
+  CDK, CloudFormation, Ansible, Kubernetes manifests, or Helm charts.
 ---
 
 # Terraform Development Skill
