@@ -44,6 +44,7 @@ If you can't tell which mode applies, ask via `AskUserQuestion`. If no PRD exist
     - Push column lists, payload shapes, and SQL into `Note over X,Y:` blocks.
     - Use `·`, `→`, or `<br/>` as separators inside notes — never commas.
     - Wrap `graph` / `flowchart` / `erDiagram` node labels in `"..."` when they contain anything beyond plain alphanumerics.
+    - **Setting `fill:` requires also setting `color:` and `stroke:`.** A fill alone overrides only the background; text and border stay at theme defaults and lose contrast under the opposite theme. Example: `style NewService fill:#fff9c4,color:#1a1a1a,stroke:#666`.
 
 ## Surfacing Decisions to the User
 
