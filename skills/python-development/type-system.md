@@ -91,3 +91,16 @@ OrderId = NewType("OrderId", int)
 def is_string_list(val: list[object]) -> TypeGuard[list[str]]:
     return all(isinstance(x, str) for x in val)
 ```
+
+## When Types Don't Cooperate
+
+**Never reach for `# type: ignore` first.** It silences the checker without fixing the underlying problem. Work the ladder:
+
+1. **Import the correct type from the third-party library.** Use aliased imports to avoid name collisions: `from lib import Foo as LibFoo`.
+2. **If the type doesn't exist publicly**, check whether the library exports a `TypedDict`, `Protocol`, or base class you should use instead.
+3. **Only as a last resort**, use `# type: ignore[<error-code>]` when the library's own stubs are genuinely wrong — and add a comment explaining why.
+
+When typing errors surface, work backwards before suppressing:
+
+- A typing incompatibility is often a **red flag for a deeper code issue** — wrong abstraction, mixed concerns, or a contract that doesn't hold.
+- An **incorrect type hint** may have been assigned to a variable or function definition; fix the hint rather than the call site.

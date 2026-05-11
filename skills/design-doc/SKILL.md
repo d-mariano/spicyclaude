@@ -39,12 +39,10 @@ If you can't tell which mode applies, ask via `AskUserQuestion`. If no PRD exist
 7. **The design file must stand alone.** Anyone reading it cold must understand the system without the conversation.
 8. **Save artifacts incrementally.** Build `docs/design/<task-slug>/design.md` section-by-section as choices resolve. If the directory already has files, ask via `AskUserQuestion`: resume, restart (overwrite — confirm), or pick a new slug. Never silently overwrite.
 9. **`AskUserQuestion` is the only sanctioned channel for design decisions.** Plain-text "which would you prefer?" prompts are not allowed for any decision that lands in `design.md`. Conversational follow-ups (e.g., when the user says "discuss further") and free-form interjections are fine.
-10. **Mermaid sequence-diagram guardrails.** Strict renderers (4.4+) tokenize arrow message text and break on `,` and `;`:
-    - Arrow messages (`->>`, `-->>`, `->`, `-->`) must be short verb phrases — no `,`, `;`, multi-statement SQL, or JSON shapes.
-    - Push column lists, payload shapes, and SQL into `Note over X,Y:` blocks.
-    - Use `·`, `→`, or `<br/>` as separators inside notes — never commas.
-    - Wrap `graph` / `flowchart` / `erDiagram` node labels in `"..."` when they contain anything beyond plain alphanumerics.
-    - **Setting `fill:` requires also setting `color:` and `stroke:`.** A fill alone overrides only the background; text and border stay at theme defaults and lose contrast under the opposite theme. Example: `style NewService fill:#fff9c4,color:#1a1a1a,stroke:#666`.
+10. **Mermaid rendering guardrails.**
+    - **Component & ER diagrams:** wrap `graph` / `flowchart` / `erDiagram` node labels in `"..."` when they contain anything beyond plain alphanumerics.
+    - **Style declarations:** setting `fill:` requires also setting `color:` and `stroke:`. A fill alone overrides only the background; text and border stay at theme defaults and lose contrast under the opposite theme. Example: `style NewService fill:#fff9c4,color:#1a1a1a,stroke:#666`.
+    - **Sequence diagrams (escape hatch only — Data Flow is text-by-default):** strict renderers (4.4+) tokenize arrow message text and break on `,` and `;`. Arrow messages must be short verb phrases — push payload shapes into `Note over X,Y:` blocks, and use `·`, `→`, or `<br/>` as separators inside notes (never commas).
 
 ## Surfacing Decisions to the User
 
@@ -104,7 +102,7 @@ The Architecture Overview is the first section with material decisions. Resolve 
 2. **Populate the Key Decisions section** at the end of `design.md` (above Open Questions). One bulleted line per choice the user made via `AskUserQuestion`. Do not list values that came directly from the PRD — those are already cited where they appear.
 3. **Confirm the Open Questions section** captures every deferral with a concrete working assumption (Critical Rule 4).
 4. **Update the document header** with final Status (`Ready for Review`) and date.
-5. **Present the summary**: path to `design.md`, diagram count (`"1 overview + N data flow + (optional ER) + N sub-component = K diagrams"`), and the Key Decisions and Open Questions sections inline for quick review.
+5. **Present the summary**: path to `design.md`, diagram count (`"1 overview + (optional ER) + N internal-structure = K diagrams"`), and the Key Decisions and Open Questions sections inline for quick review.
 
 ---
 
@@ -131,7 +129,7 @@ The Architecture Overview is the first section with material decisions. Resolve 
 This is the alignment-critical view. If a reader can't grasp the system from this one diagram + the Goal, the architecture is too complex or the diagram is wrong.
 
 ### [Component Name]
-<One H3 per top-level component. Each H4 below is required.>
+<One H3 per top-level component. Required H4s: Responsibility, Technology, Key Abstractions, Public Contract. Optional: Internal Structure.>
 
 #### Responsibility
 <One sentence.>
@@ -140,32 +138,32 @@ This is the alignment-critical view. If a reader can't grasp the system from thi
 <Specific framework, library, or tool.>
 
 #### Key Abstractions
-<The 2-5 most important types/classes/modules with type signatures or interface definitions — the contract surface, not the implementation.>
+<The 2-5 most important types/classes/modules — name + one-line role each. No full type signatures; that's planning territory.>
 
 #### Public Contract
-<How other components interact with this one:
-- Function/method signatures with full type annotations
-- HTTP endpoints (method, path, request/response/error shapes)
-- Event schemas (name, payload type)
-- gRPC/GraphQL definitions if applicable>
+<Bullet the contract style and the cross-component contracts that matter for coupling. Field-level shapes are planning territory, not design.
+- **Inbound:** <protocol, surface area in one phrase>
+- **Outbound:** <protocol, named contracts + consumers>
+- **Invariants:** <design-level guarantees only>>
 
-#### Sub Components
-<Only populate if the component has multiple obvious sub-modules. Otherwise omit this H4.>
-
-#### Diagram
-<Only populate if Sub Components is populated. Show internal modules / layers / responsibilities and the contracts re-exposed back to the overview. Otherwise omit this H4.>
+#### Internal Structure
+<Only populate if the component has multiple obvious sub-modules. Name them with a one-line role each, and include a Mermaid sub-diagram if the relationships aren't obvious from the names. Omit this H4 otherwise.>
 
 ## Data Flow
-<For each primary use case from the PRD:
-- Mermaid sequence or flow diagram
-- Happy path with all components involved
-- At least one error/failure path per flow
-- Mark async boundaries and data transformations.>
+<For each primary use case from the PRD, write ordered text steps. Each flow needs a happy path plus at least one named failure mode. Mark async boundaries inline (e.g., "→ async via <queue>") and call out data transformations. Reserve Mermaid sequence diagrams for genuinely complex parallel/async flows where text gets tangled.
+
+### Use case: <name from PRD>
+**Happy path:**
+1. <Component> <action> → <next component>
+2. ...
+
+**Failure: <named failure mode>**
+1. ...>
 
 ## Data Model
-<- Type definitions for each entity (the shape, not the storage schema)
-- Relationships shown explicitly (1:1, 1:N, M:N)
-- Mermaid ER diagram if 3+ entities with relationships
+<- Entities with the fields that carry architectural weight: PRD-named fields, PII / compliance-sensitive fields, foreign keys, and fields that drive storage choices (large blobs, encrypted columns) or access patterns (indexed / queried). Skip incidental fields (`created_at`, surrogate IDs, descriptive strings) — those are planning territory.
+- Relationships shown explicitly (1:1, 1:N, M:N).
+- Mermaid ER diagram if 3+ entities with relationships.
 - Note which component owns each entity.>
 
 ## Directory Structure
@@ -181,11 +179,11 @@ project-root/
 <Show one level deep, occasionally two. Do not enumerate individual files. Justify the structure: framework conventions, domain boundaries, or layer separation.>
 
 ## Cross-Cutting Concerns
-<Include only if applicable (skip with a one-line note if not):
-- Error handling strategy (propagation, type hierarchy, user-facing vs. internal)
-- Auth (where enforced, how identity flows)
-- Logging & observability (format, trace propagation, key metrics)
-- Configuration (loading, env overrides, secrets)>
+<One line per concern stating the decision, not the design space. Skip with a one-line note if not applicable.
+- **Errors:** <where caught, how propagated, user-facing vs. internal split>
+- **Auth:** <where enforced, how identity flows>
+- **Observability:** <log format, trace propagation, key metrics>
+- **Config:** <load order, env overrides, secrets handling>>
 
 ## Walking Skeleton Requirements
 <The thinnest possible end-to-end slice through the system — expressed as requirements, not implementation:
@@ -202,7 +200,7 @@ This becomes Phase 1 of implementation.
 - Dependencies (which prior phases must be complete, and *why architecturally*)
 - Done condition (the observable condition that means the phase is complete)
 
-Phase 1 is always the Walking Skeleton. Include a Mermaid Gantt chart — primary purpose is showing dependency relationships and natural slicing, not durations.
+Phase 1 is always the Walking Skeleton.
 
 Excluded (planning territory): complexity estimates (S/M/L), per-phase risks, time/effort estimates, owner assignments, ticket numbers.>
 
