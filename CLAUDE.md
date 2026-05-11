@@ -6,7 +6,6 @@
 - Follow SOLID and KISS
 - Fail fast and loud, not silently
 - Code for an MVP at a rapidly iterating startup, not an enterprise
-- Fail fast and loud, not silently
 - No backwards compatibility unless explicitly requested
 - One class per file
 - Add docblocks to public functions and classes, avoid inline comments
