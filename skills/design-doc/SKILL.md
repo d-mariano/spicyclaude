@@ -1,6 +1,6 @@
 ---
 name: design-doc
-description: "Create a technical design document from a PRD interactively. Walks design.md section-by-section, surfacing every choice via AskUserQuestion. Decisions live where they apply — no parallel register, no inline ID tags. Strict no-assumptions rule — unknowns become Open Questions with working assumptions, not silent defaults."
+description: "Create a technical design document from a PRD interactively. Walks tdd-[nnn].md section-by-section, then a contracts-[nnn].md companion for field-level wire shapes — surfacing every choice via AskUserQuestion."
 when_to_use: "User wants a technical design, TDD, system architecture, or design doc — or to turn a PRD into a design. Examples: 'design this system', 'create a TDD', 'write a design doc for X', 'architect this service', 'system design for the PRD', 'turn this PRD into a design'."
 allowed-tools: Read Write Edit Glob AskUserQuestion
 disable-model-invocation: true
@@ -30,19 +30,22 @@ If you can't tell which mode applies, ask via `AskUserQuestion`. If no PRD exist
 
 ## Critical Rules
 
-1. **No silent assumptions.** Every choice the user has not made must be either (a) sourced from PRD/research/artifacts, (b) raised via `AskUserQuestion` and decided in the relevant section, or (c) recorded as deferred with a working assumption the user explicitly accepts. Never invent a default and proceed.
-2. **Recommendations come from given context only.** Don't draw on training-data preferences. If a decision needs an option set and the inputs don't suggest any, that's an unknown — flag it, don't invent options.
-3. **Push back when something is unclear, contradictory, or risky.** If a user choice conflicts with an earlier section, contradicts the PRD, or seems insane given the inputs, surface the conflict before recording.
-4. **Defer is valid only with a working assumption.** A defer with no assumption is invalid; mark such questions blocking instead.
-5. **Stay at alignment altitude.** Describe what the system is — components, contracts, data models, relationships. Code bodies, file-by-file responsibilities, build steps, and S/M/L estimates are out of scope.
-6. **Name things concretely.** Every type, interface, function, and file must have a real name. "SomeService", "DataProcessor", "handleData" are banned.
-7. **The design file must stand alone.** Anyone reading it cold must understand the system without the conversation.
-8. **Save artifacts incrementally.** Build `docs/design/<task-slug>/design.md` section-by-section as choices resolve. If the directory already has files, ask via `AskUserQuestion`: resume, restart (overwrite — confirm), or pick a new slug. Never silently overwrite.
-9. **`AskUserQuestion` is the only sanctioned channel for design decisions.** Plain-text "which would you prefer?" prompts are not allowed for any decision that lands in `design.md`. Conversational follow-ups (e.g., when the user says "discuss further") and free-form interjections are fine.
-10. **Mermaid rendering guardrails.**
-    - **Component & ER diagrams:** wrap `graph` / `flowchart` / `erDiagram` node labels in `"..."` when they contain anything beyond plain alphanumerics.
-    - **Style declarations:** setting `fill:` requires also setting `color:` and `stroke:`. A fill alone overrides only the background; text and border stay at theme defaults and lose contrast under the opposite theme. Example: `style NewService fill:#fff9c4,color:#1a1a1a,stroke:#666`.
-    - **Sequence diagrams (escape hatch only — Data Flow is text-by-default):** strict renderers (4.4+) tokenize arrow message text and break on `,` and `;`. Arrow messages must be short verb phrases — push payload shapes into `Note over X,Y:` blocks, and use `·`, `→`, or `<br/>` as separators inside notes (never commas).
+1. **Don't fabricate.** Every value in the design must trace back to an input or to a user decision.
+   - **No silent assumptions.** Every choice the user has not made must be either (a) sourced from PRD/research/artifacts, (b) raised via `AskUserQuestion` and decided in the relevant section, or (c) recorded as deferred with a working assumption the user explicitly accepts.
+   - **Options come from given context only.** Don't draw on training-data preferences. If a decision needs an option set and the inputs don't suggest any, that's an unknown — flag it, don't invent options.
+   - **Defer requires a working assumption.** A defer with no assumption is invalid; mark such questions blocking instead.
+2. **Push back when something is unclear, contradictory, or risky.** If a user choice conflicts with an earlier section, contradicts the PRD, or seems insane given the inputs, surface the conflict before recording.
+3. **Stay at alignment altitude.** Describe what the system is — components, contracts, data models, relationships. Code bodies, file-by-file responsibilities, build steps, and S/M/L estimates are out of scope.
+4. **Name things concretely.** Every type, interface, function, and file must have a real name. "SomeService", "DataProcessor", "handleData" are banned.
+5. **The design file must stand alone.** Anyone reading it cold must understand the system without the conversation.
+6. **Save artifacts incrementally, never silently overwrite.** Build `/context/[nnn]-<slug>/tdd-[nnn].md` section-by-section as choices resolve. Workflow Step 0 covers what to do when files already exist.
+7. **`AskUserQuestion` is the only sanctioned channel for design decisions.** Plain-text "which would you prefer?" prompts are not allowed for any decision that lands in `tdd-[nnn].md` or `contracts-[nnn].md`. Conversational follow-ups (e.g., when the user says "discuss further") and free-form interjections are fine.
+
+## Mermaid rendering notes
+
+- **Component & ER diagrams:** wrap `graph` / `flowchart` / `erDiagram` node labels in `"..."` when they contain anything beyond plain alphanumerics.
+- **Style declarations:** setting `fill:` requires also setting `color:` and `stroke:`. A fill alone overrides only the background; text and border stay at theme defaults and lose contrast under the opposite theme. Example: `style NewService fill:#fff9c4,color:#1a1a1a,stroke:#666`.
+- **Sequence diagrams (escape hatch only — Data Flow is text-by-default):** strict renderers (4.4+) tokenize arrow message text and break on `,` and `;`. Arrow messages must be short verb phrases — push payload shapes into `Note over X,Y:` blocks, and use `·`, `→`, or `<br/>` as separators inside notes (never commas).
 
 ## Surfacing Decisions to the User
 
@@ -57,11 +60,11 @@ Use `AskUserQuestion` whenever a decision needs the user's input. Rules:
 - **Always offer a defer path** when the workflow can proceed with a working assumption. Phrase: `"Defer — proceed with: <concrete assumption>"`. If the design genuinely cannot proceed without the answer, mark the question blocking and don't offer defer.
 - **Do not write open-ended prose questions.** If the answer space is open-ended, still propose 2-3 plausible options grounded in inputs plus a defer path; the user can override via "Other".
 
-After every `AskUserQuestion` answer, fill in the relevant section of `design.md` with the chosen value. Add a one-line rationale next to the value where the rationale isn't obvious from the value itself. If the user deferred, also append a row to the Open Questions section.
+After every `AskUserQuestion` answer, fill in the relevant section of the TDD with the chosen value. Add a one-line rationale next to the value where the rationale isn't obvious from the value itself. If the user deferred, also append a row to the Open Questions section.
 
 ## Push-Back Protocol
 
-When something doesn't make sense, surface it before recording. Push-back uses `AskUserQuestion` like all other decision channels. Targets: prior sections of `design.md`, the PRD, or the inputs themselves.
+When something doesn't make sense, surface it before recording. Push-back uses `AskUserQuestion` like all other decision channels. Targets: prior sections of the TDD, the PRD, or the inputs themselves.
 
 - **Contradicts an earlier section** — `"Your choice <X> conflicts with the <section>: <prior decision>. Which should govern?"` Options: keep prior, replace prior, both update (specify how).
 - **Contradicts the PRD** — `"Your choice <X> conflicts with PRD §Y, which says <Z>. Confirm overriding the PRD?"` Options: stick with PRD, override (recorded as deviation), revise PRD before proceeding.
@@ -77,38 +80,66 @@ Single interactive flow. Decisions surface as each section requires them. Pause 
 ### Step 0: Setup
 
 1. **Determine task slug.** If argument supplied, use it. Otherwise infer from PRD title or ask via `AskUserQuestion` with 2-3 candidate slugs derived from input filenames or content.
-2. **Check for existing artifacts.** Glob `docs/design/<task-slug>/`. If files exist, ask via `AskUserQuestion`: resume (read existing `design.md` and continue from the next unwritten section), restart (confirm overwrite), or pick a new slug.
-3. **Load inputs.**
+2. **Resolve feature folder.** Glob `/context/*-<slug>/` for an existing folder matching the slug.
+   - **No match**: assign the next feature index by globbing `/context/[0-9][0-9][0-9]-*` and taking `max([nnn]) + 1`, zero-padded to 3 digits. Folder is `/context/[nnn]-<slug>/`. Create on first write.
+   - **Single match**: reuse that folder.
+   - **Multiple matches**: ask via `AskUserQuestion` which to use, including a "create new" option.
+3. **Determine TDD index.** Glob `/context/[nnn]-<slug>/tdd-*.md`. The new design writes to `tdd-[next].md` where `[next] = max(existing) + 1`, zero-padded to 3 digits; first design is `tdd-001.md`. Existing TDDs are never overwritten — a new design always increments. The companion `contracts-[next].md` uses the matching index.
+4. **Check for interrupted draft.** If the highest-numbered `tdd-[nnn].md` is incomplete (Status not `Ready for Review`, or required sections missing), ask via `AskUserQuestion`: **resume** that file from the next unwritten section, or **start fresh** at `tdd-[nnn+1].md`.
+5. **Load inputs.**
    - If user provided paths: Read each in full.
    - If inputs are in context: use the conversation; don't re-read.
-   - If no PRD is identifiable: confirm spike mode via `AskUserQuestion`.
+   - If no PRD is identifiable: confirm spike mode via `AskUserQuestion`. Spike mode uses the same `tdd-[nnn].md` path with `Status: Spike` in the header.
 
 ### Step 1: Walk Sections
 
-Build `docs/design/<task-slug>/design.md` section-by-section, in the order listed in the [Document Format](#document-format) section below.
+Build `/context/[nnn]-<slug>/tdd-[nnn].md` section-by-section, in the order listed in the [Document Format](#document-format) section below.
 
 For each section:
 
 1. **Identify the decisions the section requires.** Pull from the PRD and artifacts first (those are decided). Pull from research where it offers a recommendation or option set. What's left needs the user.
 2. **Surface unresolved decisions via `AskUserQuestion`** (batched up to 4 per call), grounded in inputs only. Apply the push-back protocol when needed.
-3. **Write the section to `design.md`** using the value chosen plus a one-line rationale where the rationale isn't obvious. If the user deferred (chose `"Defer — proceed with: <X>"`), use `<X>` as the working assumption in the section AND append a row to the Open Questions table at the bottom of `design.md`.
+3. **Write the section to the TDD** using the value chosen plus a one-line rationale where the rationale isn't obvious. If the user deferred (chose `"Defer — proceed with: <X>"`), use `<X>` as the working assumption in the section AND append a row to the Open Questions table at the bottom of the TDD.
 4. **Move on.** Do not revisit a section unless push-back surfaces a contradiction.
 
 The Architecture Overview is the first section with material decisions. Resolve the architectural choice in flow — it's the load-bearing decision everything else depends on, but it doesn't need its own ceremonial phase.
 
-### Step 2: Final Pass
+### Step 2: Contracts Walk
 
-1. **Read `design.md` end-to-end.** Check for contradictions across sections that batched section-by-section work can produce. Examples: feature X is in v1 in section A but deferred in section B; component picks technology T while another section requires not-T; the Walking Skeleton claims a property the Component Outlines don't deliver. For each contradiction, raise an `AskUserQuestion` to reconcile.
-2. **Populate the Key Decisions section** at the end of `design.md` (above Open Questions). One bulleted line per choice the user made via `AskUserQuestion`. Do not list values that came directly from the PRD — those are already cited where they appear.
-3. **Confirm the Open Questions section** captures every deferral with a concrete working assumption (Critical Rule 4).
-4. **Update the document header** with final Status (`Ready for Review`) and date.
-5. **Present the summary**: path to `design.md`, diagram count (`"1 overview + (optional ER) + N internal-structure = K diagrams"`), and the Key Decisions and Open Questions sections inline for quick review.
+Build `/context/[nnn]-<slug>/contracts-[nnn].md` — a companion file carrying field-level wire shapes (IDL, request/response bodies, error envelopes, document schemas, configuration). The TDD stays at alignment altitude per Critical Rule 3; the contracts file is where the field-level detail lives.
+
+**Skip path.** Begin Step 2 by asking via `AskUserQuestion` whether contracts are needed. Skip when the design only edits an existing surface (no new IDL, no new endpoints, no new event payloads), or when the work is scoped to UI-only changes against a stable API. When skipping, jump straight to Step 3.
+
+When walking:
+
+1. **Wire conventions first.** Surface the cross-cutting decisions that govern every subsequent contract section as a single batched `AskUserQuestion` call. Derive which conventions are needed from the wire surfaces present in the TDD's Architecture Overview and Public Contract bullets — do not pre-enumerate.
+2. **Walk each contract surface** named in the TDD's Public Contract bullets, one section per surface. For each, identify decisions the design and inputs don't pin down, batch them via `AskUserQuestion` (≤4 per call), then write the section.
+3. **Push-back protocol still applies.** Contradictions with the TDD surface here often — writing field shapes forces architectural questions the alignment altitude lets you skate past. When a contract issue reveals a design issue, raise it via `AskUserQuestion` and fix at the design layer first; then pin the contract.
+4. **No invented fields.** Every field comes from PRD, the TDD, decisions register, or `AskUserQuestion`. If it can't be sourced, ask.
+5. **One naming convention per wire surface.** Mixed casing within a single surface is a bug.
+
+Output file header:
+
+```
+# <Title> — Contracts
+**Version:** 1.0 | **Date**: YYYY-MM-DD | **Status**: Draft
+
+> Companion to [`tdd-[nnn].md`](./tdd-[nnn].md). Decision provenance in [`decisions.md`](./decisions.md) (if used).
+```
+
+### Step 3: Final Pass
+
+1. **Read the TDD and contracts file end-to-end.** Check for contradictions across sections AND across the two files (counts, names, references must agree). Examples: feature X is in v1 in TDD section A but deferred in section B; component picks technology T while another section requires not-T; the Walking Skeleton claims a property the Component Outlines don't deliver; an RPC method count in the TDD's Public Contract disagrees with the IDL in the contracts file. For each contradiction, raise an `AskUserQuestion` to reconcile.
+2. **Populate the Key Decisions section** at the end of the TDD (above Open Questions). One bulleted line per choice the user made via `AskUserQuestion`. Do not list values that came directly from the PRD — those are already cited where they appear. Include contract-level decisions (wire conventions, IDL shape choices, error semantics) alongside design-level ones.
+3. **Confirm the Open Questions section** captures every deferral with a concrete working assumption (Critical Rule 1).
+4. **Update both file headers** with final Status (`Ready for Review`) and date.
+5. **Present the summary**: paths to the TDD and contracts file (if written), a brief diagram inventory, and the Key Decisions and Open Questions sections inline for quick review.
 
 ---
 
 ## Document Format
 
-`docs/design/<task-slug>/design.md` follows this exact structure. **Do not include inline decision IDs (no `[D###]` tags or similar) in any section.** Decisions are recorded by the value they produce; rationale lives next to the value where useful, plus a one-line summary in Key Decisions.
+`/context/[nnn]-<slug>/tdd-[nnn].md` follows this exact structure. Decisions are recorded by the value they produce; rationale lives next to the value where useful, plus a one-line summary in Key Decisions.
 
 ````markdown
 # <Title>
@@ -138,10 +169,10 @@ This is the alignment-critical view. If a reader can't grasp the system from thi
 <Specific framework, library, or tool.>
 
 #### Key Abstractions
-<The 2-5 most important types/classes/modules — name + one-line role each. No full type signatures; that's planning territory.>
+<The 2-5 most important types/classes/modules — name + one-line role each. Full type signatures go in the contracts file, not here.>
 
 #### Public Contract
-<Bullet the contract style and the cross-component contracts that matter for coupling. Field-level shapes are planning territory, not design.
+<Bullet the contract style and the cross-component contracts that matter for coupling. Field-level shapes go in the contracts file, not here.
 - **Inbound:** <protocol, surface area in one phrase>
 - **Outbound:** <protocol, named contracts + consumers>
 - **Invariants:** <design-level guarantees only>>
@@ -213,5 +244,5 @@ Do NOT list values that came directly from the PRD — those are already cited w
 ## Open Questions & Deferred Decisions
 | Question | Working Assumption | Resolve By |
 
-<One row per deferred item. Every row must have a concrete working assumption — defer with no assumption is invalid (Critical Rule 4).>
+<One row per deferred item. Every row must have a concrete working assumption — defer with no assumption is invalid (Critical Rule 1).>
 ````

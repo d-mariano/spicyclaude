@@ -66,6 +66,8 @@ Commands often use `/context/{feature|branch}/` directory structure:
 - `research.md`: Findings from exploration
 - `plan.md`: Implementation plan
 - `progress.md`: Execution progress
+- `tdd-[nnn].md`: Technical design document (from `design-doc` skill or `spice-designer` agent)
+- `contracts-[nnn].md`: Companion field-level wire shapes (from `design-doc` skill)
 - Organize by feature name or branch name
 
 ## Testing
