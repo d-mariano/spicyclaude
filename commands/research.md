@@ -1,27 +1,19 @@
 ---
 allowed-tools: Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch, mcp__atlassian__getJiraIssue
 argument-hint: [topic]
-description: Conduct research on relevant files and resources to gain enough context for a full understanding of the given PRD or topic.
+description: Research a PRD, ticket, or topic by reading related code and the web before any implementation. Use when the user says 'research X', shares a PRD/Jira link, or asks to scope a feature.
 ---
-Ultrathink.
 
-You are a world class software engineer.
+Do not write any code right now. We are going to discuss working on $ARGUMENTS.
 
-Do not write any code right now. We are going to discuss working on $1.
-
-If you are given an identifier, attempt to use configured MCP servers like to search for the related resource. If you are given a PRD, read it.
+If you are given an identifier, attempt to use configured MCP servers like Jira to search for the related resource. If you are given a PRD, read it.
 
 You are going to read through related code and conduct any web searches.
 
-Gather enough context, become a subject matter expert and prepare to discuss.
-
-## Implementation
-Use the python-development skill for Python projects.
-Use the terraform-development skill for Terraform projects.
+Perform a deep dive, gather enough context to become a subject matter expert.
 
 ## Considerations
-- Conduct any web searches that you may need on frameworks in use, unless the usage examples in code are telling enough
-- Conduct any web searches on official protocols, APIs, or standards
+- Conduct web searches on frameworks, protocols, APIs, or standards in use — unless usage examples in code are telling enough
 - Always share usage examples and best practices when found
 - Research if third-party packages in use already provide required types and explicitly call this out
 - If alternative approaches are identified and you have identified a preference, only mention your preference
@@ -29,7 +21,7 @@ Use the terraform-development skill for Terraform projects.
 - Always cite your sources
 
 ## Output
-- Store your research in `/context/[nnn]-{feature|branch|question}/research_[nnn].md`, unless instructed otherwise
+- Store your research in `/context/[nnn]-{feature|branch|question}/research-[nnn].md`, unless instructed otherwise
 
 ### Examples:
 - `/context/001-implement-cool-service/research-001.md`
