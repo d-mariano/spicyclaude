@@ -5,13 +5,9 @@ description: Breaks a technical design document into an epic (or several epics) 
 
 # Breaking down design docs
 
-Turn a technical design document into an epic (or epics) + stories that a team can actually pick up and ship. Optimised for Claude Code: stories land as markdown files in the repo, and if the `jira` CLI is installed and authenticated, the user can opt in to pushing them as real tickets.
-
 The default failure mode of this task is producing a tidy-looking list of tickets that hides ambiguity. Resist that. It is better to surface three real questions than to invent answers and ship a clean-looking breakdown built on guesses.
 
-## When the design doc isn't in front of you yet
-
-If the user hasn't actually shared the doc — only mentioned one — ask for it (path, URL, or pasted content) before doing anything else. Don't proceed on the strength of the doc's title.
+**Early exit:** if the doc is a problem statement without a proposed solution, don't fake a breakdown. Say so and offer to break the *discovery* work down into spikes instead.
 
 ## The workflow has a hard gate
 
@@ -26,14 +22,14 @@ Breakdown progress:
 - [ ] Phase 2: Propose epic structure + story titles (one line each) + pushback
 - [ ] Phase 2 GATE: User has confirmed or revised the split
 - [ ] Phase 3: Expand each confirmed story to full markdown
-- [ ] Phase 3: (Optional) Push to Jira if `jira` CLI is available and user opted in
+- [ ] Phase 3: (Optional) Push to Jira if `acli` is available and user opted in
 ```
 
 ---
 
 ## Phase 1: Read and ground
 
-Read the design doc carefully. Then, **before** drafting anything:
+If the user has only mentioned a design doc without sharing it, ask for the path, URL, or pasted content before proceeding. Otherwise, read the doc carefully. Then, **before** drafting anything:
 
 **Ground the breakdown in repo reality (Claude Code only).** A breakdown disconnected from the codebase is fiction. Spend a few tool calls doing things like:
 - Look at the repo's top-level structure and `README.md` to understand what's already there.
@@ -47,7 +43,7 @@ This is the single highest-leverage thing this skill does. Skipping it produces 
 - **Goal**: what user/business outcome does this unlock?
 - **Scope**: what's explicitly in and out?
 - **Components touched**: which subsystems, services, files, or external systems?
-- **Sequencing constraints**: what must happen before what?
+- **Dependencies**: what relies on what? Capture this as a graph, not a list. Most stories can run in parallel; the interesting information is which ones genuinely block which others.
 - **Open questions the doc itself names** (these become clarifying questions for the user).
 - **Smells**: see "Pushback heuristics" below.
 
@@ -99,15 +95,13 @@ If you're tempted by multiple epics just because the doc is long, that's not a g
 
 ### Sizing stories
 
-A good story is roughly **1–3 days of focused work for one engineer**, has a single coherent goal, and can be demoed independently. Rough heuristics:
+A good story is roughly **1–3 days of focused work for one engineer** (M on the scale below), has a single coherent goal, and can be demoed independently. S (≤1 day) is fine in moderation but usually folds into a neighbour. L (3–5 days) is a soft smell — it's allowed when the work genuinely doesn't split, but ask yourself whether it should be two stories before settling on L. Rough heuristics for "this is too big":
 
 - **Acceptance criteria > 7 items**: probably two stories.
 - **Title contains "and"**: suspect compound. "Add caching and update docs" → two stories.
 - **Touches > 2 major subsystems**: consider splitting along the subsystem seam.
 - **Mixes build + migrate** ("build new flow and migrate old data"): almost always split.
 - **First AC is "investigate / spike / decide"**: that's a spike story on its own; the build story comes after.
-
-Stories that are too small are also a smell — if a story is "add one field to one struct", it probably belongs folded into a neighbour.
 
 ### What to output in Phase 2
 
@@ -129,6 +123,8 @@ Execution plan (waves of work that can run in parallel):
 - **Wave 3** (after 04 + 05): 06
 
 Critical path: 01 → 04 → 06. Everything else has slack.
+
+*(Skip the execution plan section if there are ≤4 stories or they all sit in a single wave — the story list already conveys it. Include it whenever there's non-trivial parallelism worth surfacing.)*
 
 ## Concerns / pushback
 - <thing that worries me about this design or breakdown>
@@ -155,7 +151,7 @@ Surface any of these that apply. Don't editorialise; just name them.
 - **No observability story**: New code paths with no logging/metrics plan are a smell.
 - **Untestable AC**: An acceptance criterion you can't write a test for is a criterion you can't verify. Flag.
 - **Design assumes Claude knows business context** that isn't in the doc or the repo. Ask, don't invent.
-- **False serialisation**: stories listed in order but with no real dependencies between them. If 01, 02, and 03 touch independent files and nothing in 02 relies on 01 having shipped, say so — these can run in parallel and probably should. The numbered ordering is for the directory listing, not a mandate to ship serially.
+- **False serialisation**: stories listed in order but with no real dependencies between them. If 01, 02, and 03 touch independent files and nothing in 02 relies on 01 having shipped, say so — these can run in parallel and probably should.
 
 ---
 
@@ -231,7 +227,7 @@ Critical path: 01 → 04 → 06.
 <2–4 sentences. Why this story exists, what it unlocks. Link to the relevant section of the design doc.>
 
 ## Acceptance criteria
-Written so each item is independently testable. Prefer Given/When/Then when behaviour-oriented; bullet list when structural.
+Written so each item is independently testable — this section *is* the test plan. Prefer Given/When/Then when behaviour-oriented; bullet list when structural. If an item can't be turned into a test, it doesn't belong here.
 
 - [ ] <criterion>
 - [ ] <criterion>
@@ -246,9 +242,14 @@ Written so each item is independently testable. Prefer Given/When/Then when beha
 - <thing a reader might assume is part of this story but isn't>
 
 ## Definition of done
-- [ ] Code merged behind <flag / not behind a flag>
-- [ ] Tests added (unit + <integration?>)
-- [ ] <Migrations applied / docs updated / metrics added — whichever apply>
+Release-process checks only — *what it does* belongs in acceptance criteria, not here. Use whichever apply:
+
+- [ ] Merged to main (behind <flag name> / not behind a flag)
+- [ ] Deployed to <env>
+- [ ] Docs updated (<which docs>)
+- [ ] Metrics / dashboards in place
+- [ ] Migration applied in <env>
+- [ ] Stakeholder notified
 
 ## Open questions
 - <anything still unresolved; if none, delete this section>
@@ -278,12 +279,3 @@ Then present the files to the user with a one-line summary of what landed where.
 ## Optional: push to Jira
 
 If the user wants tickets in Jira, see [references/jira-integration.md](references/jira-integration.md) for the detection and push workflow using the official Atlassian CLI (`acli`). Do not attempt this unless the user asks — creating tickets is a side effect that's hard to undo. The check is one command: `command -v acli`.
-
----
-
-## A few things this skill deliberately does not do
-
-- **Estimate in story points or hours.** Estimation depends on team velocity and conventions this skill doesn't know. Size buckets (S/M/L) are a coarse sanity check, nothing more.
-- **Assign stories to people.** Not the skill's job.
-- **Invent acceptance criteria the doc doesn't support.** If the doc is silent on a behaviour, ask or flag — don't manufacture criteria that look plausible.
-- **Produce a breakdown when the design isn't ready.** If the doc is a problem statement without a proposed solution, say so and offer to break the *discovery* work down into spikes instead.

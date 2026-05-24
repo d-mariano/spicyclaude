@@ -1,5 +1,15 @@
 # Pushing the breakdown to Jira (Atlassian CLI)
 
+## Contents
+- Terminology quirks (acli, "work item", ADF descriptions)
+- Step 1: Detect the CLI
+- Step 2: Check auth
+- Step 3: Gather what you need from the user (project key, types, labels)
+- Step 4: Dry-run (full command template and flag reference)
+- Step 5: Create, then sync the keys back to markdown
+- Step 6: Report back
+- Pushback specific to Jira (big batches, markdown rendering, custom fields, renamed types)
+
 Load this file only when the user has confirmed they want to push the breakdown to Jira. Creating tickets is a side effect with a clumsy undo path; do not invoke any of this proactively.
 
 This uses the **official Atlassian CLI (`acli`)**. Docs: https://developer.atlassian.com/cloud/acli/. Notable terminology quirks worth internalising before running anything:
