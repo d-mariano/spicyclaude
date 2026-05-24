@@ -27,11 +27,10 @@ Keep these findings as a top-level "Pre-flight findings" section in the final pl
 
 ## Phase 2 — Drafting the plan
 
-Structure the plan with these sections in order:
-
 - **Overview.** 2-3 sentences: what you're doing and why now.
 - **Key decisions table.** Each row: decision + choice + one-line rationale. Surface deliberate divergences from the ticket/PRD AC here so reviewers see them upfront, not buried in a diff.
 - **Pre-flight findings** (from Phase 1).
+- **AC trace table.** For PRD/ticket-driven work, cross-walk every AC item to where it's satisfied (file, test, or deferred ticket). No AC items left unaccounted for. Divergences from AC text go in the Key decisions table; this table just confirms coverage.
 - **Files to change.** Group as NEW / MODIFIED / DELETED / NOT-modified-but-considered. For each: file path + concrete diff intent.
 - **New functions and classes.** Write the **full signature with parameter types and return type**, not a description. If you can't write the signature, you don't understand the function yet. Add a 1-2 sentence docstring after each.
 - **Test impact in three buckets:**
@@ -47,61 +46,49 @@ Structure the plan with these sections in order:
 
 ---
 
-## Phase 3 — Footgun checklist (scan before declaring done)
+## Phase 3 — Footgun checklist
 
-Explicitly scan against these gotchas. For each that applies, document how the plan addresses it:
+Scan these gotchas; for each that applies, document how the plan addresses it.
 
 - **Module-import-time side effects.** Singletons, registries populated at bottom of module — what happens on re-import or under `pytest-randomly`?
 - **Mutable global state in tests.** Fixtures, `monkeypatch`, isolation under `pytest-xdist` / `pytest-randomly` / re-ordering.
 - **Type-narrowing edge cases.** `bool ⊂ int`, `None ⊂ Optional`, `isinstance` vs static type, mypy vs pyright divergence.
 - **Async/sync boundary.** Helper async, dependency sync, or vice versa — where's the `await`? What about sync handlers (Flask) calling async helpers?
+- **Async cancellation between awaits.** When a handler has `await A()` then `await B()`, what state is left if `CancelledError` strikes between them? Particularly load-bearing for write-followed-by-write sequences (DB write then telemetry, DB write then billing). Consider `asyncio.shield` or document the inconsistency.
 - **Fixture autouse ordering and scope.** Autouse fixtures applied at the wrong scope leak into unrelated tests; explicit `@pytest.mark.usefixtures` on the test class is often safer than autouse.
 - **`**kwargs` collisions.** Explicit named parameters silently eat their names from `**kwargs` passthrough — list reserved names or use an explicit `dict` parameter.
+- **Wire-boundary type compatibility.** When crossing module boundaries (Python → gRPC, Python → JSON, Python → SQL): does the source field type match the sink schema? `UUID` vs `string`, `datetime` vs `Timestamp`, `Optional[int]` vs `NULLABLE INTEGER`. Pydantic types that auto-coerce in Python sometimes reject at the wire.
+- **Unbounded I/O on user-perceived hot path.** Adding a network call to a request handler? Default to a timeout (3–5s for sync RPCs); document the choice. Without one, a single hung dependency = tenant-wide outage.
+- **Test patch-target refactor.** When moving an import from module A to module B, every `@patch("A.symbol")` in tests becomes a no-op or `AttributeError`. List the patch targets that need to move. Vacuous patches don't fail loudly — coverage stays green, assertions stop measuring.
+- **Deployment rollover semantics.** Does a Cloud Run / Kubernetes revision change leave in-flight state inconsistent? Old revision writes documents in old schema; new revision reads them in new schema. Sidecars and webhooks that read state written by a previous revision are especially load-bearing.
 - **Heterogeneous existing surface.** Did the call-site survey confirm homogeneity, or are there N-1-vs-1 cases you need to handle differently?
 
 ---
 
 ## Phase 4 — Self-review + handoff
 
-After drafting, before reporting back:
-
-1. **Read it cold.** As if you'd never seen the task. Find at least 3 issues a senior reviewer would catch — fix them or document why they're acceptable. Common hits: weak tests (paranoia rather than behavior), magic strings, fragile fixture ordering, missing edge cases, scope creep, vague test names.
+1. **Read it cold.** As if you'd never seen the task. Find at least 3 issues a senior reviewer would catch — fix them or document why they're acceptable. Common hits: weak tests (paranoia rather than behavior), vacuous test assertions (patches that no longer take effect, mocks that aren't checked, asserts on tautologies), magic strings, fragile fixture ordering, missing edge cases, scope creep, vague test names.
 2. **Recommend `/review:my-developer-plan` or the `plan-reviewer` agent** at the end of your response. Independent eyes catch coupling and assumption errors that author-review misses.
 
 ---
 
-## Implementation
-Use the python-development skill for Python projects.
-Use the terraform-development skill for Terraform projects.
-
-## Testing
-Use the test-driven-development skill.
+## Skills to invoke during implementation
+- `python-development` for Python projects
+- `terraform-development` for Terraform projects
+- `test-driven-development` for any production code
 
 ## DO NOT
 - Do not include plans for legacy fallback unless required or explicitly requested.
 - Fail fast and loud, avoid unnecessary error handling.
 - Do not over-engineer abstractions.
 - Avoid creating new types for interacting with third-party libraries when they already have their own.
+- Do not use audience framing ("a junior would prefer", "more accessible", "easier to read") as justification for architectural decisions. Justify on engineering merits.
 
 ## Target Audience
-Assume the primary reader of the task list is a **junior developer** who will implement the feature with awareness of the existing codebase context. Concrete file paths, line numbers, and full type signatures beat generic descriptions every time.
+Assume the implementer is a **competent engineer who knows the codebase but has not read the ticket or design doc.** They need enough context to implement without re-reading the source material — concrete file paths, full type signatures, explicit decision rationale. They do NOT need standard engineering practices explained. Make decisions on engineering merits; if a senior would call your decision wrong, a junior shouldn't get a different answer either.
 
 ## Tasks section format
-The Tasks section must appear at the end of the file in this exact format:
-```markdown
-## Tasks
-- [ ] 1.0 Parent Task Title
-  - [ ] 1.1 [Sub-task description 1.1]
-  - [ ] 1.2 [Sub-task description 1.2]
-- [ ] 2.0 Parent Task Title
-  - [ ] 2.1 [Sub-task description 2.1]
-- [ ] 3.0 Parent Task Title (may not require sub-tasks if purely structural or configuration)
-```
+End the plan with `## Tasks` using GitHub-checkbox markdown: `- [ ] N.M Title`. Two-level nesting (parent 1.0, sub 1.1, 1.2, ...). Parent tasks may stand alone if purely structural.
 
 ## Output
-Store your plan in /context/[nnn]-{feature|branch}/plan-[nnn].md.
-
-### Examples:
-/context/001-implement-cool-service/plan-001.md
-/context/001-implement-cool-service/plan-002.md
-/context/002-next-neat-service/plan-001.md
+Store your plan in `/context/[nnn]-{feature|branch}/plan-[nnn].md`. Example: `/context/026-pricing-registry/plan-001.md`.
