@@ -163,6 +163,24 @@ def test_sends_email():
     assert sender.was_sent_to("user@test.com")
 ```
 
+**Anti-pattern — The Tautology:**
+
+A test that asserts a function does what its body literally says. Subtler than The Liar because the assertion *looks* meaningful — it touches real state and uses real types. But the only way it can fail is if the function body is rewritten to not call its own implementation.
+
+```python
+async def record_usage_event(event: UsageEvent) -> None:
+    await get_usage_service().record(event)
+
+async def test_records_event_even_when_user_id_empty(usage_service):
+    event = UsageEvent(user_id="", tool_name="x", aqcus=0.0)
+    await record_usage_event(event)
+    assert len(usage_service.events) == 1  # Tautology: the body IS this call
+```
+
+**Before writing an edge-case test, ask:** "what observable behavior change would cause this test to fail?" If the only answer is "the function body would have to be rewritten to not call its own implementation," it's a tautology — drop it. Edge-case tests earn their keep when they pin a branch, defend an invariant against a sibling that handles the same axis differently, or lock a fail-open / fail-loud contract. "Function records when called" is none of those.
+
+**Divergence-lock check.** When writing a "function X handles edge case Y" test, look at the sibling function handling the same axis. If sibling skips on Y and yours records on Y (or vice versa), you have two choices: (a) align them and drop the test, or (b) document the divergence with a behavior reason — not just "we picked this." A test that locks a divergence you can't justify in one sentence is locking the wrong thing.
+
 ---
 
 ## Thorough

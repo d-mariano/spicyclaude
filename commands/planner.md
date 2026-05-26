@@ -19,7 +19,9 @@ Most planning bugs come from skipping this step. Read the relevant code and writ
 
 - **Call-site survey.** For each existing call site of code you're changing or extending: how does it currently behave on each axis you're changing? List heterogeneity explicitly. When extending a pattern across N call sites, the assumption that they're homogeneous is usually wrong — find the 1-of-N that breaks the pattern.
 - **Existing-test impact.** For each existing test that touches state your changes affect (globals, singletons, fixtures, autouse): predict which break and how to fix them. Fixtures you add or modify will collide with existing tests that depend on the old fixture's behavior — name them.
-- **Sibling-ticket coupling.** For each sibling ticket this work blocks or unblocks: name the API surface they depend on; confirm your surface meets their needs. If you can't confirm, flag as a pre-merge check with whoever owns the sibling.
+- **Same-file sibling-test enumeration.** For every test file you're modifying, list ALL tests in the file in one of three buckets: CHANGED, UNCHANGED-but-named (so the implementer doesn't second-guess), UNCHANGED-irrelevant (don't enumerate). The cold-read implementer opens the file diff and wonders whether the tests you *didn't* touch should also have changed — the "do not touch these" list must be explicit, not implied.
+- **Stale-reference grep.** For any symbol being renamed or removed, run `grep -rn <old-name>` across the whole project and triage every hit. Imports and call sites change automatically with the rename; comments, docstrings, log messages, error strings, and test names rot silently.
+- **Sibling-ticket coupling.** For each sibling ticket this work blocks or unblocks: (a) name the API surface they depend on; confirm your surface meets their needs — if you can't confirm, flag as a pre-merge check with whoever owns the sibling; (b) **deployment-window risk** — what's the user-visible state of the system between this PR merging and the sibling landing? "It works" is a complete answer; so is "telemetry drops for tool X — acceptable pre-launch." Silence here is the bug.
 
 Keep these findings as a top-level "Pre-flight findings" section in the final plan — they document the assumptions the rest of the plan is built on.
 
@@ -34,7 +36,7 @@ Keep these findings as a top-level "Pre-flight findings" section in the final pl
 - **Files to change.** Group as NEW / MODIFIED / DELETED / NOT-modified-but-considered. For each: file path + concrete diff intent.
 - **New functions and classes.** Write the **full signature with parameter types and return type**, not a description. If you can't write the signature, you don't understand the function yet. Add a 1-2 sentence docstring after each.
 - **Test impact in three buckets:**
-  - **ADD**: new tests, name + 5-10 words on behavior.
+  - **ADD**: new tests, name + the observable behavior change that would cause the test to fail. "Locks regression: function does not call billing client" is a behavior. "Function records event when called" is a tautology and a sign the test shouldn't exist — see the Tautology anti-pattern in `test-driven-development/testing-principles.md`.
   - **MODIFY**: existing tests changing, what changes, why.
   - **DELETE**: existing tests being removed, what replaced them.
 - **CLAUDE.md reinforcement.** Cite specific rules from project + global CLAUDE.md that constrain this work (clarity, simplicity, reuse, third-party usage).
