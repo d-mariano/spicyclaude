@@ -2,7 +2,6 @@
 name: feasibility-cold-read
 description: "Produces a cold-read feasibility findings draft for a technical design. Reads TDD, contracts, PRD, and prior research in a forked context with no conversation history; extracts claims; verifies load-bearing ones via web research; writes .feasibility-[nnn]-draft.md. Used by feasibility-study as its research phase, and invocable standalone when a draft is wanted without the guided disposition walk."
 when_to_use: "Invoked by feasibility-study. Also standalone when the user wants a cold-read research draft on a TDD without committing to the full guided walk."
-disable-model-invocation: true
 context: fork
 agent: general-purpose
 allowed-tools: Read Glob WebSearch WebFetch Write

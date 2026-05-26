@@ -1,6 +1,7 @@
 ---
 name: breaking-down-design-docs
 description: Breaks a technical design document into an epic (or several epics) and actionable user stories with acceptance criteria, dependencies, and explicit out-of-scope items. Use this whenever a user shares a design doc, RFC, technical spec, PRD, ADR, or implementation proposal and wants it turned into work items — tickets, Jira issues, Linear tickets, stories, sprint plans, or a "plan of attack". Trigger even when the user phrases it loosely, such as "help me plan this", "how should we build this", "split this up", or "what are the tickets". Always asks clarifying questions before proposing a split and pushes back on ambiguity, hidden assumptions, oversized stories, and impossible dependencies rather than producing busy-work tickets.
+allowed-tools: Read Write Edit Glob Bash AskUserQuestion
 ---
 
 # Breaking down design docs
@@ -68,13 +69,16 @@ Useful question categories — pick from these rather than asking generic "what'
 
 ### What pushback looks like in Phase 1
 
-Pushback is not refusal. It's surfacing a concern, naming it, and proposing how to handle it. Examples:
+Pushback is not refusal. It's surfacing a concern, naming it, and proposing how to handle it.
 
-> "The design assumes we already have a feature flag system, but I don't see one in the repo. Three options: (a) add 'introduce feature flags' as a prerequisite epic, (b) ship behind an env var for v1, (c) you tell me there's one I missed. Which?"
+**When pushback has discrete options, use `AskUserQuestion`.** Scope boundaries, missing systems, contradictions, and prerequisite decisions all have a finite option set — route them through `AskUserQuestion` so the user sees structured choices with trade-offs. Every option's description includes a counter: `"<implication> · Counter: <trade-off or objection>"`. Mark one "(Recommended)" when evidence clearly favors it; that option gets the strongest counter.
 
-> "Sections 3 and 5 contradict each other on whether the API is sync or async. I'll need that resolved before I can break this down — async vs sync changes the story list materially."
+Examples of pushback that should go through `AskUserQuestion`:
+- The design assumes a system that doesn't exist in the repo — options: add as prerequisite epic, work around it, or the user points you to it.
+- The design contradicts itself on a decision that changes the story list — options: which reading governs.
+- The doc is a problem statement, not a design — options: break down as discovery spikes, or hold off.
 
-> "This reads more like a problem statement than a design — there's no proposed solution yet, just goals. I can either break down the goals as discovery stories (spikes), or we can hold off until the design proposes an approach. Preference?"
+**Open-ended clarifications stay conversational.** Questions like "is this expected to handle 50 req/s or 5k?" or "does the migration need to land before the new endpoint?" are better asked in plain text — the answer space is too open for structured options.
 
 ---
 

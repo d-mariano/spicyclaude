@@ -30,6 +30,11 @@
     "command": "~/.claude/statusline.sh",
     "padding": 0
   },
+  "enabledPlugins": {
+    "skill-creator@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true
+  },
   "alwaysThinkingEnabled": true,
   "effortLevel": "xhigh"
 }

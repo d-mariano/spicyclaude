@@ -1,0 +1,12 @@
+{
+  "skills": ["breaking-down-design-docs"],
+  "query": "Can you break this down into stories for the team?",
+  "files": ["fixtures/onboarding-problem-statement.md"],
+  "expected_behavior": [
+    "Identifies that the doc is a problem statement with no proposed solution, not a design. The doc explicitly lists multiple approaches ('wizard / better defaults / redesigned dashboard / combination') under Next steps without picking one — this is the tell.",
+    "Does NOT produce a breakdown that treats the goals (activation rate, TTFV, support tickets) as if they were stories. Producing stories like 'Improve activation rate' or 'Reduce TTFV' is a failure — those are outcomes, not work items.",
+    "Does NOT invent a solution to break down. The skill should not pick 'guided wizard' from the list of options and break that down as if the doc had chosen it.",
+    "Explicitly offers the early-exit options: (a) wait until a design proposes a specific approach, or (b) break the discovery work into spike stories (e.g., 'spike: prototype guided wizard', 'spike: instrument current onboarding to find drop-off points'). Either offer is acceptable; both is better.",
+    "Tone is constructive, not refusing. The skill says what's missing and what can be done about it, rather than just declining."
+  ]
+}

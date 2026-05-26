@@ -1,0 +1,13 @@
+{
+  "skills": ["breaking-down-design-docs"],
+  "query": "Please break this design into stories — we want to start shipping next sprint.",
+  "files": ["fixtures/notifications-ambiguous.md"],
+  "expected_behavior": [
+    "Identifies the internal contradiction about delivery guarantees: the doc says WebSockets are 'fire-and-forget' with 'no acknowledgements needed' in one paragraph, then says 'clients send an ack message' in the next. This contradiction must be flagged before a breakdown can be produced because it changes the story list materially. Failing to spot this is a failure.",
+    "Flags the vague non-functional requirements: 'should be performant', 'scale well', 'high volume', 'snappy and modern' are not testable. The skill should either ask the user to pin these down or call them out as needing definition before stories can be sized.",
+    "Flags the phantom-system risk for `EventBus` and the push-notification gateway. In a Claude Code context, the skill should at least check whether these exist in the repo before treating them as given. If the user is in chat-only mode (no repo), the skill should explicitly ask whether these services exist and what their interfaces look like.",
+    "Surfaces the open questions the doc itself names (Redis vs Kafka, retention policy) as decisions that need to be made before the relevant stories can be expanded. Does not silently pick one.",
+    "Pushes back on the user's 'start shipping next sprint' framing if the unresolved questions would block sprint work. The skill should not produce a clean-looking breakdown that hides the fact that several questions need answers first. A reasonable response: 'I can sketch the stories, but here are the 3 things that need decisions before any of this can actually start.'",
+    "Does NOT produce a fully-expanded Phase 3 breakdown in the first response just because the user asked for stories. The Phase 1 → 2 → 3 gates still apply, especially here where pushback is the point."
+  ]
+}

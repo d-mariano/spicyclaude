@@ -68,6 +68,8 @@ This skill is willing to deliver Not-Feasible. Do not soften Show-stoppers into 
   - **Apply mitigation: <named mitigation>** — only offered if the cold-read draft surfaced a real mitigation. Mitigation is described concretely in the option label.
   - **Validate empirically (spike: <named spike>)** — for inconclusive items where a prototype would resolve it. The spike must have a concrete success criterion.
   - **Requires redesign** — escalates to design-doc. Required for any Show-stopper without a real mitigation or empirical path. The option label names which TDD/contracts section needs revisiting.
+- **Every option's description includes a counter.** Format: `"<implication> · Counter: <trade-off or objection>"`. Non-recommended options state the key cost or risk of that path. If an option has no real counter, it's either the obvious choice (why offer alternatives?) or the option set needs rework.
+- **Mark a recommended disposition** with "(Recommended)" when the cold-read draft's evidence clearly favors one option — not because it's the easiest path. The recommended option gets the strongest counter — the primary reason the user might reject it.
 - **State the evidence in the question text, not just the label.** Format: `"<finding>. Evidence: <source + key fact>. PRD impact: <what's at risk>."` The user must see the evidence at the moment they choose.
 - **Never invent option counts.** If only one real disposition exists (a true Show-stopper with no mitigation and no spike that would help), the question still goes through `AskUserQuestion` with the lone option plus "Defer — open discussion before recording" so the user explicitly acknowledges.
 

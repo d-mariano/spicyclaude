@@ -53,8 +53,9 @@ Use `AskUserQuestion` whenever a decision needs the user's input. Rules:
 
 - **Batch related questions** — up to 4 per call.
 - **Provide 2-4 options per question.** Each option needs a one-line description of what choosing it implies.
+- **Every option's description includes a counter.** Format: `"<implication> · Counter: <trade-off or objection>"`. Non-recommended options state the key cost or risk of that path. If an option has no real counter, it's either the obvious choice (why offer alternatives?) or the option set needs rework.
 - **Mark research-recommended options** with "(research-rec)" in the label when research had a recommendation.
-- **Mark your recommendation** with "(Recommended)" only when you have a clear, evidence-backed lean from the inputs — not absence of contrary signal. When you do mark Recommended, the option's description **must include the strongest single argument against it**. Format: `"<implication> · Counter: <strongest objection>"`. If no real counter exists, the alternatives are probably weak — rework the option set.
+- **Mark your recommendation** with "(Recommended)" only when you have a clear, evidence-backed lean from the inputs — not absence of contrary signal. The recommended option gets the strongest counter — the primary reason the user might reject it.
 - **State which goal(s) the decision serves.** The question text must reference the PRD goal, NFR, use case, or related prior decisions in plain English (topic names, not codes). Example: `"Which tenant isolation mechanism? Addresses the PRD §6.4 high-priority NFR; bears on the throughput targets and the chosen architecture."` Keeps the user oriented to *why* the question matters.
 - **Flag scope creep.** If any option (or research recommendation) addresses a non-goal (PRD §3) or out-of-scope item, mark it with "(addresses non-goal: <ref>)" in the label. The user must consciously accept scope creep.
 - **Always offer a defer path** when the workflow can proceed with a working assumption. Phrase: `"Defer — proceed with: <concrete assumption>"`. If the design genuinely cannot proceed without the answer, mark the question blocking and don't offer defer.
