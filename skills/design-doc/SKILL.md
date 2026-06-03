@@ -55,11 +55,15 @@ Use `AskUserQuestion` whenever a decision needs the user's input. Rules:
 - **Provide 2-4 options per question.** Each option needs a one-line description of what choosing it implies.
 - **Every option's description includes a counter.** Format: `"<implication> · Counter: <trade-off or objection>"`. Non-recommended options state the key cost or risk of that path. If an option has no real counter, it's either the obvious choice (why offer alternatives?) or the option set needs rework.
 - **Mark research-recommended options** with "(research-rec)" in the label when research had a recommendation.
-- **Mark your recommendation** with "(Recommended)" only when you have a clear, evidence-backed lean from the inputs — not absence of contrary signal. The recommended option gets the strongest counter — the primary reason the user might reject it.
+- **Mark your recommendation** with "(Recommended)" only when you have a clear, evidence-backed lean from the inputs — not absence of contrary signal. The recommended option gets the strongest counter — the primary reason the user might reject it. **Place the recommended option first** in the options array.
+- **`header` is hard-capped at 12 characters.** Pick a short tag ("Auth method", "Storage", "Wire fmt"); don't write a sentence.
 - **State which goal(s) the decision serves.** The question text must reference the PRD goal, NFR, use case, or related prior decisions in plain English (topic names, not codes). Example: `"Which tenant isolation mechanism? Addresses the PRD §6.4 high-priority NFR; bears on the throughput targets and the chosen architecture."` Keeps the user oriented to *why* the question matters.
 - **Flag scope creep.** If any option (or research recommendation) addresses a non-goal (PRD §3) or out-of-scope item, mark it with "(addresses non-goal: <ref>)" in the label. The user must consciously accept scope creep.
 - **Always offer a defer path** when the workflow can proceed with a working assumption. Phrase: `"Defer — proceed with: <concrete assumption>"`. If the design genuinely cannot proceed without the answer, mark the question blocking and don't offer defer.
-- **Do not write open-ended prose questions.** If the answer space is open-ended, still propose 2-3 plausible options grounded in inputs plus a defer path; the user can override via "Other".
+- **Do not write open-ended prose questions.** If the answer space is open-ended, still propose 2-3 plausible options grounded in inputs plus a defer path; the tool surfaces a free-text input automatically.
+- **Do NOT add an "Other" option.** The tool surfaces a free-text input automatically; adding "Other" wastes one of the 4 option slots.
+- **Use `multiSelect: true`** when the choices are not mutually exclusive — e.g., "Which cross-cutting concerns apply?", "Which entities are PII-bearing?", "Which wire surfaces need this convention?". Default `false` for picking-one decisions.
+- **Use the `preview` field for concrete-shape choices** (single-select only). When the user is comparing visual artifacts — directory layout variants, IDL shape alternatives, error-envelope JSON examples, sample request/response bodies — put an ASCII mockup or code snippet in each option's `preview` so the UI renders a side-by-side comparison. Skip preview for preference questions where label + description suffice. Previews are not supported for `multiSelect: true`.
 
 After every `AskUserQuestion` answer, fill in the relevant section of the TDD with the chosen value. Add a one-line rationale next to the value where the rationale isn't obvious from the value itself. If the user deferred, also append a row to the Open Questions section.
 
@@ -104,6 +108,25 @@ For each section:
 4. **Move on.** Do not revisit a section unless push-back surfaces a contradiction.
 
 The Architecture Overview is the first section with material decisions. Resolve the architectural choice in flow — it's the load-bearing decision everything else depends on, but it doesn't need its own ceremonial phase.
+
+#### Diagram-shape decision (Architecture Overview)
+
+When the inputs do not pin down a diagram shape, surface the choice via `AskUserQuestion` as part of the first batched call for Architecture Overview (do not make it a standalone interrupt). Diagram shape is a meta-decision about how the system is *communicated*; readers will internalize whichever frame you pick.
+
+Use the `preview` field with ASCII mermaid mockups so the user sees the candidates side-by-side. Single-select. Candidates come from the inputs — typical option sets:
+
+- **Layered** (e.g., API → Service → Data) — when the system has clear horizontal layers and data flows top-to-bottom.
+- **Hexagonal / Ports-and-Adapters** — when the system has a stable core with multiple inbound/outbound adapters.
+- **Event-driven / Pipeline** — when the system is dominated by async message flow.
+- **Hub-and-spoke** — when one component coordinates many peripheral services.
+
+Skip the question when the PRD, research, or artifacts already pin the shape (e.g., research recommends event-driven and the PRD's throughput target requires it).
+
+#### Component naming decision
+
+When ≥2 new component names land in a single Architecture Overview pass and they are not pinned by inputs (PRD didn't name them, no existing artifact defines them), batch a single `AskUserQuestion` call proposing 2-3 candidate names per component with a one-line rationale each. Names are sticky — they show up in code, tickets, runbooks, conversations — so this is worth asking even though it adds an interrupt.
+
+When only one new component name is unpinned, the model may name it and note the choice in Key Decisions without asking. When all component names are pinned by inputs, skip.
 
 ### Step 2: Contracts Walk
 
@@ -221,7 +244,9 @@ project-root/
 <The thinnest possible end-to-end slice through the system — expressed as requirements, not implementation:
 - Use case it covers (one of the primary use cases from the PRD)
 - What it must prove about the architecture
-- The success assertion (the observable condition that means the slice works)>
+- The success assertion (the observable condition that means the slice works)
+
+**Surface the slice via `AskUserQuestion`.** Multiple valid slices typically exist (auth-only path, single happy-path use case, read-only slice, write-only slice). The slice the user picks becomes Phase 1 of implementation, so this is a load-bearing choice — do not pick silently. Propose 2-4 candidates derived from the PRD's primary use cases. Each option's description states what the slice proves about the architecture (the value) and what it leaves untested (the counter).>
 
 This becomes Phase 1 of implementation.
 
@@ -233,6 +258,14 @@ This becomes Phase 1 of implementation.
 - Done condition (the observable condition that means the phase is complete)
 
 Phase 1 is always the Walking Skeleton.
+
+**Surface the phase-split strategy via `AskUserQuestion` with `preview`** before drafting phases. Different teams have strong preferences and the resulting phase lists differ materially. Single-select. Candidate strategies:
+
+- **Vertical slices** — each phase delivers one end-to-end use case fully working.
+- **Horizontal layers** — each phase delivers one layer (data → service → API) across all use cases.
+- **Hybrid** — Walking Skeleton (vertical) → core infrastructure (horizontal) → feature slices (vertical).
+
+Each option's `preview` shows the resulting phase list as a short ASCII outline so the user can compare shapes. Skip when the PRD or research pins the strategy.
 
 Excluded (planning territory): complexity estimates (S/M/L), per-phase risks, time/effort estimates, owner assignments, ticket numbers.>
 

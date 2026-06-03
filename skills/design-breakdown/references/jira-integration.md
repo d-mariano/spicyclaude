@@ -12,6 +12,8 @@
 
 Load this file only when the user has confirmed they want to push the breakdown to Jira. Creating tickets is a side effect with a clumsy undo path; do not invoke any of this proactively.
 
+For publishing a single ad-hoc ticket (not a full breakdown), see [`../../writing-tickets/references/publishing-to-jira.md`](../../writing-tickets/references/publishing-to-jira.md) — that flow uses the Atlassian MCP. This file is the bulk-breakdown recipe via `acli`.
+
 This uses the **official Atlassian CLI (`acli`)**. Docs: https://developer.atlassian.com/cloud/acli/. Notable terminology quirks worth internalising before running anything:
 
 - The binary is **`acli`**, not `jira` or `atlassian`.

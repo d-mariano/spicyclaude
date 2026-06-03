@@ -163,6 +163,38 @@ Surface any of these that apply. Don't editorialise; just name them.
 
 Only enter this phase after the user has confirmed (or revised) the Phase 2 outline.
 
+### Pick the right ticket type per item
+
+A **Story** is any item with an identifiable consumer — an end user, an API caller, a downstream service, or a future engineer writing against a new contract. If you can write an AC in the shape "When `<consumer>` does `<X>`, they observe `<Y>`", it's a Story. Most items in a technical design breakdown are Stories, because most items introduce or change a contract surface (a gRPC method, a REST endpoint, a webhook route, a Pub/Sub topic schema, a per-tool extension point) and have at least one calling service as the consumer.
+
+A **Task** has no externally observable consumer surface: Terraform infrastructure, internal refactors with identical request/response shape (worker-class flips, framework upgrades), shared internal helpers used only by sibling stories in the same service, build/CI tweaks, pure deletion.
+
+A **Spike** is research with a binary outcome (graduate / pivot / abandon), not deliverable work. Use **Bug** for defects, **Epic** for the epic you're rolling up to.
+
+Defaulting every item to "Task" because it lacks an end-user surface is the wrong reflex — it loses the contract-observation framing that makes the ACs externally verifiable. When unsure, ask: "Can I write an AC starting with 'When `<some consumer>` does X, they observe Y'?" If yes, Story. If no, Task.
+
+### Ticket structure
+
+Use the per-type template from `~/.claude/skills/writing-tickets/` — `task.md`, `story.md`, `spike.md`, `bug.md`, `epic.md`. Each file has the canonical section structure (`# Summary`, `# Acceptance Criteria`, `# Out of Scope`, `# Engineering Notes`), the per-type Refinement Check, and worked examples. Read the file for each type you'll emit before drafting.
+
+Add **on top** of that template a header block above `# Summary` carrying the breakdown-specific fields:
+
+```markdown
+# <NN>. <Ticket title>
+
+**Type:** Task | Story | Spike
+**Epic:** <epic name>
+**Size:** S | M | L  (S ≤ 1 day, M ≈ 1–3 days, L ≈ 3–5 days — anything bigger should have been split)
+**Blocks on:** <ticket numbers that must be *merged* before this can start, or "none">
+**Coordinates with:** <ticket numbers that touch overlapping code or contracts — can be done in parallel but pickers should talk, or "none">
+```
+
+Everything below the header block follows the per-type template as-is. Do not rename, reorder, or invent breakdown-specific variants.
+
+### Run the per-type Refinement Check before declaring Phase 3 done
+
+Each per-type file defines its own check (Story's is the most prescriptive; Task is lighter). Run the matching check per ticket. Don't skip — this is the moment that catches "I shipped 21 engineer-perspective ACs and called them user stories".
+
 ### Where the files go
 
 In Claude Code, default to a `breakdown/` directory at the repo root (create it if missing):
@@ -217,63 +249,16 @@ Critical path: 01 → 04 → 06.
 - Related ADRs, prior epics, etc.
 ```
 
-### Story template
-
-```markdown
-# <NN>. <Story title>
-
-**Epic:** <epic name>
-**Size:** S | M | L  (rough: S ≤ 1 day, M ≈ 1–3 days, L ≈ 3–5 days — anything bigger should have been split)
-**Blocks on:** <story numbers that must be *merged* before this can start, or "none">
-**Coordinates with:** <story numbers that touch overlapping code or contracts — can be done in parallel but pickers should talk, or "none">
-
-## Context
-<2–4 sentences. Why this story exists, what it unlocks. Link to the relevant section of the design doc.>
-
-## Acceptance criteria
-Written so each item is independently testable — this section *is* the test plan. Prefer Given/When/Then when behaviour-oriented; bullet list when structural. If an item can't be turned into a test, it doesn't belong here.
-
-- [ ] <criterion>
-- [ ] <criterion>
-- [ ] <criterion>
-
-## Technical notes
-- <file/module to change, e.g. `services/billing/charge.py`>
-- <library or API to use, with version if it matters>
-- <gotcha worth flagging — e.g., "the existing `retry_with_backoff` helper does not handle 429s; check before reusing">
-
-## Out of scope
-- <thing a reader might assume is part of this story but isn't>
-
-## Definition of done
-Release-process checks only — *what it does* belongs in acceptance criteria, not here. Use whichever apply:
-
-- [ ] Merged to main (behind <flag name> / not behind a flag)
-- [ ] Deployed to <env>
-- [ ] Docs updated (<which docs>)
-- [ ] Metrics / dashboards in place
-- [ ] Migration applied in <env>
-- [ ] Stakeholder notified
-
-## Open questions
-- <anything still unresolved; if none, delete this section>
-```
-
-A few notes on filling the template:
-
-- **"As a <role>, I want <thing>, so that <reason>"** is optional. It's useful for product-facing stories and noise for "rename this internal interface". Use it where it earns its keep.
-- **Technical notes should reference real things in the repo** — file paths, function names, existing patterns. This is where Phase 1 grounding pays off. If you don't have a specific note to make, leave the section out rather than padding it.
-- **Acceptance criteria do the heavy lifting.** If everything else were stripped, good AC would still tell an engineer what to build. Spend the effort here.
-
 ### Final pass before handing back
 
 Once the files are written, do a quick sanity pass:
 
-- Read the AC for each story. Could you write a test for every item? If not, sharpen or flag.
+- **Run the per-type Refinement Check per ticket** (Story's is the most prescriptive; Task is lighter). This is the moment that catches "I shipped 21 engineer-perspective ACs and called them user stories".
+- Read the AC for each ticket. Could you write a test for every item? If not, sharpen or flag.
 - Check `Blocks on` forms a DAG, not a cycle. (`Coordinates with` is symmetric and doesn't need to.)
 - Check the execution plan matches reality: if A blocks on B, A should not appear in an earlier wave than B.
-- Sanity-check the critical path. If it's only one or two stories, most of the work is parallel — good. If it's a long chain with little parallelism, surface that — it may indicate over-coupling worth splitting differently.
-- Check the union of all story scopes covers the epic scope — and that nothing is in two stories at once.
+- Sanity-check the critical path. If it's only one or two tickets, most of the work is parallel — good. If it's a long chain with little parallelism, surface that — it may indicate over-coupling worth splitting differently.
+- Check the union of all ticket scopes covers the epic scope — and that nothing is in two tickets at once.
 - Re-state any concerns from Phase 2 that the user didn't address, so they don't get lost.
 
 Then present the files to the user with a one-line summary of what landed where.

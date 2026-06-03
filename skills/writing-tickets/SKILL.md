@@ -1,11 +1,11 @@
 ---
-name: writing-jira-issues
-description: Creates and updates Jira issues across types (Epic, Spike, Story, Task, Bug). Use when creating, updating, or tracking work in Jira.
+name: writing-tickets
+description: Drafts and refines tickets (Story, Task, Bug, Spike, Epic) with concrete acceptance criteria, observable behaviour, and explicit out-of-scope. Use whenever the work is to write up a piece of work — a story, ticket, issue, AC, "write this up", "turn this into a ticket" — regardless of whether it will be published to Jira, Linear, GitHub Issues, kept as a local markdown file, or pasted into chat. Also handles publishing to Jira via the Atlassian MCP when the user asks; loads tracker-specific guidance only on demand.
 ---
 
-# Jira Issue Creation
+# Ticket Authoring
 
-Pick the issue type that fits the work, then read the sub-file for the template and type-specific guidance before creating.
+Pick the issue type that fits the work, then read the sub-file for the template and type-specific guidance before drafting.
 
 ## Issue Types
 - **Epic** — multi-sprint features, typically born from a PRD. Use on request. See [epic.md](epic.md)
@@ -17,15 +17,11 @@ Pick the issue type that fits the work, then read the sub-file for the template 
 ## Definitions
 - **Acceptance Criteria**: observable behaviour or deliverables. Testable from the outside.
 - **Engineering Notes**: how-to. Libraries, patterns, code pointers, citations.
-- **Issue Links** (blocks / is blocked by / relates to) and **Epic parent** are Jira fields, not body content. Set them via `additional_fields` on `createJiraIssue`; if create drops them, follow up with `editJiraIssue`.
-- Never create subtasks. Use issue links instead.
 
 ## Steps
 - ALWAYS use the template from the matching sub-file
-- If there are any gaps in the details, push back with clarifying questions before creating
-- Create one or more issues to capture the work; split when scope spans types
-- Always attach created Stories, Spikes, Tasks, or Bugs to an Epic unless instructed otherwise
-- If you are unsure which Epic to attach to, ask which Epic
+- If there are any gaps in the details, push back with clarifying questions before drafting
+- Create one or more tickets to capture the work; split when scope spans types
 - Always include reference and resource links in Engineering Notes and Summary where applicable
 - When referencing code or files, link to a canonical repo URL (e.g. a GitHub permalink at the current commit, derived from `git remote` and `git rev-parse HEAD`) rather than a bare path — tickets must stand on their own
 - Do not write large chunks of tests or novels
@@ -38,4 +34,9 @@ Pick the issue type that fits the work, then read the sub-file for the template 
 - Cite sources
 
 ## Output
-- Output any issues created with their keys and links
+
+### Authoring (default)
+Emit the drafted ticket(s) as markdown — one per file in a sensible location the user picks, or inline in chat if that's what they asked for. The ticket should stand on its own: a reader who hasn't been in this conversation can act on it.
+
+### Publishing (on request)
+If the user wants the ticket(s) published to Jira, load [references/publishing-to-jira.md](references/publishing-to-jira.md) for the MCP tool surface, field-handling quirks, and Epic-linking rules. Do not assume publishing — the user must ask.
