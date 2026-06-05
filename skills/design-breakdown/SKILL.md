@@ -177,19 +177,34 @@ Defaulting every item to "Task" because it lacks an end-user surface is the wron
 
 Use the per-type template from `~/.claude/skills/writing-tickets/` — `task.md`, `story.md`, `spike.md`, `bug.md`, `epic.md`. Each file has the canonical section structure (`# Summary`, `# Acceptance Criteria`, `# Out of Scope`, `# Engineering Notes`), the per-type Refinement Check, and worked examples. Read the file for each type you'll emit before drafting.
 
-Add **on top** of that template a header block above `# Summary` carrying the breakdown-specific fields:
+Add **on top** of that template a YAML frontmatter block carrying the breakdown-specific metadata. Then the publishable body — first H1 is the ticket title, no `NN.` prefix (sort-order lives in the filename, not the title):
 
 ```markdown
-# <NN>. <Ticket title>
+---
+breakdown_id: "<NN>"
+type: story            # epic | story | task | spike | bug
+size: M                # S ≤ 1 day, M ≈ 1–3 days, L ≈ 3–5 days — anything bigger should have been split
+blocks_on: ["01"]      # breakdown_ids that must be MERGED before this can start; [] if none
+coordinates_with: ["03", "06"]  # breakdown_ids that touch overlapping code/contracts; [] if none
+---
+# <Ticket title>
 
-**Type:** Task | Story | Spike
-**Epic:** <epic name>
-**Size:** S | M | L  (S ≤ 1 day, M ≈ 1–3 days, L ≈ 3–5 days — anything bigger should have been split)
-**Blocks on:** <ticket numbers that must be *merged* before this can start, or "none">
-**Coordinates with:** <ticket numbers that touch overlapping code or contracts — can be done in parallel but pickers should talk, or "none">
+# Summary
+…
 ```
 
-Everything below the header block follows the per-type template as-is. Do not rename, reorder, or invent breakdown-specific variants.
+Everything below the frontmatter follows the per-type template as-is. Do not rename, reorder, or invent breakdown-specific variants.
+
+**Frontmatter rules:**
+- `breakdown_id` is the leading `NN[a-z]?` from the filename (e.g. `"06b"` for `06b-worker-safety-stack.md`). Quote it — bare `01` parses inconsistently across YAML libraries.
+- `type` is lowercase. Maps directly to issue type at publish time.
+- `size` is breakdown-time sizing only — never published as a Jira field; teams use their own estimation surfaces.
+- `blocks_on` / `coordinates_with` reference other stories by `breakdown_id`. The epic is implicit (every child has the epic as parent) — never list it. Use `[]` for empty, not omission.
+- The first `# H1` after the frontmatter is the publishable summary — write it as you want it to appear in the ticket tracker, no leading number.
+
+**Body rules:**
+- Self-contained. Don't write "see story 06b above" — that reference doesn't resolve in Jira / GitHub Issues / Linear. After the first publish, reference siblings by their tracker key (looked up in `jira-keys.md`) if needed.
+- No prose duplication of frontmatter (e.g. don't restate "this story is blocked by 01" in the body — the frontmatter says so, the publisher will create the link).
 
 ### Run the per-type Refinement Check before declaring Phase 3 done
 
@@ -211,8 +226,13 @@ Number stories in a sensible topological order (`01-`, `02-`, …) so the direct
 
 ### Epic template
 
+The epic file is the only one without a `breakdown_id` (nothing references it — children link via the publisher's `parent` field, not via `blocks_on`).
+
 ```markdown
-# Epic: <name>
+---
+type: epic
+---
+# <Epic name>
 
 ## Goal
 <One paragraph. What outcome does this enable, for whom, and why now?>
@@ -267,4 +287,8 @@ Then present the files to the user with a one-line summary of what landed where.
 
 ## Optional: push to Jira
 
-If the user wants tickets in Jira, see [references/jira-integration.md](references/jira-integration.md) for the detection and push workflow using the official Atlassian CLI (`acli`). Do not attempt this unless the user asks — creating tickets is a side effect that's hard to undo. The check is one command: `command -v acli`.
+If the user wants tickets in Jira, the recommended path is **the MCP batch flow** in writing-tickets: load [`~/.claude/skills/writing-tickets/references/breakdown-batch-publishing.md`](../writing-tickets/references/breakdown-batch-publishing.md). It ingests the frontmatter contract this skill produces, runs the two-pass create-then-link flow, and writes the `jira-keys.md` map.
+
+The older `acli`-based alternative lives at [`references/jira-integration.md`](references/jira-integration.md) — useful when the Atlassian MCP isn't available, but does **not** currently understand the frontmatter format and will publish raw frontmatter into descriptions. Update it before use, or stick to the MCP flow.
+
+Do not push to any tracker unless the user asks — creating tickets is a side effect that's hard to undo.

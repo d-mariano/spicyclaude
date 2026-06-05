@@ -40,3 +40,5 @@ Emit the drafted ticket(s) as markdown — one per file in a sensible location t
 
 ### Publishing (on request)
 If the user wants the ticket(s) published to Jira, load [references/publishing-to-jira.md](references/publishing-to-jira.md) for the MCP tool surface, field-handling quirks, and Epic-linking rules. Do not assume publishing — the user must ask.
+
+For publishing an entire design-breakdown batch (epic + N stories with a dependency graph and frontmatter metadata), load [references/breakdown-batch-publishing.md](references/breakdown-batch-publishing.md) instead — same MCP surface, but with the frontmatter contract, the `jira-keys.md` map convention, and the two-pass create-then-link flow.
