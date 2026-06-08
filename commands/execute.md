@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash, BashOutput, Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch
+allowed-tools: Bash, BashOutput, Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch, Skill
 argument-hint: [plan]
 description: Implement a given plan.
 ---
@@ -12,21 +12,24 @@ Respect Core Philosophy, Development Lifecycle, Implementation, and Validation, 
 
 Refer to official docs and research in `/context/[nnn]-{feature|branch|question}/research-*` as needed.
 
-## Implementation
-Use the python-development skill for Python projects.
-Use the terraform-development skill for Terraform projects.
+## Skill loading protocol
 
-## Testing and Validation
-Use the test-driven-development skill.
+**Before any other work, invoke `Skill(test-driven-development)`.** This is unconditional — the TDD skill self-gates on its documented exclusions (pure config, type-only, rename), so loading it once for the run costs nothing on tasks where it doesn't apply.
+
+**Per parent task, before starting its subtasks:**
+1. Read the parent task's `**Skills:**` metadata field from the plan.
+2. For each skill listed *other than* `test-driven-development` (which is already loaded), invoke `Skill(<name>)`. Typically this is one of `python-development`, `terraform-development`.
+3. **If the `**Skills:**` field is missing from a parent task, stop and report the plan as malformed.** Do not guess or detect project type — the planner is responsible for annotating this field, and a silent skip would hide a planner bug. Per the project's "fail fast and loud" principle, surface it.
 
 ## Steps
-1. Regularly update the task list file after finishing any significant work.
-2. Follow the completion protocol:
+1. Load TDD per the Skill loading protocol above (once per run).
+2. Before starting work on any parent task, check which sub‑task is next AND load that parent's `**Skills:**` per the protocol.
+3. Regularly update the task list file after finishing any significant work.
+4. Follow the completion protocol:
    - Mark each finished **sub‑task** `[x]`.
    - Mark the **parent task** `[x]` once **all** its subtasks are `[x]`.
-3. Add newly discovered tasks.
-4. Keep "Relevant Files" accurate and up to date.
-5. Before starting work, check which sub‑task is next.
+5. Add newly discovered tasks.
+6. Keep "Relevant Files" accurate and up to date.
 
 ## Task List Management
 

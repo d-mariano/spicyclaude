@@ -1,5 +1,5 @@
 ---
-allowed-tools: AskUserQuestion, Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch
+allowed-tools: AskUserQuestion, Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch, Skill, Bash
 argument-hint: [prd] [research]
 description: Prepare a plan that implements the PRD or subcomponent that is informed by recent research.
 ---
@@ -10,6 +10,22 @@ We are going to work on $1.
 Make a detailed plan to accomplish this, based on $2.
 
 Prioritize for rapid iteration and MVP development. Do NOT add scope.
+
+---
+
+## Phase 0 — Load skills
+
+Before pre-flight, load the skills that will shape the plan.
+
+**Available implementation skills** (the catalog the per-task `**Skills:**` field draws from):
+- `test-driven-development` — for any production code
+- `python-development` — for Python projects
+- `terraform-development` — for Terraform projects
+
+**Steps:**
+1. **Always: `Skill(test-driven-development)`.** The plan's Test Impact section and tautology-detection logic depend on it (Phase 2 cites `test-driven-development/testing-principles.md` directly).
+2. **Detect language now and load the matching skill:** `ls pyproject.toml *.tf 2>/dev/null` — if `pyproject.toml` is present, `Skill(python-development)`; if `*.tf` files are present, `Skill(terraform-development)`.
+3. **Annotate every parent task's `**Skills:**` field** with the skills the implementer must load (subset of the catalog above). This is the contract `/execute` reads — a missing field will cause execute to fail loud.
 
 ---
 
@@ -103,11 +119,6 @@ Scan these gotchas; for each that applies, document how the plan addresses it.
 
 ---
 
-## Skills to invoke during implementation
-- `python-development` for Python projects
-- `terraform-development` for Terraform projects
-- `test-driven-development` for any production code
-
 ## DO NOT
 - Do not include plans for legacy fallback unless required or explicitly requested.
 - Fail fast and loud, avoid unnecessary error handling.
@@ -126,7 +137,7 @@ End the plan with `## Tasks` using GitHub-checkbox markdown. Two-level nesting (
 
 Each parent task carries three fields so `execute.md` can load the right context without re-discovering it per task:
 
-- **Skills**: which skills the implementer loads (subset of the ones listed under "Skills to invoke during implementation")
+- **Skills**: which skills the implementer loads (subset of the catalog listed in Phase 0)
 - **Files**: which files this task touches (matches the Files-to-change section)
 - **Depends on**: parent task numbers this one waits for, or "None"
 
