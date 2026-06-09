@@ -50,23 +50,26 @@ Parent task execution keeps the full TDD cycle (RED/GREEN/REFACTOR) in one conte
 
 #### 1. Load Skills (Dynamic)
 
-**Load ONLY the skills specified for this task.**
+**Load skills in two steps:**
 
-You will be told which skills:
-```
-Skills to load, i.e: python-development, terraform-developer, test-driven-development
-```
+**Step 1 — Unconditional, once per `/spice:iterate` or `/spice:implement` run:**
+- `Skill(test-driven-development)` — load the full TDD protocol. TDD self-gates on its documented exclusions (pure config, type-only, rename), so loading it once for the run costs nothing on tasks where it doesn't apply.
 
-For SPICE language skills, read:
-- `spice/languages/typescript` → `~/.claude/skills/spice/languages/typescript.md`
-- `spice/languages/go` → `~/.claude/skills/spice/languages/go.md`
-- `python-development` → load full `python-development` skill protocol
-- `terraform-development` → load full `terraform-development` skill protocol
-- `frontend-development` → load full `frontend-development` skill protocol
+**Step 2 — Per parent task, from the plan's `**Skills:**` metadata:**
 
-For `test-driven-development`, load that skill's full protocol.
+Read the parent task's `**Skills:**` field. For each skill listed *other than* `test-driven-development` (already loaded), invoke the matching skill:
 
-**Do NOT load skills that aren't specified** — keep context focused.
+| Skill name in plan | What to load |
+|--------------------|--------------|
+| `python-development` | full `python-development` skill protocol |
+| `terraform-development` | full `terraform-development` skill protocol |
+| `frontend-development` | full `frontend-development` skill protocol |
+| `spice/languages/typescript` | `~/.claude/skills/spice/languages/typescript.md` |
+| `spice/languages/go` | `~/.claude/skills/spice/languages/go.md` |
+
+**If the `**Skills:**` field is missing from a parent task, stop and report the plan as malformed.** Do not guess or detect project type — the planner's protocol (`phases/plan.md` step 6) makes this field mandatory, and a silent skip would hide a planner bug. Per the project's "fail fast and loud" principle, surface it and ask the user to re-run `/spice:plan` or hand-fix the plan.
+
+**Do NOT load skills not listed in the field** — keep context focused.
 
 #### 2. Load Context
 
@@ -82,17 +85,23 @@ For `test-driven-development`, load that skill's full protocol.
 
 ```
 FOR EACH subtask (or single subtask if specified):
-    
+
     1. Execute RED/GREEN/REFACTOR as appropriate
     2. Mark subtask [x] complete in plan
     3. Continue to next subtask (if parent task)
-    
-AFTER ALL subtasks in parent complete:
-    
-    1. Mark parent task [x] complete
-    2. Run full test suite
-    3. Commit with conventional message
+
+AFTER ALL subtasks in parent complete — execute IN ORDER, do not skip:
+
+    1. Run full test suite (pytest / npm test / go test ./...)
+       → If any test fails, STOP. Fix before proceeding. Do NOT mark parent [x] yet.
+    2. Stage changes: git add <specific files>  (avoid `git add .` per project hygiene)
+    3. Remove any temp files, debug prints, scratch code
+    4. Commit with conventional message — see Commit Protocol below for format
+    5. ONLY AFTER commit succeeds: mark parent task [x] complete in the plan
+    6. Update progress-{nnn}.md
 ```
+
+**The order matters.** Marking the parent `[x]` is the LAST step — it signals "this work is committed and on disk." Marking it before committing breaks the contract `/spice:iterate` relies on to find the next pending task.
 
 Follow strict RED → GREEN → REFACTOR for each subtask. **No exceptions.**
 
@@ -284,24 +293,19 @@ tests/user/test_service.py ...                                    [100%]
 
 ### Commit Protocol
 
-When **all subtasks** of a parent task are complete:
+The commit *sequence* is enforced inline in the "AFTER ALL subtasks in parent complete" block above. This section is the **message format reference**.
+
+**Conventional commit types:** `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`
+
+**Format** — single-line command with multiple `-m` flags so each bullet renders on its own line:
 
 ```bash
-# 1. Run full test suite
-pytest  # or: npm test / go test ./...
-
-# 2. Only if all pass, stage changes
-git add .
-
-# 3. Remove any temp files/debug code
-
-# 4. Commit with conventional message
 git commit -m "feat: {parent task title}" \
   -m "- {subtask 1 summary}" \
   -m "- {subtask 2 summary}"
 ```
 
-Use conventional commits: `feat:`, `fix:`, `refactor:`, `test:`, `docs:`
+**Stage explicit files, not `git add .`** — avoids accidentally committing scratch files, `.env`, or large binaries.
 
 ---
 
@@ -352,9 +356,10 @@ After /clear, resume with:
 - **Fix failures immediately** — Don't proceed with failing tests
 
 #### Skill Discipline
-- **Load ONLY specified skills** — Keep context lean
-- **Follow loaded skills strictly** — They define conventions
-- **Language skill + TDD skill** — Always both for implementation
+- **TDD loads once unconditionally** at the start of the run (Step 1 of "Load Skills (Dynamic)")
+- **Language skills load per parent task** from the plan's `**Skills:**` field — load ONLY what's listed there to keep context lean
+- **Missing `**Skills:**` field = fail loud** — do not silently proceed without language skills
+- **Follow loaded skills strictly** — they define conventions
 
 #### Code Quality
 - Minimal implementation in GREEN phase
@@ -483,11 +488,10 @@ Lost 20 minutes debugging. Had to research transaction handling mid-implementati
 
 ```
 Task: 1.2 GREEN - Implement user creation
-Skills: python-development, test-driven-development
+Skills (from plan): python-development, test-driven-development
 
-Loading skills...
+Loading per-task skills (TDD already loaded at run start)...
 - python-development ✓
-- test-driven-development ✓
 
 Reading task 1.2 from plan...
 

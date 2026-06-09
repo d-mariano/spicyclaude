@@ -14,24 +14,31 @@
 
 ## Code Intelligence
 
-Prefer LSP over Grep/Read for code navigation — it's faster, precise, and avoids reading entire files:
-- `workspaceSymbol` to find where something is defined
-- `findReferences` to see all usages across the codebase
-- `goToDefinition` / `goToImplementation` to jump to source
-- `hover` for type info without reading the file
-
-Use Grep only when LSP isn't available or for text/pattern searches (comments, strings, config).
+Prefer LSP (`workspaceSymbol`, `findReferences`, `goToDefinition`, `hover`) over Grep/Read for code navigation — faster, precise, no full-file reads. Use Grep for text/pattern searches (comments, strings, config) and when LSP isn't available.
 
 After writing or editing code, check LSP diagnostics and fix errors before proceeding.
 
+## Documentation
+
+- README is a map, not a manual — link to deeper docs, don't inline entire guides
+- Cut history: reversed decisions, removed features, and migration notes belong in `git log`, not docs
+- Document what exists now, not what used to exist or what's planned
+- Same rule applies to comments — no "we used to do X" or "previously Y was needed"
+- Don't restate what readable code already says — document the non-obvious: invariants, gotchas, intentional constraints
+
+### CLAUDE.md files
+
+- Purpose: index, light guide, conventions — not a novel, not a textbook, not a file registry
+- Describe only the **top-level structure at the current directory** (depth 0). Subdirectories get their own CLAUDE.md if they need one
+- Don't enumerate every file or describe what code does — readable code speaks for itself
+- Avoid brittle facts that change with normal edits (test counts, function counts, exhaustive lists). If editing code routinely forces a CLAUDE.md update, the CLAUDE.md is wrong
+
 ## Commit Protocol
 
-Use conventional commits:
+Use conventional commits (`feat:`, `fix:`, `refactor:`, etc.):
 
 ```bash
 git commit -m "feat: {description}" \
   -m "- {change 1}" \
   -m "- {change 2}"
 ```
-
-Types: `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`

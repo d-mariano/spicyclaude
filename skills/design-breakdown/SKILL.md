@@ -287,8 +287,11 @@ Then present the files to the user with a one-line summary of what landed where.
 
 ## Optional: push to Jira
 
-If the user wants tickets in Jira, the recommended path is **the MCP batch flow** in writing-tickets: load [`~/.claude/skills/writing-tickets/references/breakdown-batch-publishing.md`](../writing-tickets/references/breakdown-batch-publishing.md). It ingests the frontmatter contract this skill produces, runs the two-pass create-then-link flow, and writes the `jira-keys.md` map.
+If the user wants tickets in Jira, there are two paths — both consume this skill's frontmatter contract and both write the same `jira-keys.md` map:
 
-The older `acli`-based alternative lives at [`references/jira-integration.md`](references/jira-integration.md) — useful when the Atlassian MCP isn't available, but does **not** currently understand the frontmatter format and will publish raw frontmatter into descriptions. Update it before use, or stick to the MCP flow.
+- **MCP batch flow (recommended default)** — [`~/.claude/skills/writing-tickets/references/breakdown-batch-publishing.md`](../writing-tickets/references/breakdown-batch-publishing.md). Use when the Atlassian MCP is authenticated; richer error handling, no shell dependency.
+- **`acli` CLI flow** — [`references/jira-integration.md`](references/jira-integration.md). Use when the MCP isn't available, when the user prefers a scriptable flow, or in environments where MCP isn't reachable but `acli` is.
+
+Both run a two-pass create-then-link cycle: Pass 1 creates the epic + children and captures keys to `jira-keys.md`; Pass 2 applies `Blocks` (from `blocks_on`) and `Relates` (from `coordinates_with`) links using the captured map.
 
 Do not push to any tracker unless the user asks — creating tickets is a side effect that's hard to undo.

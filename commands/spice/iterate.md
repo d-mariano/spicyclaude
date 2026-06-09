@@ -17,10 +17,12 @@ Implements tasks sequentially until context ~45%, then pauses. Load the full pro
 ```
 WHILE pending tasks AND context < 45%:
   1. Find next pending parent task
-  2. Load skills, execute TDD
-  3. Mark complete, commit
+  2. Load per-task skills, execute TDD for each subtask
+  3. After ALL subtasks done: run tests → stage → commit → THEN mark parent [x]
   4. Check context → continue or pause
 ```
+
+Step 3 ordering is load-bearing: marking parent `[x]` before committing means the next iteration loses the work boundary.
 
 After pause: `/clear` then `/spice:iterate $1` to resume.
 
