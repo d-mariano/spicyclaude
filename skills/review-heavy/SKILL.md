@@ -43,7 +43,7 @@ Each prompt must pass the **path to the shared context file** and instruct the r
 
 ## 4. Aggregate
 
-Run `references/verdict-algorithm.md` over the combined findings: collect → **drop confidence < 80** → deduplicate → reasonableness filter (`references/what-not-to-flag.md`) → verdict. Score definitions live in `references/severity-rubric.md`.
+Run `.claude/skills/review-heavy/references/verdict-algorithm.md` over the combined findings: collect → **drop confidence < 80** → deduplicate → reasonableness filter (`.claude/skills/review-heavy/references/what-not-to-flag.md`) → verdict. Score definitions live in `.claude/skills/review-heavy/references/severity-rubric.md`.
 
 ## 5. Print the report
 
