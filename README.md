@@ -35,6 +35,7 @@ These get loaded by `/execute` (and SPICE) on demand:
 
 ## 🔍 Review
 
+- [`/review-heavy`](skills/review-heavy/) — Multi-reviewer pass: fans a PR or branch diff out to four read-only reviewers (mental-alignment, security, code-quality, documentation) in parallel, aggregates behind a confidence gate, and prints one severity-tiered verdict. Never posts, never approves.
 - [`/review:pragmatic-code-review`](commands/review/pragmatic-code-review.md) — Pragmatic review of the current branch; focuses on real issues, not nitpicks.
 - [`/review:my-developer-plan`](commands/review/my-developer-plan.md) — Independent review of a plan before you start executing it.
 

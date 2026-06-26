@@ -175,6 +175,20 @@ These agents validate code quality and design standards.
 
 ---
 
+### Multi-Reviewer Suite (`review-heavy`)
+**Files**: `review/mental-alignment.md`, `review/security.md`, `review/code-quality.md`, `review/documentation.md`
+**Model**: Sonnet (×4, fanned out in parallel)
+**Purpose**: Read-only specialists driven by the [`/review-heavy`](../skills/review-heavy/) skill, which fetches the diff once, runs all four concurrently, and aggregates behind a confidence gate.
+
+- **mental-alignment** — does the diff do what the ticket/PR claims? Catches unimplemented acceptance criteria and scope creep.
+- **security** — concretely exploitable flaws only (injection, authz/authn bypass, secrets); strictest confidence discipline.
+- **code-quality** — over-engineering and unnecessary complexity, per SOLID + KISS.
+- **documentation** — comment rot, over-documentation, stale CLAUDE.md.
+
+Each reviews only the changed code and returns structured findings (or "No concerns identified") — never posts, never approves.
+
+---
+
 ## Infrastructure & Documentation Agents
 
 These agents handle meta-tasks and documentation.

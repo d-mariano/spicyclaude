@@ -45,6 +45,8 @@ Each prompt must pass the **path to the shared context file** and instruct the r
 
 Run `.claude/skills/review-heavy/references/verdict-algorithm.md` over the combined findings: collect → **drop confidence < 80** → deduplicate → reasonableness filter (`.claude/skills/review-heavy/references/what-not-to-flag.md`) → verdict. Score definitions live in `.claude/skills/review-heavy/references/severity-rubric.md`.
 
+> Run the orchestrating session on **Opus** — aggregation (dedup, confidence gating, verdict) is the judgment-heavy step. The four reviewers stay on Sonnet for cheap parallel fan-out.
+
 ## 5. Print the report
 
 Output one consolidated, severity-tiered report to the terminal:
