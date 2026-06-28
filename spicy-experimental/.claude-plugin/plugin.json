@@ -1,0 +1,9 @@
+{
+  "name": "spicy-experimental",
+  "version": "1.0.0",
+  "description": "Phased greenfield/integration design workflows: greenfield-design, feature-integration, and refactor-modifier.",
+  "author": {
+    "name": "dave",
+    "email": "developer.dave@outlook.com"
+  }
+}

@@ -11,9 +11,9 @@ You are executing a multi-phase technical design workflow for adding a feature t
 
 ## Before You Start
 
-Read the example output at `.claude/skills/feature-integration/examples/webhook-delivery.md` to calibrate the expected depth, format, and level of concreteness. Your output should match this quality bar.
+Read the example output at `${CLAUDE_PLUGIN_ROOT}/skills/feature-integration/examples/webhook-delivery.md` to calibrate the expected depth, format, and level of concreteness. Your output should match this quality bar.
 
-If the user's task involves significant restructuring or replacement of existing code, also read `.claude/skills/refactor-modifier/SKILL.md` and apply its additions at each phase (look for "Phase 1 Addition", "Phase 2 Addition", etc.).
+If the user's task involves significant restructuring or replacement of existing code, also read `${CLAUDE_PLUGIN_ROOT}/skills/refactor-modifier/SKILL.md` and apply its additions at each phase (look for "Phase 1 Addition", "Phase 2 Addition", etc.).
 
 ## Critical Rules
 
