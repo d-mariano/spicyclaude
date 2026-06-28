@@ -1,0 +1,10 @@
+{
+  "name": "spicy-review",
+  "version": "1.0.0",
+  "description": "Pragmatic code review and frontend design review of pending changes.",
+  "author": {
+    "name": "dave",
+    "email": "developer.dave@outlook.com"
+  },
+  "dependencies": ["spicy-dev-skills"]
+}

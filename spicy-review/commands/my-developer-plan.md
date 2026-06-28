@@ -1,6 +1,6 @@
 ---
 allowed-tools: Bash, BashOutput, Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch
-argument-hint: [plan]
+argument-hint: "[plan]"
 description: Review a plan.
 ---
 
