@@ -15,29 +15,16 @@ SPICE is built on four core principles:
 
 ## Installation
 
-Copy the `.claude/` directory to your project or home directory:
+Install from the `spicyclaude` marketplace:
 
 ```bash
-# Project-specific
-cp -r .claude/ /path/to/your/project/
-
-# Global installation
-cp -r .claude/ ~/.claude/
+/plugin marketplace add d-mariano/spicyclaude
+/plugin install spice@spicyclaude
 ```
 
 ### Requirements
 
-SPICE requires the **`test-driven-development`** skill:
-
-```
-.claude/skills/
-├── spice/                      # This skill
-└── test-driven-development/    # TDD skill (required)
-    ├── SKILL.md
-    ├── red-green-refactor.md
-    ├── first-principles.md
-    └── ...
-```
+Installing `spice` automatically pulls in its dependency, the **`spicy-dev-skills`** plugin, which provides the required **`test-driven-development`** skill plus the language skills (`python-development`, `terraform-development`, `frontend-development`).
 
 ## Quick Start
 
@@ -153,7 +140,7 @@ skills:
   - spice
 ---
 
-Load and follow: `~/.claude/skills/spice/phases/design.md`
+Load and follow: `${CLAUDE_PLUGIN_ROOT}/skills/spice/phases/design.md`
 ```
 
 ### Minimal Command Pattern
@@ -163,7 +150,7 @@ Commands are orchestration only — spawn agent or reference skill:
 ```yaml
 ---
 allowed-tools: Task, Read, Glob
-argument-hint: [prd-path] [research-path]
+argument-hint: "[prd-path] [research-path]"
 description: SPICE design — create Technical Design Document
 ---
 
@@ -179,7 +166,9 @@ All protocol details live in skills, not in commands or agents.
 ## Directory Structure
 
 ```
-.claude/
+spice/
+├── .claude-plugin/
+│   └── plugin.json           # name, version, dependencies: [spicy-dev-skills]
 ├── skills/spice/
 │   ├── SKILL.md              # Main entry point
 │   ├── phases/               # Full protocols (source of truth)
@@ -195,30 +184,25 @@ All protocol details live in skills, not in commands or agents.
 │       ├── python.md
 │       ├── typescript.md
 │       └── go.md
-│
-├── agents/spice/             # Minimal configs → reference skills
+├── agents/                   # Minimal configs → reference skills (/spice agents)
 │   ├── ideator.md
 │   ├── researcher.md
 │   ├── web-researcher.md
 │   ├── designer.md
 │   ├── planner.md
 │   └── plan-reviewer.md
-│
-├── commands/spice/           # User-facing slash commands
-│   ├── ideate.md
-│   ├── research.md
-│   ├── web-research.md
-│   ├── design.md
-│   ├── plan.md
-│   ├── review-plan.md
-│   ├── implement.md
-│   ├── iterate.md
-│   ├── review.md
-│   ├── status.md
-│   └── workflow.md
-│
-└── hooks/
-    └── spice-post-task.sh    # Optional validation hook
+└── commands/                 # User-facing slash commands (/spice:*)
+    ├── ideate.md
+    ├── research.md
+    ├── web-research.md
+    ├── design.md
+    ├── plan.md
+    ├── review-plan.md
+    ├── implement.md
+    ├── iterate.md
+    ├── review.md
+    ├── status.md
+    └── workflow.md
 ```
 
 ### Component Roles

@@ -1,6 +1,6 @@
 ---
 allowed-tools: Task, Read, Glob, AskUserQuestion
-argument-hint: [input...] (file, folder, or multiple files)
+argument-hint: "[input...] (file, folder, or multiple files)"
 description: SPICE research — analyze inputs, explore codebase, identify gaps
 ---
 

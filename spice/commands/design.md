@@ -1,6 +1,6 @@
 ---
 allowed-tools: Task, Read, Glob, AskUserQuestion
-argument-hint: [prd-path] [research-path]
+argument-hint: "[prd-path] [research-path]"
 description: SPICE design — create Technical Design Document
 ---
 

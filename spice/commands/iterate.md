@@ -1,6 +1,6 @@
 ---
 allowed-tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob
-argument-hint: [context-folder]
+argument-hint: "[context-folder]"
 description: SPICE iterate — implement tasks until context threshold (main context)
 ---
 
@@ -10,7 +10,7 @@ description: SPICE iterate — implement tasks until context threshold (main con
 
 Implements tasks sequentially until context ~45%, then pauses. Load the full protocol:
 
-`~/.claude/skills/spice/phases/execute.md`
+`${CLAUDE_PLUGIN_ROOT}/skills/spice/phases/execute.md`
 
 ## Quick Reference
 

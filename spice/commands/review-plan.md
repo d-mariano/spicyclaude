@@ -1,6 +1,6 @@
 ---
 allowed-tools: Task, Read, Glob, AskUserQuestion
-argument-hint: [context-folder]
+argument-hint: "[context-folder]"
 description: SPICE review-plan — critically review plan for gaps and issues
 ---
 

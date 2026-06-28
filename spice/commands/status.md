@@ -1,6 +1,6 @@
 ---
 allowed-tools: Read, Glob, Grep
-argument-hint: [context-folder]
+argument-hint: "[context-folder]"
 description: SPICE status — show progress and suggest next action
 ---
 

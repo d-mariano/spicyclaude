@@ -1,6 +1,6 @@
 ---
 allowed-tools: Task, Read, Write, Glob, Grep, Edit, MultiEdit, Bash, AskUserQuestion
-argument-hint: [feature-name] [description-or-prd]
+argument-hint: "[feature-name] [description-or-prd]"
 description: SPICE workflow — full pipeline from idea to implementation
 ---
 

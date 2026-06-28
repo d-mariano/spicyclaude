@@ -8,4 +8,4 @@ skills:
   - test-driven-development
 ---
 
-Load and follow: `~/.claude/skills/spice/phases/web-research.md`
+Load and follow: `${CLAUDE_PLUGIN_ROOT}/skills/spice/phases/web-research.md`

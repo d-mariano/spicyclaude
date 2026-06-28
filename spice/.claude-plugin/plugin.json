@@ -1,0 +1,10 @@
+{
+  "name": "spice",
+  "version": "1.0.0",
+  "description": "SPICE — Subagent-Powered Iterative Coding Engine: a multi-phase SDLC workflow using context-efficient subagent patterns.",
+  "author": {
+    "name": "dave",
+    "email": "developer.dave@outlook.com"
+  },
+  "dependencies": ["spicy-dev-skills"]
+}

@@ -7,4 +7,4 @@ skills:
   - spice
 ---
 
-Load and follow: `~/.claude/skills/spice/phases/design.md`
+Load and follow: `${CLAUDE_PLUGIN_ROOT}/skills/spice/phases/design.md`

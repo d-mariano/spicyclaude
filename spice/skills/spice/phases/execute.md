@@ -64,8 +64,8 @@ Read the parent task's `**Skills:**` field. For each skill listed *other than* `
 | `python-development` | full `python-development` skill protocol |
 | `terraform-development` | full `terraform-development` skill protocol |
 | `frontend-development` | full `frontend-development` skill protocol |
-| `spice/languages/typescript` | `~/.claude/skills/spice/languages/typescript.md` |
-| `spice/languages/go` | `~/.claude/skills/spice/languages/go.md` |
+| `spice/languages/typescript` | `${CLAUDE_PLUGIN_ROOT}/skills/spice/languages/typescript.md` |
+| `spice/languages/go` | `${CLAUDE_PLUGIN_ROOT}/skills/spice/languages/go.md` |
 
 **If the `**Skills:**` field is missing from a parent task, stop and report the plan as malformed.** Do not guess or detect project type — the planner's protocol (`phases/plan.md` step 6) makes this field mandatory, and a silent skip would hide a planner bug. Per the project's "fail fast and loud" principle, surface it and ask the user to re-run `/spice:plan` or hand-fix the plan.
 

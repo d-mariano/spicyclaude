@@ -1,6 +1,6 @@
 ---
 allowed-tools: Task, Read, Glob, AskUserQuestion
-argument-hint: [prd-path] [tdd-or-research-path]
+argument-hint: "[prd-path] [tdd-or-research-path]"
 description: SPICE plan — create TDD task breakdown
 ---
 

@@ -1,6 +1,6 @@
 ---
 allowed-tools: Task, Read, Glob, AskUserQuestion
-argument-hint: [folder] [optional-topic]
+argument-hint: "[folder] [optional-topic]"
 description: SPICE web-research — fill research gaps with targeted web searches
 ---
 

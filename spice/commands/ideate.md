@@ -1,6 +1,6 @@
 ---
 allowed-tools: Task, Read, Write, Glob, AskUserQuestion
-argument-hint: [idea-or-topic]
+argument-hint: "[idea-or-topic]"
 description: SPICE ideate — generate PRD from an idea
 ---
 

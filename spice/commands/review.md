@@ -1,6 +1,6 @@
 ---
 allowed-tools: Read, Glob, Grep, Bash, Write
-argument-hint: [context-folder]
+argument-hint: "[context-folder]"
 description: SPICE review — comprehensive implementation review before completion
 ---
 
@@ -25,7 +25,7 @@ Comprehensive review of completed implementation. Run this when you think implem
 
 1. Load the review protocol:
    ```
-   Read: ~/.claude/skills/spice/phases/review.md
+   Read: ${CLAUDE_PLUGIN_ROOT}/skills/spice/phases/review.md
    ```
 
 2. Load context files:
