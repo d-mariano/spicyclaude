@@ -1,5 +1,5 @@
 ---
-argument-hint: <path to design doc> <description of change>
+argument-hint: "<path to design doc> <description of change>"
 description: Revise an existing design document — targeted update, re-review affected sections
 ---
 
@@ -26,7 +26,7 @@ Follow this process:
 
 5. **Check downstream impact.** If a `plan.md` exists in the same directory:
    - List which plan tasks are affected by the design change
-   - Tell the user: *"The plan at {path} has tasks affected by this change: {list}. Run `/plan {design path}` to regenerate, or manually update the affected tasks."*
+   - Tell the user: *"The plan at {path} has tasks affected by this change: {list}. Run `/spicy-dev-workflow:planner {design path}` to regenerate, or manually update the affected tasks."*
 
 6. **Re-run the reviewer** on the updated design using the Task tool, delegating to the `design-reviewer` agent. Include the original task description and the amendment description in the review prompt.
 

@@ -175,7 +175,7 @@ Defaulting every item to "Task" because it lacks an end-user surface is the wron
 
 ### Ticket structure
 
-Use the per-type template from `~/.claude/skills/writing-tickets/` — `task.md`, `story.md`, `spike.md`, `bug.md`, `epic.md`. Each file has the canonical section structure (`# Summary`, `# Acceptance Criteria`, `# Out of Scope`, `# Engineering Notes`), the per-type Refinement Check, and worked examples. Read the file for each type you'll emit before drafting.
+Use the per-type template from `${CLAUDE_PLUGIN_ROOT}/skills/writing-tickets/` — `task.md`, `story.md`, `spike.md`, `bug.md`, `epic.md`. Each file has the canonical section structure (`# Summary`, `# Acceptance Criteria`, `# Out of Scope`, `# Engineering Notes`), the per-type Refinement Check, and worked examples. Read the file for each type you'll emit before drafting.
 
 Add **on top** of that template a YAML frontmatter block carrying the breakdown-specific metadata. Then the publishable body — first H1 is the ticket title, no `NN.` prefix (sort-order lives in the filename, not the title):
 
@@ -289,7 +289,7 @@ Then present the files to the user with a one-line summary of what landed where.
 
 If the user wants tickets in Jira, there are two paths — both consume this skill's frontmatter contract and both write the same `jira-keys.md` map:
 
-- **MCP batch flow (recommended default)** — [`~/.claude/skills/writing-tickets/references/breakdown-batch-publishing.md`](../writing-tickets/references/breakdown-batch-publishing.md). Use when the Atlassian MCP is authenticated; richer error handling, no shell dependency.
+- **MCP batch flow (recommended default)** — [`${CLAUDE_PLUGIN_ROOT}/skills/writing-tickets/references/breakdown-batch-publishing.md`](../writing-tickets/references/breakdown-batch-publishing.md). Use when the Atlassian MCP is authenticated; richer error handling, no shell dependency.
 - **`acli` CLI flow** — [`references/jira-integration.md`](references/jira-integration.md). Use when the MCP isn't available, when the user prefers a scriptable flow, or in environments where MCP isn't reachable but `acli` is.
 
 Both run a two-pass create-then-link cycle: Pass 1 creates the epic + children and captures keys to `jira-keys.md`; Pass 2 applies `Blocks` (from `blocks_on`) and `Relates` (from `coordinates_with`) links using the captured map.

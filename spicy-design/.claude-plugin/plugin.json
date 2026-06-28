@@ -1,0 +1,9 @@
+{
+  "name": "spicy-design",
+  "version": "1.0.0",
+  "description": "Design docs, feasibility studies, and ticket breakdown (design-doc, feasibility, design-breakdown + writing-tickets).",
+  "author": {
+    "name": "dave",
+    "email": "developer.dave@outlook.com"
+  }
+}
