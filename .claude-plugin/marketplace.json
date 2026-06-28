@@ -1,0 +1,45 @@
+{
+  "name": "spicyclaude",
+  "owner": {
+    "name": "dave",
+    "email": "developer.dave@outlook.com"
+  },
+  "description": "Structured, iterative AI-assisted development workflows for Claude Code — SPICE, design, planning, review, and craft skills.",
+  "plugins": [
+    {
+      "name": "spice",
+      "source": "./spice",
+      "description": "SPICE — Subagent-Powered Iterative Coding Engine: multi-phase SDLC workflow with context-efficient subagents."
+    },
+    {
+      "name": "spicy-dev-skills",
+      "source": "./spicy-dev-skills",
+      "description": "Language and TDD craft skills: python, terraform, frontend, test-driven development. Shared dependency."
+    },
+    {
+      "name": "spicy-dev-workflow",
+      "source": "./spicy-dev-workflow",
+      "description": "Single-context research → plan → execute workflow with implementation-planner and plan review."
+    },
+    {
+      "name": "spicy-design",
+      "source": "./spicy-design",
+      "description": "Design docs, feasibility studies, and ticket breakdown (design-doc, feasibility, design-breakdown + writing-tickets)."
+    },
+    {
+      "name": "spicy-experimental",
+      "source": "./spicy-experimental",
+      "description": "Phased greenfield/integration design workflows (greenfield-design, feature-integration, refactor-modifier)."
+    },
+    {
+      "name": "spicy-review",
+      "source": "./spicy-review",
+      "description": "Pragmatic code review and frontend design review of pending changes."
+    },
+    {
+      "name": "spicy-docs",
+      "source": "./spicy-docs",
+      "description": "Generate and maintain CLAUDE.md documentation via the claude-crawler agent."
+    }
+  ]
+}
