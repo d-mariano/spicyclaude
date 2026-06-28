@@ -1,0 +1,9 @@
+{
+  "name": "spicy-dev-skills",
+  "version": "1.0.0",
+  "description": "Language and TDD craft skills: python, terraform, frontend, and test-driven development.",
+  "author": {
+    "name": "dave",
+    "email": "developer.dave@outlook.com"
+  }
+}
