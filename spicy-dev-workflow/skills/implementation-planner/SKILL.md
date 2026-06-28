@@ -1,6 +1,6 @@
 ---
 name: implementation-planner
-description: "Converts a technical design document into a phased, executable implementation plan with coverage analysis. Reads design docs cold, preserves phase structure, produces tasks sized for a single context window. Use after /design or /design-greenfield or /design-integrate has produced a design document."
+description: "Converts a technical design document into a phased, executable implementation plan with coverage analysis. Reads design docs cold, preserves phase structure, produces tasks sized for a single context window. Use after /spicy-experimental:design, /spicy-experimental:design-greenfield, or /spicy-experimental:design-integrate has produced a design document."
 disable-model-invocation: true
 ---
 
@@ -10,7 +10,7 @@ You are converting a finished technical design document into an executable imple
 
 ## Before You Start
 
-If this is your first plan in this session or you're uncertain about depth/format, read the abbreviated example at `.claude/skills/implementation-planner/examples/notification-system-plan.md` to calibrate. Otherwise, proceed directly — the section instructions below are sufficient.
+If this is your first plan in this session or you're uncertain about depth/format, read the abbreviated example at `${CLAUDE_PLUGIN_ROOT}/skills/implementation-planner/examples/notification-system-plan.md` to calibrate. Otherwise, proceed directly — the section instructions below are sufficient.
 
 ## Critical Rules
 
@@ -245,7 +245,7 @@ Execute phases in order. Within each phase, execute tasks in order (dependencies
 
 **With an iterate command:**
 ```
-/iterate docs/design/<task-slug>/plan.md
+/spicy-dev-workflow:execute docs/design/<task-slug>/plan.md
 ```
 
 **Manually:**

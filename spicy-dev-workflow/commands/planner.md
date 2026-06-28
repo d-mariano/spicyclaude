@@ -1,6 +1,6 @@
 ---
 allowed-tools: AskUserQuestion, Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch, Skill, Bash
-argument-hint: [prd] [research]
+argument-hint: "[prd] [research]"
 description: Prepare a plan that implements the PRD or subcomponent that is informed by recent research.
 ---
 You are a world class software engineer.
@@ -25,7 +25,7 @@ Before pre-flight, load the skills that will shape the plan.
 **Steps:**
 1. **Always: `Skill(test-driven-development)`.** The plan's Test Impact section and tautology-detection logic depend on it (Phase 2 cites `test-driven-development/testing-principles.md` directly).
 2. **Detect language now and load the matching skill:** `ls pyproject.toml *.tf 2>/dev/null` — if `pyproject.toml` is present, `Skill(python-development)`; if `*.tf` files are present, `Skill(terraform-development)`.
-3. **Annotate every parent task's `**Skills:**` field** with the skills the implementer must load (subset of the catalog above). This is the contract `/execute` reads — a missing field will cause execute to fail loud.
+3. **Annotate every parent task's `**Skills:**` field** with the skills the implementer must load (subset of the catalog above). This is the contract `/spicy-dev-workflow:execute` reads — a missing field will cause execute to fail loud.
 
 ---
 
@@ -43,7 +43,7 @@ Keep these findings as a top-level "Pre-flight findings" section in the final pl
 
 ### Surfacing open questions before drafting
 
-PRD/AC ambiguity, scope boundaries, and contradictory-source forks belong **upstream in research** — by the time the user reaches the planner, those should already be resolved. If you find unresolved upstream ambiguity here, that's a research-phase gap; flag it as such rather than re-litigating it now ("Recommend re-running `/research` to resolve: <list>; or commit to working assumptions and proceed").
+PRD/AC ambiguity, scope boundaries, and contradictory-source forks belong **upstream in research** — by the time the user reaches the planner, those should already be resolved. If you find unresolved upstream ambiguity here, that's a research-phase gap; flag it as such rather than re-litigating it now ("Recommend re-running `/spicy-dev-workflow:research` to resolve: <list>; or commit to working assumptions and proceed").
 
 After pre-flight is complete and before drafting Phase 2, surface every fork that **the pre-flight itself uncovered** in a **single batched `AskUserQuestion` call** (up to 4 questions per call; chain calls only if more remain). These are code-grounded discoveries the user couldn't have answered upstream because no one had read the code yet. Trigger on:
 
@@ -115,7 +115,7 @@ Scan these gotchas; for each that applies, document how the plan addresses it.
 ## Phase 4 — Self-review + handoff
 
 1. **Read it cold.** As if you'd never seen the task. Find at least 3 issues a senior reviewer would catch — fix them or document why they're acceptable. Common hits: weak tests (paranoia rather than behavior), vacuous test assertions (patches that no longer take effect, mocks that aren't checked, asserts on tautologies), magic strings, fragile fixture ordering, missing edge cases, scope creep, vague test names, RGR opt-outs that don't actually qualify as config/type/rename, parent tasks missing Skills/Files/Depends-on metadata, AC gaps that weren't surfaced via Coverage Gap Handling.
-2. **Recommend `/review:my-developer-plan` or the `plan-reviewer` agent** at the end of your response. Independent eyes catch coupling and assumption errors that author-review misses.
+2. **Recommend `/spicy-review:my-developer-plan` or the `plan-reviewer` agent** at the end of your response. Independent eyes catch coupling and assumption errors that author-review misses.
 
 ---
 

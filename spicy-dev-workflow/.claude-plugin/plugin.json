@@ -1,0 +1,10 @@
+{
+  "name": "spicy-dev-workflow",
+  "version": "1.0.0",
+  "description": "Single-context research → plan → execute workflow, with implementation-planner skill and plan review.",
+  "author": {
+    "name": "dave",
+    "email": "developer.dave@outlook.com"
+  },
+  "dependencies": ["spicy-dev-skills"]
+}

@@ -1,6 +1,6 @@
 ---
 allowed-tools: AskUserQuestion, Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch, mcp__atlassian__getJiraIssue
-argument-hint: [topic]
+argument-hint: "[topic]"
 description: Research a PRD, ticket, or topic by reading related code and the web before any implementation. Use when the user says 'research X', shares a PRD/Jira link, or asks to scope a feature.
 ---
 
