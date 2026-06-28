@@ -1,0 +1,9 @@
+{
+  "name": "spicy-docs",
+  "version": "1.0.0",
+  "description": "Generate and maintain CLAUDE.md documentation across a codebase via the claude-crawler agent.",
+  "author": {
+    "name": "dave",
+    "email": "developer.dave@outlook.com"
+  }
+}
