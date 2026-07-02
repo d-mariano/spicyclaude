@@ -212,7 +212,7 @@ Execute phases in order. Within each phase, execute tasks in order.
 # At phase checkpoint: /clear and resume with this file
 
 # Or with an iterate command:
-/spicy-dev-workflow:execute docs/design/notification-system/plan.md
+/spicy-workflow:execute docs/design/notification-system/plan.md
 ```
 
 ### Verification Commands

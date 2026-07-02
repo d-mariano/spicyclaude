@@ -1,7 +1,7 @@
 ---
 allowed-tools: AskUserQuestion, Glob, Grep, Read, Edit, TodoWrite, Write, WebFetch, WebSearch
 argument-hint: "[topic]"
-description: Explore code and the web to build context on a PRD or topic for in-conversation discussion — no file output. Use when the user wants to quickly scope or discuss something without persisting a research doc (use /spicy-dev-workflow:research for that).
+description: Explore code and the web to build context on a PRD or topic for in-conversation discussion — no file output. Use when the user wants to quickly scope or discuss something without persisting a research doc (use /spicy-workflow:research for that).
 ---
 
 Do not write any code right now. We are going to discuss working on $ARGUMENTS.

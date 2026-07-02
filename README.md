@@ -19,21 +19,21 @@ Install any subset of the plugins below. Installing a plugin pulls in its depend
 
 | Plugin | Namespace | Provides | Depends on |
 |--------|-----------|----------|------------|
-| **spice** | `/spice:*` | SPICE — Subagent-Powered Iterative Coding Engine: multi-phase SDLC (ideate → research → design → plan → implement → review) with context-efficient subagents | `spicy-dev-skills` |
-| **spicy-dev-workflow** | `/spicy-dev-workflow:*` | Single-context research → plan → execute workflow, with the `implementation-planner` skill and plan review | `spicy-dev-skills` |
+| **spice** | `/spice:*` | SPICE — Subagent-Powered Iterative Coding Engine: multi-phase SDLC (ideate → research → design → plan → implement → review) with context-efficient subagents | `spicy-skills` |
+| **spicy-workflow** | `/spicy-workflow:*` | Single-context research → plan → execute workflow, with the `implementation-planner` skill and plan review | `spicy-skills` |
 | **spicy-design** | `/spicy-design:*` | Design docs, feasibility studies, and ticket breakdown (`design-doc`, `feasibility-study`, `design-breakdown` + `writing-tickets`), plus the `design-reviewer` agent | — |
 | **spicy-experimental** | `/spicy-experimental:*` | Phased greenfield/integration design workflows (`greenfield-design`, `feature-integration`, `refactor-modifier`) | — |
-| **spicy-review** | `/spicy-review:*` | Pragmatic code review and frontend design review of pending changes | `spicy-dev-skills` |
-| **spicy-dev-skills** | `/spicy-dev-skills:*` | Language and TDD craft skills: `python-development`, `terraform-development`, `frontend-development`, `test-driven-development`. The shared dependency. | — |
+| **spicy-review** | `/spicy-review:*` | Pragmatic code review and frontend design review of pending changes | `spicy-skills` |
+| **spicy-skills** | `/spicy-skills:*` | Language and TDD craft skills: `python-development`, `terraform-development`, `frontend-development`, `test-driven-development`. The shared dependency. | — |
 | **spicy-docs** | `/spicy-docs:*` | Generate and maintain `CLAUDE.md` files across a codebase via the `claude-crawler` agent | — |
 
 ### Dependency graph
 
 ```
-spicy-dev-skills  (leaf)
+spicy-skills  (leaf)
    ▲   ▲   ▲
    │   │   └──── spicy-review        (frontend-development)
-   │   └──────── spicy-dev-workflow  (test-driven-development, python-development, …)
+   │   └──────── spicy-workflow  (test-driven-development, python-development, …)
    └──────────── spice               (TDD + language skills, by name)
 
 spicy-design        (self-contained)
@@ -41,7 +41,7 @@ spicy-experimental  (self-contained)
 spicy-docs          (self-contained)
 ```
 
-> **Namespacing.** Plugin commands are namespaced by plugin name — e.g. `/spicy-dev-workflow:research`, `/spicy-design:design-update`, `/spice:plan`. This prevents collisions across plugins.
+> **Namespacing.** Plugin commands are namespaced by plugin name — e.g. `/spicy-workflow:research`, `/spicy-design:design-update`, `/spice:plan`. This prevents collisions across plugins.
 
 ## 💎 Core Philosophy: CLAUDE.md
 
@@ -62,7 +62,7 @@ The repo also includes a custom statusline script ([`statusline.sh`](statusline.
 Test a plugin without installing:
 
 ```bash
-claude --plugin-dir ./spice --plugin-dir ./spicy-dev-skills
+claude --plugin-dir ./spice --plugin-dir ./spicy-skills
 ```
 
 Validate the marketplace and individual plugins:

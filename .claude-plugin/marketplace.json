@@ -12,13 +12,13 @@
       "description": "SPICE — Subagent-Powered Iterative Coding Engine: multi-phase SDLC workflow with context-efficient subagents."
     },
     {
-      "name": "spicy-dev-skills",
-      "source": "./spicy-dev-skills",
+      "name": "spicy-skills",
+      "source": "./spicy-skills",
       "description": "Language and TDD craft skills: python, terraform, frontend, test-driven development. Shared dependency."
     },
     {
-      "name": "spicy-dev-workflow",
-      "source": "./spicy-dev-workflow",
+      "name": "spicy-workflow",
+      "source": "./spicy-workflow",
       "description": "Single-context research → plan → execute workflow with implementation-planner and plan review."
     },
     {

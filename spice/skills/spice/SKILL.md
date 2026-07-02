@@ -207,7 +207,7 @@ Language-specific conventions loaded during implementation:
 
 ### External Skills
 
-SPICE integrates with skills from the `spicy-dev-skills` plugin (declared as a dependency):
+SPICE integrates with skills from the `spicy-skills` plugin (declared as a dependency):
 - **`test-driven-development`** — TDD cycle, test structure, anti-patterns (required)
 - **`python-development`** — Python patterns, types, testing
 - **`terraform-development`** - Terraform best practices and validation instructions

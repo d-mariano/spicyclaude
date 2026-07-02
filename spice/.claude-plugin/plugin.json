@@ -6,5 +6,5 @@
     "name": "dave",
     "email": "developer.dave@outlook.com"
   },
-  "dependencies": ["spicy-dev-skills"]
+  "dependencies": ["spicy-skills"]
 }

@@ -24,7 +24,7 @@ Install from the `spicyclaude` marketplace:
 
 ### Requirements
 
-Installing `spice` automatically pulls in its dependency, the **`spicy-dev-skills`** plugin, which provides the required **`test-driven-development`** skill plus the language skills (`python-development`, `terraform-development`, `frontend-development`).
+Installing `spice` automatically pulls in its dependency, the **`spicy-skills`** plugin, which provides the required **`test-driven-development`** skill plus the language skills (`python-development`, `terraform-development`, `frontend-development`).
 
 ## Quick Start
 
@@ -168,7 +168,7 @@ All protocol details live in skills, not in commands or agents.
 ```
 spice/
 ├── .claude-plugin/
-│   └── plugin.json           # name, version, dependencies: [spicy-dev-skills]
+│   └── plugin.json           # name, version, dependencies: [spicy-skills]
 ├── skills/spice/
 │   ├── SKILL.md              # Main entry point
 │   ├── phases/               # Full protocols (source of truth)

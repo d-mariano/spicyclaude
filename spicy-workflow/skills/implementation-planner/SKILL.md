@@ -245,7 +245,7 @@ Execute phases in order. Within each phase, execute tasks in order (dependencies
 
 **With an iterate command:**
 ```
-/spicy-dev-workflow:execute docs/design/<task-slug>/plan.md
+/spicy-workflow:execute docs/design/<task-slug>/plan.md
 ```
 
 **Manually:**
