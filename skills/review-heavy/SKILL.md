@@ -7,7 +7,7 @@ allowed-tools: Bash(gh pr view *), Bash(gh pr diff *), Bash(gh repo view *), Bas
 model: opus
 ---
 
-# Heavy Code Review (orchestrator)
+# Multi-Agent Code Review (orchestrator)
 
 You orchestrate a risk-tiered, multi-reviewer code review. You fetch context **once**, pick a
 reviewer set by risk, fan out **in parallel**, verify the findings, aggregate, and print one

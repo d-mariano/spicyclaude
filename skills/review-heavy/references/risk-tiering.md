@@ -30,5 +30,5 @@ gives risky changes full coverage. Thresholds below are sensible defaults — tu
 
 ## Output
 
-State the computed tier and the chosen reviewer set at the top of the run (and in the report
-`## Notes`), e.g. `Risk tier: High (touches src/auth/, package.json changed) → 9 reviewers`.
+State the computed tier and the chosen reviewer set at the top of the run, e.g.
+`Risk tier: High (touches src/auth/, package.json changed) → 9 reviewers`.

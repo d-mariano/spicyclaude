@@ -38,8 +38,8 @@ Rules:
   carries it lowercase. Confidence is the **bare number** — no "conf" label.
 - **Bolded minimal title** on the next line (use the finding's `title` from the
   [rubric shape](severity-rubric.md); derive one if a reviewer omitted it).
-- Summary-body bullets compress the same elements to one line:
-  `- [<confidence>] path:line — **<Title>.** Fix: <change>`.
+- Summary-body bullets use the rendering format from [severity-rubric.md](severity-rubric.md):
+  `- [NN] path:line — **Title.** problem. Fix: …`.
 
 ## Mechanism (gh)
 
@@ -50,7 +50,7 @@ Use `gh` — the same tooling the orchestrator already uses to fetch PR context 
    ```json
    {
      "event": "COMMENT",
-     "body": "<summary: verdict + tiered counts + notes + any findings that could not be anchored inline>",
+     "body": "<title + verdict + one-line takeaway + any findings that could not be anchored inline>",
      "comments": [
        { "path": "src/auth.ts", "line": 42, "side": "RIGHT",
          "body": "`High` · `Security` · `88`\n**SQL built by string concatenation**\n\nUser input reaches the query string unparameterized at line 42.\n\n**Fix:** use a parameterized query." }
@@ -71,9 +71,15 @@ Use `gh` — the same tooling the orchestrator already uses to fetch PR context 
 
 ## Summary body
 
-The review `body` carries the verdict header, the per-severity counts, the `## Notes` (Jira status,
-risk tier + reviewer set, counts dropped by the gate and by verification), and any findings that
-couldn't be anchored inline — so nothing verified is lost.
+Keep the review `body` to the point — the inline comments already carry the findings. It contains
+exactly:
+
+1. `# Multi-Agent Code Review — <scope>   ·   Verdict: <verdict>`
+2. A one-sentence takeaway.
+3. Any verified findings that couldn't be anchored inline, in the rendering format — so nothing
+   verified is lost.
+
+No per-severity counts, no notes, no restating what the inline comments already say.
 
 After posting, also print the same report to the terminal and tell the user what was posted (review
 URL, event type, inline vs. summary counts).

@@ -62,25 +62,22 @@ approver.
 ## Report shape
 
 ```
-# Code Review — <scope>   ·   Verdict: <verdict>
+# Multi-Agent Code Review — <scope>   ·   Verdict: <verdict>
 
 ## Critical
-- [NN] path:line — **Title.** problem. Fix: …
+<findings in the rubric's rendering format>
 
 ## High
-- [NN] path:line — **Title.** problem. Fix: …
+…
 
 ## Medium
-- [NN] path:line — **Title.** problem. Fix: …
+…
 
 ## Low
-- [NN] path:line — **Title.** problem. Fix: …
+…
 
-## Notes
-- Risk tier: <Low|Medium|High> (<why>) → <reviewer set>
-- Jira ticket: <key> (or "no ticket found — compared against PR description only")
-- <N> findings dropped below the confidence gate; <M> dropped/adjusted by verification
-- Posting: <printed only | posted review <url> as COMMENT/REQUEST_CHANGES>
+<one-line takeaway>
 ```
 
-Omit any severity section that has no confirmed findings.
+Each finding uses the rendering format from [severity-rubric.md](severity-rubric.md). Omit any
+severity section that has no confirmed findings.

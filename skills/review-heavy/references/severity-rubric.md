@@ -47,4 +47,15 @@ a missed nitpick is cheaper than a false alarm that erodes trust in the review.
   fix:        a specific, actionable change (not "consider improving")
 ```
 
+## Rendering (report line)
+
+Every report line — light's summary, heavy's terminal report, posted summary bullets — uses one
+format:
+
+```
+- [NN] path:line — **Title.** problem. Fix: …
+```
+
+`NN` is the bare confidence number.
+
 If you have nothing at or above the gate, say exactly: **"No concerns identified."**

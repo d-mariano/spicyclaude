@@ -28,7 +28,6 @@ be real. Precision beats recall here.
 - **DROP** → remove the finding entirely.
 
 Only the **confirmed (and re-gated)** set proceeds to the verdict and, if requested, to posting.
-Record how many findings verification dropped or adjusted in the report `## Notes`.
 
 ## Guardrail
 
