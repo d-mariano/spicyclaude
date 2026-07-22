@@ -24,7 +24,7 @@ There is no built-in runner. Two ways to use these:
 
 | File | Tests | Primary failure mode it catches |
 |---|---|---|
-| `01-happy-path.json` | Phase 1 → 2 → 3 workflow with a clean, well-written design doc | Skipping the hard gate between Phase 2 and Phase 3 |
+| `01-happy-path.json` | Phase 1 → 2 → 3 workflow with a clean, well-written design doc, plus reference hygiene in Phase 3 output | Skipping the hard gate between Phase 2 and Phase 3 |
 | `02-problem-statement.json` | Early-exit when the "design" is actually goals without a solution | Producing a fake breakdown of goals as if they were stories |
 | `03-ambiguous-doc.json` | Pushback when the doc contradicts itself or references phantom systems | Papering over ambiguity to produce a clean-looking output |
 

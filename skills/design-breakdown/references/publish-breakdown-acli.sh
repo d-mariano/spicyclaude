@@ -10,8 +10,12 @@
 #   ASSIGNEE     Passed to --assignee on every create (default: unset).
 #
 # Behavior:
+#   Lint   — fail on relative markdown links that die in Jira (the epic's ./NN-*.md story
+#            links are exempt; Pass 3 rewrites them).
 #   Pass 1 — create epic (or reuse [epic-key]), then create each child, append to jira-keys.md.
 #   Pass 2 — read jira-keys.md, apply Blocks (from blocks_on) and Relates (from coordinates_with) links.
+#   Pass 3 — rewrite the epic's ./NN-*.md story links to browse URLs. Requires SITE; skipped
+#            for reused epics (never overwrites a description this run didn't create).
 #
 # Failure: stops loud on any acli error. jira-keys.md is the resume marker — re-running
 # this script on a partial batch will recreate already-created tickets (no idempotency).
@@ -101,6 +105,29 @@ mapfile -t CHILD_FILES < <(find "$BREAKDOWN_DIR" -maxdepth 1 -regex '.*/[0-9]+[a
 [ "${#EPIC_FILES[@]}" -eq 1 ] || { echo "ERROR: expected exactly one epic-*.md, found ${#EPIC_FILES[@]}" >&2; exit 1; }
 EPIC_FILE="${EPIC_FILES[0]}"
 
+# --- Lint: relative links die in Jira ------------------------------------------
+
+LINT_FAIL=0
+lint_file() {
+  local file="$1" exempt_story_links="${2:-}"
+  local hits
+  hits="$(grep -nE '\]\((\./|\.\./)' "$file" || true)"
+  if [ -n "$exempt_story_links" ] && [ -n "$hits" ]; then
+    hits="$(printf '%s\n' "$hits" | grep -vE '\]\(\./[0-9]+[a-z]?-[^)]*\.md\)' || true)"
+  fi
+  if [ -n "$hits" ]; then
+    printf 'LINT %s\n%s\n' "$file" "$hits" >&2
+    LINT_FAIL=1
+  fi
+}
+
+lint_file "$EPIC_FILE" exempt
+for FILE in "${CHILD_FILES[@]}"; do lint_file "$FILE"; done
+[ "$LINT_FAIL" -eq 0 ] || {
+  echo "ERROR: relative links above won't resolve in Jira. Permalink them (see writing-tickets/references/code-references.md)." >&2
+  exit 1
+}
+
 # Initialise keymap if absent.
 if [ ! -f "$KEYMAP" ]; then
   cat > "$KEYMAP" <<EOF
@@ -111,6 +138,7 @@ if [ ! -f "$KEYMAP" ]; then
 EOF
 fi
 
+REUSED_EPIC=""
 if [ -z "$EPIC_KEY" ]; then
   echo "Creating epic from $(basename "$EPIC_FILE")..."
   EPIC_KEY="$(create_issue "$EPIC_FILE" "")"
@@ -118,6 +146,7 @@ if [ -z "$EPIC_KEY" ]; then
   echo "  → $EPIC_KEY"
 else
   echo "Reusing existing epic $EPIC_KEY"
+  REUSED_EPIC=1
 fi
 
 for FILE in "${CHILD_FILES[@]}"; do
@@ -166,9 +195,34 @@ for FILE in "${CHILD_FILES[@]}"; do
   done < <(yq '.coordinates_with[]' "$FILE" 2>/dev/null || true)
 done
 
+# --- Pass 3: rewrite epic's relative story links to browse URLs -----------------
+# Only for epics this run created — never overwrite a description we didn't write.
+
+EPIC_REWRITTEN=""
+if [ -n "$SITE" ] && [ -z "$REUSED_EPIC" ]; then
+  extract_body "$EPIC_FILE" >/dev/null
+  if grep -qE '\]\(\./[0-9]+[a-z]?-[^)]*\.md\)' /tmp/desc.md; then
+    SED_ARGS=()
+    for FILE in "${CHILD_FILES[@]}"; do
+      BASE="$(basename "$FILE")"
+      KEY="${KEY_BY_ID[$(yq '.breakdown_id' "$FILE")]}"
+      SED_ARGS+=(-e "s|(\./$BASE)|(https://$SITE.atlassian.net/browse/$KEY)|g")
+    done
+    sed "${SED_ARGS[@]}" /tmp/desc.md > /tmp/epic-desc-linked.md
+    # Flag shape drifts across acli versions — check `acli jira workitem edit --help` on failure.
+    acli jira workitem edit --key "$EPIC_KEY" --description-file /tmp/epic-desc-linked.md
+    EPIC_REWRITTEN=1
+  fi
+elif [ -z "$SITE" ] && [ -z "$REUSED_EPIC" ]; then
+  echo "NOTE: SITE unset — epic story links left relative (they will not resolve in Jira)."
+fi
+
 # --- Report -------------------------------------------------------------------
 
 echo
 echo "Done. Created $(( ${#CHILD_FILES[@]} + 1 )) issues in $PROJECT_KEY."
 echo "Links applied: $LINK_COUNT_BLOCKS Blocks, $LINK_COUNT_RELATES Relates."
+if [ -n "$EPIC_REWRITTEN" ]; then
+  echo "Epic story links rewritten to browse URLs."
+fi
 echo "Map persisted to $KEYMAP."

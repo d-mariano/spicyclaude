@@ -12,6 +12,11 @@ Describe the research or PoC to be done in order to fulfill the spike. Include r
 - Findings and supporting evidence captured in the ticket
 
 # Engineering Notes
-- A good place to start in code
-- A good place to start in documentation (internal/external/etc)
+- Start in code: `src/area/` ([permalink](https://github.com/org/repo/tree/<sha>/src/area))
+- Start in docs: [internal or external doc](https://link.to/docs)
 ```
+
+## Refinement Check
+Before creating, verify:
+- [ ] Starting points are reachable from the ticket alone — code permalinked per [references/code-references.md](references/code-references.md), docs by URL
+- [ ] No load-bearing content that exists only locally or in this conversation

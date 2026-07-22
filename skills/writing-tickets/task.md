@@ -22,6 +22,11 @@ Do this thing so we have that done
 - The new capability is available where expected
 
 # Engineering Notes
-- Infra code here
-- Existing module in place here
+- Infra code: `terraform/modules/thing/` ([permalink](https://github.com/org/repo/tree/<sha>/terraform/modules/thing))
+- Existing module to extend: `src/module.ts` ([permalink](https://github.com/org/repo/blob/<sha>/src/module.ts))
 ```
+
+## Refinement Check
+Before creating, verify:
+- [ ] Code/file references pair a short path with a SHA-pinned permalink per [references/code-references.md](references/code-references.md), and at least one canonical repo URL anchors the ticket
+- [ ] No load-bearing content that exists only locally or in this conversation — commit + permalink, upload + link, or inline it

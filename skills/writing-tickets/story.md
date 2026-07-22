@@ -38,7 +38,8 @@ Before creating, verify:
 - [ ] ACs are written from the consumer's perspective and observable from outside the implementation
 - [ ] At least one AC covers an unhappy path (empty, error, edge)
 - [ ] Out of Scope present when scope is ambiguous; omitted only when scope is genuinely tight
-- [ ] Engineering Notes link to designs, APIs, or existing patterns (not bare file paths)
+- [ ] Engineering Notes pair every code/file reference with a SHA-pinned permalink per [references/code-references.md](references/code-references.md), and at least one canonical repo URL anchors the ticket
+- [ ] No load-bearing content that exists only locally or in this conversation — commit + permalink, upload + link, or inline it
 - [ ] No clarifying questions left unanswered
 
 ## Template
@@ -59,7 +60,7 @@ One or two sentences on what we are building and why it matters. Lead with the u
 # Engineering Notes
 - [Figma Design](https://link.to/design)
 - [API Endpoint](https://link.to/api)
-- Existing pattern: [permalink to canonical example](https://github.com/org/repo/blob/<sha>/path)
+- Existing pattern: `path/in/repo.ts` ([permalink](https://github.com/org/repo/blob/<sha>/path/in/repo.ts))
 - Docs: [link](https://link.to/docs)
 ```
 

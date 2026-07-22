@@ -205,6 +205,8 @@ Everything below the frontmatter follows the per-type template as-is. Do not ren
 **Body rules:**
 - Self-contained. Don't write "see story 06b above" — that reference doesn't resolve in Jira / GitHub Issues / Linear. After the first publish, reference siblings by their tracker key (looked up in `jira-keys.md`) if needed.
 - No prose duplication of frontmatter (e.g. don't restate "this story is blocked by 01" in the body — the frontmatter says so, the publisher will create the link).
+- Code/file references pair a short path with a SHA-pinned repo permalink — mechanics in [`~/.claude/skills/writing-tickets/references/code-references.md`](../writing-tickets/references/code-references.md). At least one canonical repo URL per ticket, so a reader in the tracker knows which repo this is.
+- No load-bearing content that exists only locally or in this conversation. An uncommitted design doc, local logs, or a decision made in chat must be committed + permalinked, uploaded + linked, or inlined before the ticket is done.
 
 ### Run the per-type Refinement Check before declaring Phase 3 done
 
@@ -265,8 +267,8 @@ Critical path: 01 → 04 → 06.
 - <risk or question that survived Phase 1>
 
 ## Links
-- Design doc: <path or URL>
-- Related ADRs, prior epics, etc.
+- Design doc: <URL — if it lives in the repo, a SHA-pinned permalink; if only local, commit or upload it first>
+- Related ADRs, prior epics, etc. — URLs only
 ```
 
 ### Final pass before handing back
@@ -275,6 +277,7 @@ Once the files are written, do a quick sanity pass:
 
 - **Run the per-type Refinement Check per ticket** (Story's is the most prescriptive; Task is lighter). This is the moment that catches "I shipped 21 engineer-perspective ACs and called them user stories".
 - Read the AC for each ticket. Could you write a test for every item? If not, sharpen or flag.
+- Check reference hygiene: every code/file reference is backed by a repo permalink, every ticket carries a canonical repo URL anchor, and nothing load-bearing lives only in this conversation.
 - Check `Blocks on` forms a DAG, not a cycle. (`Coordinates with` is symmetric and doesn't need to.)
 - Check the execution plan matches reality: if A blocks on B, A should not appear in an earlier wave than B.
 - Sanity-check the critical path. If it's only one or two tickets, most of the work is parallel — good. If it's a long chain with little parallelism, surface that — it may indicate over-coupling worth splitting differently.
@@ -292,6 +295,6 @@ If the user wants tickets in Jira, there are two paths — both consume this ski
 - **MCP batch flow (recommended default)** — [`~/.claude/skills/writing-tickets/references/breakdown-batch-publishing.md`](../writing-tickets/references/breakdown-batch-publishing.md). Use when the Atlassian MCP is authenticated; richer error handling, no shell dependency.
 - **`acli` CLI flow** — [`references/jira-integration.md`](references/jira-integration.md). Use when the MCP isn't available, when the user prefers a scriptable flow, or in environments where MCP isn't reachable but `acli` is.
 
-Both run a two-pass create-then-link cycle: Pass 1 creates the epic + children and captures keys to `jira-keys.md`; Pass 2 applies `Blocks` (from `blocks_on`) and `Relates` (from `coordinates_with`) links using the captured map.
+Both lint the batch for local-only references before creating anything, then run the same cycle: Pass 1 creates the epic + children and captures keys to `jira-keys.md`; Pass 2 applies `Blocks` (from `blocks_on`) and `Relates` (from `coordinates_with`) links using the captured map; Pass 3 rewrites the epic's relative `./NN-slug.md` story links to tracker URLs.
 
 Do not push to any tracker unless the user asks — creating tickets is a side effect that's hard to undo.

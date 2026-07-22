@@ -10,6 +10,8 @@
     "Phase 2: includes at least one item under 'Concerns / pushback' that names something not explicitly written in the doc — for example, flags that the 409 Conflict path needs an acceptance criterion the doc doesn't pin down, or notes that the rollout plan implies an observability requirement.",
     "Phase 2 does NOT invent acceptance criteria the doc doesn't support (e.g., specific latency targets, retry counts, error message wording). Anything not in the doc should be flagged as an open question, not silently filled in.",
     "Phase 3 only happens after explicit user confirmation. When it does, story files include both 'Blocks on' and 'Coordinates with' fields and the schema-migration story is correctly identified as blocking the request-handling story.",
+    "Phase 3: in a Claude Code context with a git remote, code and file references in ticket bodies pair a short path with a SHA-pinned repo permalink (per writing-tickets/references/code-references.md). Bare paths with no canonical repo URL anywhere in the ticket are a failure.",
+    "Phase 3: the epic's Links section does not point at a local-only path for the design doc. Since the doc arrived pasted into the conversation, the skill either flags that it needs committing/uploading or inlines the load-bearing content — inventing a URL is a failure.",
     "If the user provides no confirmation, the skill does not auto-expand into Phase 3."
   ]
 }

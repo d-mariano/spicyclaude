@@ -45,7 +45,7 @@ coordinates_with: ["02", "03", "06", "11", "14"]
 
 **Why frontmatter and not a header block?** The frontmatter is mechanical to strip during publish (any YAML parser will do it). A prose header block requires fragile regex stripping and shows up in the Jira description if you miss it.
 
-**Body rule:** everything below the frontmatter is publishable verbatim. The first `# H1` is the ticket summary; the rest is the description. The body should be self-contained — no references to "see story 06b above" or similar (those references survive into Jira where they don't resolve; reference Jira keys via the map below instead, after the first publish).
+**Body rule:** everything below the frontmatter is publishable verbatim. The first `# H1` is the ticket summary; the rest is the description. The body should be self-contained — no references to "see story 06b above" or similar (those references survive into Jira where they don't resolve; reference Jira keys via the map below instead, after the first publish). Code/file references must already be permalinked per [`code-references.md`](code-references.md) — the pre-publish lint below stops the batch if they aren't.
 
 ## The key-map file
 
@@ -64,7 +64,17 @@ The publisher writes (and reads) `<breakdown-dir>/jira-keys.md` — a single-fil
 
 Use the filename (not the `breakdown_id`) as the key — it's grep-friendly and unambiguous when a story is renamed. Mark unpublished rows with `_pending_` during in-flight publish so a partial-failure recovery is obvious.
 
-## Two-pass flow
+## Pre-publish lint
+
+Before creating anything, scan every body — this is the last stop before broken references ship:
+
+- **Relative markdown links** (`](./`, `](../`): fail, with one exception — the epic's `./NN-slug.md` story links, which Pass 3 rewrites. `grep -nE '\]\((\./|\.\./)' *.md` finds them mechanically.
+- **Bare repo paths with no permalink**: an Engineering Notes line naming `src/foo.ts` with no `https://` link alongside fails the reference contract ([`code-references.md`](code-references.md)).
+- **Conversational references**: "see above", "as discussed", "story 06b" in prose.
+
+On any hit: stop, report the per-file list, fix the markdown, re-run. Don't publish a batch you know is broken — editing 20 Jira descriptions after the fact is the expensive path.
+
+## Publish flow
 
 **Pass 1 — create issues + capture keys:**
 
@@ -86,6 +96,14 @@ Use the filename (not the `breakdown_id`) as the key — it's grep-friendly and 
    - `blocks_on: ["X"]` → `createIssueLink` with `type: "Blocks"`, `inwardIssue: <key of X>` (the blocker), `outwardIssue: <key of this story>` (the blocked). The MCP tool's directionality is "inward = blocker, outward = blocked" — easy to invert; double-check before running.
    - `coordinates_with: ["X"]` → `createIssueLink` with `type: "Relates"`. Dedupe pairs by ordering `(min_id, max_id)` so each pair gets one link, not two.
 3. Batch 8–10 link calls in parallel per message — each is independent.
+
+**Pass 3 — rewrite the epic's story links:**
+
+The epic body ships with relative `[<title>](./NN-slug.md)` links that resolve to nothing in Jira. Once all keys are captured:
+
+1. Take the epic's markdown body and replace each `(./NN-slug.md)` target with the child's browse URL (`https://<site>.atlassian.net/browse/<KEY>`) from `jira-keys.md`.
+2. `editJiraIssue` the epic with the rewritten description.
+3. On re-publish, rewrite from the markdown epic body again (the source of truth) — never from the previously published description.
 
 **Dry-run discipline.** Always publish exactly one ticket first (any Task or Story), pause, ask the user to eyeball the Jira rendering in the browser. Markdown rendering catches checkboxes (`- [ ]` becomes literal `\[ \]`), tables, fenced code, and structural fidelity. If the dry-run is off, switch to `contentFormat: "adf"` and re-render the single dry-run ticket before batching the rest.
 
@@ -113,6 +131,8 @@ For `blocks_on` / `coordinates_with` changes, the diff is annoying — old links
 - Or fetch existing issue links, compute the delta, and remove + add (correct; more MCP calls). Default to the second when a story is restructured.
 
 If `breakdown_id` itself ever changes (rare — usually means a story was renumbered), update `jira-keys.md` first; the Jira key stays the same.
+
+When the epic's markdown changes, re-run the Pass 3 link rewrite after the edit — always from the markdown source, so relative story links never reach Jira unrewritten.
 
 ## When publishing fails
 

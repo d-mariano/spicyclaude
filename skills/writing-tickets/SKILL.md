@@ -23,7 +23,8 @@ Pick the issue type that fits the work, then read the sub-file for the template 
 - If there are any gaps in the details, push back with clarifying questions before drafting
 - Create one or more tickets to capture the work; split when scope spans types
 - Always include reference and resource links in Engineering Notes and Summary where applicable
-- When referencing code or files, link to a canonical repo URL (e.g. a GitHub permalink at the current commit, derived from `git remote` and `git rev-parse HEAD`) rather than a bare path — tickets must stand on their own
+- When referencing code or files, pair the short path with a SHA-pinned repo permalink — mechanics in [references/code-references.md](references/code-references.md). Tickets must stand on their own
+- Hard gate: load-bearing content that exists only locally or in this conversation (uncommitted docs, local logs, decisions made in chat) blocks the ticket — commit + permalink, upload + link, or inline it before drafting
 - Do not write large chunks of tests or novels
 - Communicate effectively and keep it to the point
 - Conduct any web searches needed for frameworks in use, unless the usage examples in code are telling enough
@@ -41,4 +42,4 @@ Emit the drafted ticket(s) as markdown — one per file in a sensible location t
 ### Publishing (on request)
 If the user wants the ticket(s) published to Jira, load [references/publishing-to-jira.md](references/publishing-to-jira.md) for the MCP tool surface, field-handling quirks, and Epic-linking rules. Do not assume publishing — the user must ask.
 
-For publishing an entire design-breakdown batch (epic + N stories with a dependency graph and frontmatter metadata), load [references/breakdown-batch-publishing.md](references/breakdown-batch-publishing.md) instead — same MCP surface, but with the frontmatter contract, the `jira-keys.md` map convention, and the two-pass create-then-link flow.
+For publishing an entire design-breakdown batch (epic + N stories with a dependency graph and frontmatter metadata), load [references/breakdown-batch-publishing.md](references/breakdown-batch-publishing.md) instead — same MCP surface, but with the frontmatter contract, the `jira-keys.md` map convention, and the lint → create → link → rewrite flow.

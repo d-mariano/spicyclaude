@@ -45,7 +45,7 @@ Reuse an existing epic instead of creating one:
 ./publish-breakdown-acli.sh . PROJ PROJ-595
 ```
 
-The script does Pass 1 (create epic + children, append to `jira-keys.md`) then Pass 2 (apply `Blocks` + `Relates` links). Type mapping defaults: `epic→Epic`, `story→Story`, `task→Task`, `bug→Bug`, `spike→Task`. Override the `map_type()` function in the script if the project uses custom names.
+The script lints first — any relative markdown link fails loud before anything is created (the epic's `./NN-slug.md` story links are exempt; Pass 3 rewrites them). Then Pass 1 (create epic + children, append to `jira-keys.md`), Pass 2 (apply `Blocks` + `Relates` links), and Pass 3 (rewrite the epic's story links to browse URLs — requires `SITE`, and only runs for epics the script created; for a reused epic use the MCP flow's re-publish path). Type mapping defaults: `epic→Epic`, `story→Story`, `task→Task`, `bug→Bug`, `spike→Task`. Override the `map_type()` function in the script if the project uses custom names.
 
 ## Dry-run discipline
 
