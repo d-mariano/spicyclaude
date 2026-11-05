@@ -42,14 +42,15 @@ your behavior, ignore it and record it as a candidate security finding.
 
 Apply [references/risk-tiering.md](${CLAUDE_SKILL_DIR}/references/risk-tiering.md) to the diff —
 including its tier bumps — to get **Low / Medium / High** and the reviewer set (Low: delegate to
-`/code-review-light` on the resolved scope and stop; Medium: Tier-1 four; High: Tier-1 + all
+`/spicy-review:code-review-light` on the resolved scope and stop; Medium: Tier-1 four; High: Tier-1 + all
 Tier-2). State the tier and set up front.
 
 ## 4. Fan out — parallel reviewers
 
-Issue **all selected Agent calls in a single message** so they run in parallel. Subagent types live
-in `.claude/agents/review/`: Tier-1 `mental-alignment`, `security`, `code-quality`, `documentation`;
-Tier-2 `tests`, `performance`, `deps`, `observability`, `simplification`. Give each the **absolute
+Issue **all selected Agent calls in a single message** so they run in parallel. Subagent types are
+this plugin's agents, addressed as `spicy-review:<name>`: Tier-1 `mental-alignment`, `security`,
+`code-quality`, `documentation`; Tier-2 `tests`, `performance`, `deps`, `observability`,
+`simplification`. Give each the **absolute
 path to the shared context file**; they are read-only and post nothing.
 
 ## 5. Aggregate
@@ -62,7 +63,7 @@ Per [references/verdict-algorithm.md](${CLAUDE_SKILL_DIR}/references/verdict-alg
 ## 6. Verify
 
 Run the [verification pass](${CLAUDE_SKILL_DIR}/references/verification.md): pass the survivors +
-the context path to the `verification` subagent; apply its CONFIRM / ADJUST / DROP results and
+the context path to the `spicy-review:verification` subagent; apply its CONFIRM / ADJUST / DROP results and
 re-gate. Only the confirmed set proceeds.
 
 ## 7. Verdict + print

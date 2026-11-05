@@ -32,14 +32,14 @@ to verify acceptance criteria against.
 
 ## Do NOT flag
 
-Read `.claude/skills/review-heavy/references/what-not-to-flag.md` and apply it. In particular:
+Read `${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/what-not-to-flag.md` and apply it. In particular:
 pre-existing behavior the diff didn't touch, style nits, and speculative "they might also want…"
 gaps that aren't actually stated requirements.
 
 ## Output
 
 Score every finding with the shared rubric
-(`.claude/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
+(`${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
 file:line + concrete fix**. A missing-requirement or contradiction is typically High when you can
 quote the requirement. Return findings in the rubric's finding shape, category `mental-alignment`.
 Surface only confidence ≥ 80. If nothing qualifies, return exactly: **No concerns identified.**

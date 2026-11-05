@@ -1,0 +1,10 @@
+{
+  "name": "spicy-review",
+  "version": "1.0.0",
+  "description": "Risk-tiered multi-reviewer code review: review-heavy orchestrator, code-review-light fast path, read-only reviewer agents, shared severity rubric.",
+  "author": {
+    "name": "dave",
+    "email": "developer.dave@outlook.com"
+  },
+  "license": "MIT"
+}

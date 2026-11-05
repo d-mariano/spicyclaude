@@ -29,14 +29,14 @@ stream, make async).
 
 ## Do NOT flag
 
-Read `.claude/skills/review-heavy/references/what-not-to-flag.md` and apply it: micro-optimizations
+Read `${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/what-not-to-flag.md` and apply it: micro-optimizations
 with no measurable impact, "won't scale at 10M users" speculation with no concrete path, theoretical
 concerns needing an unrealistic input size, and pre-existing hot spots the diff didn't touch.
 
 ## Output
 
 Score every finding with the shared rubric
-(`.claude/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
+(`${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
 file:line + concrete fix**. A measurable regression on a real path is High/Medium; only a proven
 outage-level cost is Critical. Category `performance`. Surface only confidence ≥ 80. If nothing
 qualifies, return exactly: **No concerns identified.**

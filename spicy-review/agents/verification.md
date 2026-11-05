@@ -29,9 +29,9 @@ For each candidate, decide independently:
    (e.g. the tainted value never reaches the sink, the guard already exists, the requirement is
    actually implemented) → **DROP**.
 3. **Correctly scored?** Is severity/confidence justified by the shared rubric
-   (`.claude/skills/review-heavy/references/severity-rubric.md`)? If not → **ADJUST**.
+   (`${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/severity-rubric.md`)? If not → **ADJUST**.
 4. **On the suppression list?** Apply
-   `.claude/skills/review-heavy/references/what-not-to-flag.md`. If it matches → **DROP**.
+   `${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/what-not-to-flag.md`. If it matches → **DROP**.
 
 ## Output
 

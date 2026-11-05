@@ -1,6 +1,6 @@
 ---
 name: code-review-light
-description: Fast single-pass code review of a diff. Use for a quick read-only review of a PR or the current branch — pulls the diff, runs one consolidated pass against the shared severity rubric, and prints a severity-tiered summary. No subagents, never posts. For deep multi-reviewer review use /review-heavy.
+description: Fast single-pass code review of a diff. Use for a quick read-only review of a PR or the current branch — pulls the diff, runs one consolidated pass against the shared severity rubric, and prints a severity-tiered summary. No subagents, never posts. For deep multi-reviewer review use /spicy-review:review-heavy.
 argument-hint: "[pr-number | branch | files]"
 context: fork
 agent: Explore
@@ -37,6 +37,6 @@ current branch against its base.
    one-line takeaway. If nothing survives the gate, say **No concerns identified.**
 
 > Scope note: this runs in a forked Explore context, which does not load `CLAUDE.md`. For
-> `CLAUDE.md` / guideline-violation checks, full coverage, or posting to a PR, use `/review-heavy`.
+> `CLAUDE.md` / guideline-violation checks, full coverage, or posting to a PR, use `/spicy-review:review-heavy`.
 > This skill is also the **Low risk tier** fast path in
 > [risk-tiering.md](${CLAUDE_SKILL_DIR}/../review-heavy/references/risk-tiering.md).

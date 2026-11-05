@@ -12,3 +12,4 @@ statsig/
 todos/
 stats-cache.json
 cache/
+__pycache__/

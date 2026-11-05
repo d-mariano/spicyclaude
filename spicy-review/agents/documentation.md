@@ -35,14 +35,14 @@ matches reality. If no shared context file is given, get the diff with `gh pr di
 
 ## Do NOT flag
 
-Read `.claude/skills/review-heavy/references/what-not-to-flag.md` and apply it: pre-existing
+Read `${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/what-not-to-flag.md` and apply it: pre-existing
 comments the diff didn't touch, and missing-docstring nitpicks a linter would catch. Absence of a
 comment is rarely a finding; wrong or noisy comments are.
 
 ## Output
 
 Score every finding with the shared rubric
-(`.claude/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
+(`${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
 file:line + concrete fix** (usually "delete it" / "shorten to X" / "update to match the code").
 Category `documentation`. Misleading comments that could cause a bug are higher severity; noise is
 Low. Surface only confidence ≥ 80. If nothing qualifies, return exactly:

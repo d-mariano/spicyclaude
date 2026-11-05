@@ -27,14 +27,14 @@ file is given, get the diff with `gh pr diff` or `git diff <base>...HEAD`.
 
 ## Do NOT flag
 
-Read `.claude/skills/review-heavy/references/what-not-to-flag.md` and apply it: missing tests for
+Read `${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/what-not-to-flag.md` and apply it: missing tests for
 trivial glue/pure-passthrough code, coverage of unchanged code, "add more tests" with no concrete
 untested path, and test-framework style preferences.
 
 ## Output
 
 Score every finding with the shared rubric
-(`.claude/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
+(`${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
 file:line + concrete fix** (name the specific case that needs a test / assertion). Category
 `tests`. An untested change with a real, likely regression is High; a gap on lower-risk logic is
 Medium. Surface only confidence ≥ 80. If nothing qualifies, return exactly:

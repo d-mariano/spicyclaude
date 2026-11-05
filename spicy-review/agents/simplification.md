@@ -29,14 +29,14 @@ Every finding must show a *concrete* smaller replacement — not a vague "this c
 
 ## Do NOT flag
 
-Read `.claude/skills/review-heavy/references/what-not-to-flag.md` and apply it: subjective
+Read `${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/what-not-to-flag.md` and apply it: subjective
 "cleaner" rewrites with no real reduction, renames/formatting, pre-existing code the diff didn't
 touch, and taste debates.
 
 ## Output
 
 Score every finding with the shared rubric
-(`.claude/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
+(`${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
 file:line + concrete fix** (usually "use `existing()` instead" / "delete lines X–Y"). Category
 `simplification`. Typically Low/Medium (advisory). Surface only confidence ≥ 80. If nothing
 qualifies, return exactly: **No concerns identified.**

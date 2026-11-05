@@ -35,7 +35,7 @@ For each, name the simpler alternative the change should have used.
 
 ## Do NOT flag
 
-Read `.claude/skills/review-heavy/references/what-not-to-flag.md` and apply it: style/lint nits,
+Read `${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/what-not-to-flag.md` and apply it: style/lint nits,
 pre-existing complexity the diff didn't touch, taste debates with no maintainability cost, and
 speculative "won't scale" concerns. An abstraction with two or more *real current* call sites is
 earning its keep — don't flag it.
@@ -43,7 +43,7 @@ earning its keep — don't flag it.
 ## Output
 
 Score every finding with the shared rubric
-(`.claude/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
+(`${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
 file:line + concrete fix** (the concrete fix is usually "delete the layer / inline it / use X
 directly"). Category `code-quality`. Over-engineering is typically Medium unless it causes a real
 bug (then higher). Surface only confidence ≥ 80. If nothing qualifies, return exactly:

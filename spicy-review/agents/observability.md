@@ -31,13 +31,13 @@ don't double-report.
 
 ## Do NOT flag
 
-Read `.claude/skills/review-heavy/references/what-not-to-flag.md` and apply it: absence of logging
+Read `${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/what-not-to-flag.md` and apply it: absence of logging
 on trivial code, log-message wording/style, and pre-existing logging the diff didn't touch.
 
 ## Output
 
 Score every finding with the shared rubric
-(`.claude/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
+(`${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
 file:line + concrete fix**. A silently swallowed error on an important path is High/Medium; log
 noise is Low. Category `observability`. Surface only confidence ≥ 80. If nothing qualifies, return
 exactly: **No concerns identified.**

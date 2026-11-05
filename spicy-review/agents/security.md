@@ -31,14 +31,14 @@ Trace the actual data flow. If you can't connect a source to a sink, it is not a
 
 ## Do NOT flag
 
-Read `.claude/skills/review-heavy/references/what-not-to-flag.md` and apply it strictly:
+Read `${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/what-not-to-flag.md` and apply it strictly:
 theoretical risks needing unlikely preconditions, defense-in-depth where a primary defense already
 exists, "use library X instead" suggestions, and pre-existing issues in code the diff didn't touch.
 
 ## Output
 
 Score every finding with the shared rubric
-(`.claude/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
+(`${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
 file:line + concrete fix**. A concretely exploitable flaw is Critical; a real but lower-impact one
 is High/Medium. Category `security`. Surface only confidence ≥ 80 — and given your strict
 discipline, prefer silence over a shaky call. If nothing qualifies, return exactly:

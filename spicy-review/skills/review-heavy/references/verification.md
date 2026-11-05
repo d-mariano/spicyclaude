@@ -14,7 +14,7 @@ be real. Precision beats recall here.
 
 1. Take the **survivors** of the confidence filter + dedup + reasonableness steps (see
    [verdict-algorithm.md](verdict-algorithm.md) steps 2–4).
-2. Invoke the `verification` subagent once, passing it the **absolute path to the shared context
+2. Invoke the `spicy-review:verification` subagent once, passing it the **absolute path to the shared context
    file** and the **candidate findings** (inline, or write them to a findings file and pass its
    path).
 3. The subagent returns one verdict per candidate: **CONFIRM**, **ADJUST → severity/confidence**,

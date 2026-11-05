@@ -29,14 +29,14 @@ dependency or util that covers the same need. If no shared context file is given
 
 ## Do NOT flag
 
-Read `.claude/skills/review-heavy/references/what-not-to-flag.md` and apply it: dependencies the
+Read `${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/what-not-to-flag.md` and apply it: dependencies the
 diff doesn't touch, reasonable library choices where you just prefer another, and "you could
 vendor this" purity arguments with no concrete cost.
 
 ## Output
 
 Score every finding with the shared rubric
-(`.claude/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
+(`${CLAUDE_PLUGIN_ROOT}/skills/review-heavy/references/severity-rubric.md`): **severity + confidence 0–100 +
 file:line (the manifest/import line) + concrete fix**. A risky/unmaintained dep or license
 conflict is High; an unnecessary or duplicate dep is Medium. Category `deps`. Surface only
 confidence ≥ 80. If nothing qualifies, return exactly: **No concerns identified.**

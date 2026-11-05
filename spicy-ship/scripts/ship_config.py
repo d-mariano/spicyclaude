@@ -1,0 +1,228 @@
+#!/usr/bin/env python3
+"""Resolve spicy-ship configuration and print it as JSON.
+
+Precedence, highest first: CLI flags, SPICY_* environment variables, the
+project file .claude/spicyclaude.json, plugin userConfig values passed as
+--plugin-config KEY=VALUE, built-in defaults. Invalid input exits non-zero.
+"""
+
+import json
+import os
+import sys
+from pathlib import Path
+
+SEVERITIES = ("Critical", "High", "Medium", "Low")
+MODES = ("auto", "raise", "batch")
+ESCALATIONS = ("irreversible", "external")
+REVIEWERS = ("plan", "code")
+REVIEW_KEYS = ("max_rounds", "min_severity", "fix_floor")
+PROJECT_FILE = Path(".claude/spicyclaude.json")
+
+DEFAULTS = {
+    "review": {"default": {"max_rounds": 3, "min_severity": "High", "fix_floor": "Medium"}},
+    "questions": {"mode": "auto", "escalate": ["irreversible"]},
+}
+
+ARG_PATHS = {
+    "--max-review-rounds": ("review", "default", "max_rounds"),
+    "--min-severity": ("review", "default", "min_severity"),
+    "--fix-floor": ("review", "default", "fix_floor"),
+    "--plan-rounds": ("review", "plan", "max_rounds"),
+    "--code-rounds": ("review", "code", "max_rounds"),
+    "--plan-min-severity": ("review", "plan", "min_severity"),
+    "--code-min-severity": ("review", "code", "min_severity"),
+    "--questions": ("questions", "mode"),
+    "--escalate": ("questions", "escalate"),
+}
+
+ENV_PATHS = {
+    "SPICY_MAX_REVIEW_ROUNDS": ("review", "default", "max_rounds"),
+    "SPICY_REVIEW_MIN_SEVERITY": ("review", "default", "min_severity"),
+    "SPICY_REVIEW_FIX_FLOOR": ("review", "default", "fix_floor"),
+    "SPICY_PLAN_MAX_ROUNDS": ("review", "plan", "max_rounds"),
+    "SPICY_CODE_MAX_ROUNDS": ("review", "code", "max_rounds"),
+    "SPICY_PLAN_MIN_SEVERITY": ("review", "plan", "min_severity"),
+    "SPICY_CODE_MIN_SEVERITY": ("review", "code", "min_severity"),
+    "SPICY_QUESTION_MODE": ("questions", "mode"),
+    "SPICY_QUESTION_ESCALATE": ("questions", "escalate"),
+}
+
+PLUGIN_CONFIG_PATHS = {
+    "maxReviewRounds": ("review", "default", "max_rounds"),
+    "minReviewSeverity": ("review", "default", "min_severity"),
+    "questionMode": ("questions", "mode"),
+}
+
+
+class ConfigError(Exception):
+    """Raised for any unknown key or invalid value. Never swallowed."""
+
+
+def resolve(argv, env, project_file=PROJECT_FILE):
+    """Merge every config source in precedence order and return the resolved config."""
+    flags, plugin_pairs = _split_argv(argv)
+    layers = [
+        DEFAULTS,
+        _from_plugin_config(plugin_pairs),
+        _from_project_file(project_file),
+        _from_paths(ENV_PATHS, env, "environment variable"),
+        _from_flags(flags),
+    ]
+    merged = {}
+    for layer in layers:
+        _deep_merge(merged, layer)
+    return _finalize(merged)
+
+
+def _split_argv(argv):
+    flags, plugin_pairs = [], []
+    items = iter(argv)
+    for raw in items:
+        if raw == "--plugin-config":
+            plugin_pairs.append(next(items, None))
+        elif raw.startswith("--plugin-config="):
+            plugin_pairs.append(raw.split("=", 1)[1])
+        else:
+            flags.append(raw)
+    if None in plugin_pairs:
+        raise ConfigError("--plugin-config needs KEY=VALUE")
+    return flags, plugin_pairs
+
+
+def _from_flags(flags):
+    layer = {}
+    for raw in flags:
+        if "=" not in raw:
+            raise ConfigError(f"argument {raw!r} must look like --flag=value")
+        flag, value = raw.split("=", 1)
+        if flag not in ARG_PATHS:
+            raise ConfigError(f"unknown argument {flag!r}; known: {', '.join(sorted(ARG_PATHS))}")
+        _set(layer, ARG_PATHS[flag], _parse(ARG_PATHS[flag], value, f"argument {flag}"))
+    return layer
+
+
+def _from_plugin_config(pairs):
+    layer = {}
+    for pair in pairs:
+        if "=" not in pair:
+            raise ConfigError(f"--plugin-config value {pair!r} must look like KEY=VALUE")
+        key, value = pair.split("=", 1)
+        if key not in PLUGIN_CONFIG_PATHS:
+            raise ConfigError(f"unknown plugin option {key!r}; known: {', '.join(sorted(PLUGIN_CONFIG_PATHS))}")
+        if value == "":
+            continue
+        _set(layer, PLUGIN_CONFIG_PATHS[key], _parse(PLUGIN_CONFIG_PATHS[key], value, f"plugin option {key}"))
+    return layer
+
+
+def _from_paths(table, source, label):
+    layer = {}
+    for name, path in table.items():
+        value = source.get(name)
+        if value is None or value == "":
+            continue
+        _set(layer, path, _parse(path, value, f"{label} {name}"))
+    return layer
+
+
+def _from_project_file(project_file):
+    if project_file is None or not Path(project_file).is_file():
+        return {}
+    try:
+        data = json.loads(Path(project_file).read_text())
+    except json.JSONDecodeError as exc:
+        raise ConfigError(f"{project_file} is not valid JSON: {exc}") from exc
+    _validate_project_shape(data, project_file)
+    return data
+
+
+def _validate_project_shape(data, project_file):
+    allowed_top = {"review", "questions"}
+    unknown = set(data) - allowed_top
+    if unknown:
+        raise ConfigError(f"{project_file}: unknown top-level keys {sorted(unknown)}")
+    for reviewer, section in data.get("review", {}).items():
+        if reviewer not in ("default",) + REVIEWERS:
+            raise ConfigError(f"{project_file}: unknown review section {reviewer!r}")
+        for key, value in section.items():
+            if key not in REVIEW_KEYS:
+                raise ConfigError(f"{project_file}: unknown review key {key!r}")
+            section[key] = _parse(("review", reviewer, key), value, f"{project_file} review.{reviewer}.{key}")
+    questions = data.get("questions", {})
+    for key, value in questions.items():
+        if key not in ("mode", "escalate"):
+            raise ConfigError(f"{project_file}: unknown questions key {key!r}")
+        questions[key] = _parse(("questions", key), value, f"{project_file} questions.{key}")
+
+
+def _parse(path, value, where):
+    leaf = path[-1]
+    if leaf == "max_rounds":
+        try:
+            rounds = int(value)
+        except (TypeError, ValueError):
+            raise ConfigError(f"{where}: max_rounds must be an integer, got {value!r}") from None
+        if rounds < 1:
+            raise ConfigError(f"{where}: max_rounds must be at least 1, got {rounds}")
+        return rounds
+    if leaf in ("min_severity", "fix_floor"):
+        if value not in SEVERITIES:
+            raise ConfigError(f"{where}: severity must be one of {SEVERITIES}, got {value!r}")
+        return value
+    if leaf == "mode":
+        if value not in MODES:
+            raise ConfigError(f"{where}: question mode must be one of {MODES}, got {value!r}")
+        return value
+    if leaf == "escalate":
+        items = value if isinstance(value, list) else [v for v in str(value).split(",") if v]
+        if items == ["none"]:
+            return []
+        for item in items:
+            if item not in ESCALATIONS:
+                raise ConfigError(f"{where}: escalate entries must be in {ESCALATIONS} or 'none', got {item!r}")
+        return items
+    raise ConfigError(f"{where}: unknown config key {leaf!r}")
+
+
+def _set(layer, path, value):
+    node = layer
+    for key in path[:-1]:
+        node = node.setdefault(key, {})
+    node[path[-1]] = value
+
+
+def _deep_merge(target, source):
+    for key, value in source.items():
+        if isinstance(value, dict) and isinstance(target.get(key), dict):
+            _deep_merge(target[key], value)
+        else:
+            target[key] = value if not isinstance(value, dict) else json.loads(json.dumps(value))
+
+
+def _finalize(merged):
+    default = merged["review"]["default"]
+    review = {}
+    for reviewer in REVIEWERS:
+        section = dict(default)
+        section.update(merged["review"].get(reviewer, {}))
+        if SEVERITIES.index(section["fix_floor"]) < SEVERITIES.index(section["min_severity"]):
+            raise ConfigError(
+                f"review.{reviewer}: fix_floor {section['fix_floor']!r} is stricter than "
+                f"min_severity {section['min_severity']!r}; a fix floor can only be equal or looser"
+            )
+        review[reviewer] = section
+    return {"review": review, "questions": merged["questions"]}
+
+
+def main(argv=None):
+    """CLI entry point: print the resolved config, or the error and a non-zero exit."""
+    try:
+        print(json.dumps(resolve(sys.argv[1:] if argv is None else argv, os.environ), indent=2))
+    except ConfigError as exc:
+        print(f"ship_config: {exc}", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

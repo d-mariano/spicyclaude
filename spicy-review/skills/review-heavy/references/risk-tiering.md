@@ -17,7 +17,7 @@ gives risky changes full coverage. Thresholds below are sensible defaults — tu
 
 | Tier       | When                                                                                              | Reviewer set                                                                                             | Verification | Posting            |
 | :--------- | :------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------- | :----------- | :----------------- |
-| **Low**    | Small (≈ ≤ 30 lines / ≤ 3 files), no sensitive path, no dep change.                                | Delegate to `/code-review-light` — its single consolidated pass includes security. No fan-out.           | Skip         | — (see bumps)      |
+| **Low**    | Small (≈ ≤ 30 lines / ≤ 3 files), no sensitive path, no dep change.                                | Delegate to `/spicy-review:code-review-light` — its single consolidated pass includes security. No fan-out.           | Skip         | — (see bumps)      |
 | **Medium** | The default — anything not clearly Low or High.                                                    | Tier-1: `mental-alignment`, `security`, `code-quality`, `documentation`.                                 | Run          | Optional (`--post`)|
 | **High**   | Large diff, **or** touches any sensitive path, **or** changes dependencies, **or** changes public API. | Tier-1 **+ all** Tier-2: `tests`, `performance`, `deps`, `observability`, `simplification`.              | Run          | Recommended        |
 
