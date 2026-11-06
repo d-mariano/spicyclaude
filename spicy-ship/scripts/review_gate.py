@@ -17,10 +17,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from severities import SEVERITIES, at_least  # noqa: E402
 
 CONFIDENCE_GATE = 80
-VERDICTS = ("PASS", "CHANGES_REQUESTED")
 PRIOR_STATUSES = ("resolved", "unresolved", "regressed")
 RESOLUTIONS = ("fixed", "rejected")
-REPORT_KEYS = ("reviewer", "target", "round", "verdict", "prior_findings", "findings")
+REPORT_KEYS = ("reviewer", "target", "round", "prior_findings", "findings")
 FINDING_KEYS = ("id", "title", "severity", "confidence", "location", "category", "problem", "fix")
 CATEGORIES = (
     "correctness", "security", "tests", "design", "ac-coverage", "mental-alignment",
@@ -44,12 +43,14 @@ def decide(current, prior=None, fixes=None, *, max_rounds=3, min_severity="High"
     _validate_report(current, "current")
     if current["round"] > 1 and (prior is None or fixes is None):
         raise GateError(f"round {current['round']} needs --prior and --fixes from round {current['round'] - 1}")
+    if prior is None and fixes is not None:
+        raise GateError("--fixes without --prior: round 1 has no fixes to read")
     if prior is not None:
         _validate_report(prior, "prior")
         if prior["round"] != current["round"] - 1:
             raise GateError(f"prior round is {prior['round']} but current round is {current['round']}")
         _reconcile_priors(current, prior)
-        _validate_fixes(fixes, prior)
+        _validate_fixes(fixes, prior, fix_floor)
     if current["round"] > max_rounds:
         raise GateError(f"round {current['round']} exceeds max_rounds {max_rounds}")
 
@@ -129,10 +130,11 @@ def _stalled(blocking, prior_blocking, fixes):
     return True
 
 
-def _validate_fixes(fixes, prior):
+def _validate_fixes(fixes, prior, fix_floor):
     if not isinstance(fixes, list):
         raise GateError("fixes: file must be a JSON list of {id, resolution, note}")
     prior_ids = {f["id"] for f in prior["findings"]}
+    seen = []
     for entry in fixes:
         if not isinstance(entry, dict) or set(entry) != {"id", "resolution", "note"}:
             raise GateError("fixes: each entry needs exactly id, resolution and note")
@@ -140,6 +142,13 @@ def _validate_fixes(fixes, prior):
             raise GateError(f"fixes: resolution for {entry['id']!r} must be one of {RESOLUTIONS}")
         if entry["id"] not in prior_ids:
             raise GateError(f"fixes: {entry['id']!r} is not a finding of the prior round")
+        if entry["id"] in seen:
+            raise GateError(f"fixes: {entry['id']!r} listed more than once")
+        seen.append(entry["id"])
+    handed = {f["id"] for f in _blocking(prior, fix_floor)}
+    missing = sorted(handed - set(seen))
+    if missing:
+        raise GateError(f"fixes: no resolution recorded for {missing}; every finding at or above the fix floor needs one")
 
 
 def _validate_report(report, label):
@@ -150,8 +159,6 @@ def _validate_report(report, label):
         raise GateError(f"{label}: missing keys {missing}")
     if not isinstance(report["round"], int) or report["round"] < 1:
         raise GateError(f"{label}: round must be a positive integer")
-    if report["verdict"] not in VERDICTS:
-        raise GateError(f"{label}: verdict must be one of {VERDICTS}")
     if not isinstance(report["findings"], list) or not isinstance(report["prior_findings"], list):
         raise GateError(f"{label}: findings and prior_findings must be lists")
     ids = set()
@@ -167,9 +174,6 @@ def _validate_report(report, label):
             raise GateError(f"{label}: prior status must be one of {PRIOR_STATUSES}")
         if prior["status"] != "resolved" and prior["id"] not in ids:
             raise GateError(f"{label}: prior finding {prior['id']!r} is {prior['status']} but not re-listed in findings")
-    expected = "CHANGES_REQUESTED" if report["findings"] else "PASS"
-    if report["verdict"] != expected:
-        raise GateError(f"{label}: verdict {report['verdict']!r} does not match findings count {len(report['findings'])}")
 
 
 def _validate_finding(finding, label):
