@@ -1,6 +1,6 @@
 # spicy-ship
 
-Building blocks for shipping a story unattended: the contracts that review loops and open questions follow, and the scripts that make the loop decision deterministic.
+Ship one story unattended. `/spicy-ship:ship-it` explores, plans, reviews the plan, implements, reviews the code, and opens a pull request, delegating each phase to an agent and asking you only what the question policy lets through.
 
 ```bash
 /plugin marketplace add d-mariano/spicyclaude
@@ -9,13 +9,13 @@ Building blocks for shipping a story unattended: the contracts that review loops
 
 Depends on `spicy-skills` for the craft skills the planner, executor and fixer load, and on `spicy-review` for the severity rubric and the reviewer agents.
 
-The code-reviewer fans out to the review lenses one subagent level below itself. Set the spawn depth explicitly in the project's settings so that level exists wherever the pipeline runs:
+The code-reviewer fans out to the review lenses one subagent level below itself. From `ship-it` that is two levels below the main session, within Claude Code's default depth. An orchestrator that runs the pipeline from inside an agent pushes the lenses to level three; pin the depth in the project's settings for that case:
 
 ```json
 {"env": {"CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "3"}}
 ```
 
-Without it the code-reviewer falls back to a single consolidated pass and says so in its summary.
+When the level is not available the code-reviewer falls back to a single consolidated pass and says so in its summary.
 
 ## Usage
 
