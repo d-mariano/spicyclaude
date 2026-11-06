@@ -27,10 +27,12 @@ envelopes, nothing else.
 | 2 | `spicy-ship:phase:planner` | `story.md`, `research-[nnn].md` | `plan-[nnn].md` | none |
 | 3 | review loop: `spicy-ship:phase:plan-reviewer` and `spicy-ship:phase:fixer` in `plan` mode | `plan-[nnn].md`, `story.md` | `plan-review-r{n}.json`, `plan-fixes-r{n}.json` | `review.plan` |
 | 4 | `spicy-ship:phase:executor` | `plan-[nnn].md`, `research-[nnn].md` | commits, `progress-[nnn].md` | none |
-| 5 | review loop: `spicy-ship:phase:code-reviewer` and `spicy-ship:phase:fixer` in `code` mode | git range, `story.md`, `plan-[nnn].md` | `code-review-r{n}.json`, `code-fixes-r{n}.json` | `review.code` |
+| 5 | review loop: `spicy-ship:phase:code-reviewer` and `spicy-ship:phase:fixer` in `code` mode | `base_sha..HEAD`, `story.md`, `plan-[nnn].md` | `code-review-r{n}.json`, `code-fixes-r{n}.json` | `review.code` |
 
 Phase 4 runs only after the plan gate is `PASS`, or `EXHAUSTED` with `critical: false`. Anything
-else stops the story.
+else stops the story. Before spawning the executor, record `git rev-parse HEAD` as `base_sha` in
+`ship-state.json`; every later phase reviews `base_sha..HEAD` and nothing older, whatever else the
+branch carries.
 
 ## Running a review loop
 
@@ -54,11 +56,14 @@ Follow `review-loop` exactly. Per round `n`:
    outcomes table.
 
 A non-zero exit from the gate is a contract violation by the reviewer or the fixer. Spawn the same
-agent again with the gate's message; do not patch the file yourself.
+agent once more with the gate's message; do not patch the file yourself. If the second attempt
+fails the gate too, set `status: blocked` with the gate's message and stop.
 
 ## Handling envelopes
 
-- `DONE`: record the artifact in `ship-state.json`, append `decisions` to `decisions.md`, move on.
+- `DONE`: record the artifact in `ship-state.json` and move on. The agent has already appended its
+  `decisions` to `decisions.md`; the envelope copy is for your reply and the PR summary, never for
+  writing to the log a second time.
 - `NEEDS_INPUT`: apply `question-policy` for the resolved mode. After answers exist in
   `answers.json`, resume the same agent when the harness allows it; otherwise spawn a fresh one
   with the same inputs plus the answers path. All state is on disk, so a fresh agent loses nothing.
@@ -75,6 +80,7 @@ every phase and every gate:
   "story": "story.md",
   "slug": "012-auth-refresh",
   "branch": "ship/012-auth-refresh",
+  "base_sha": "3f1c2ab",
   "phase": "code-review",
   "round": 2,
   "status": "running | needs_input | blocked | done",
@@ -91,6 +97,6 @@ and whose gate passed.
 
 - Paths, not content. Never paste an artifact into a prompt.
 - One agent per phase at a time; the two agents of a review loop alternate, they never overlap.
-- The executor's test run is the executor's claim. Before the story is called done, run the suite
-  once yourself and keep the command and its result line.
+- The executor's test run is the executor's claim. Before the story is called done, run the
+  command it recorded in `progress-[nnn].md` once yourself and keep it with its result line.
 - Only the main session asks the user. If you are an agent, `NEEDS_INPUT` goes up, not out.
