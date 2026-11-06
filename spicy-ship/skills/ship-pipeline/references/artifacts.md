@@ -6,7 +6,9 @@ three-digit number under `/context/`; `slug` is kebab-case from the story title,
 | File | Written by | Purpose |
 |---|---|---|
 | `story.md` | orchestrator | the story text and acceptance criteria as given |
-| `ship-state.json` | orchestrator | phase, round, status, gates; the resume point |
+| `ship-state.json` | orchestrator | phase, round, status, gates, base_sha; the resume point |
+| `ship-config.json` | orchestrator | the config resolved once at the start; every agent and gate reads this, never a fresh resolution |
+| `questions.json` | orchestrator | questions still open from the last NEEDS_INPUT, until answers.json exists |
 | `research-[nnn].md` | explorer | findings, usage examples, Open Questions table |
 | `plan-[nnn].md` | planner, then fixer in plan mode | the plan; its `## Tasks` checklist is the execution protocol |
 | `plan-review-r{n}.json` | plan-reviewer | round `n` findings, per the review-loop contract |

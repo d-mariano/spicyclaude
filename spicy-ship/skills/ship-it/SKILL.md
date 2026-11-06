@@ -32,13 +32,15 @@ that output instead; arguments beat every other source.
 ## Procedure
 
 1. **Story.** `$ARGUMENTS` minus the flags is a file path or the story text. With `--resume`,
-   read `ship-state.json` in the named folder, check out its `branch`, and continue from its
-   `phase`; skip the rest of this step. Otherwise pick the next `nnn` and the slug, and if you are
-   on the default branch create and check out `ship/[nnn]-{slug}`; on any other branch stay on it.
-   Then create `/context/[nnn]-{slug}/`, write `story.md`, and write `ship-state.json` with
-   `status: running`, `phase: explore`, and the branch name.
-2. **Pipeline.** Follow `ship-pipeline`. Spawn each phase agent with paths and the resolved
-   config. Keep one line per phase in your context.
+   read `ship-state.json` in the named folder, check out its `branch`, use the folder's
+   `ship-config.json` instead of the config above, and continue from its `phase` per the pipeline's
+   resume rules; skip the rest of this step. Otherwise pick the next `nnn` and the slug, and if you
+   are on the default branch create and check out `ship/[nnn]-{slug}`; on any other branch stay on
+   it. Then create `/context/[nnn]-{slug}/`, write `story.md`, write the resolved config to
+   `ship-config.json`, and write `ship-state.json` with `status: running`, `phase: explore`, and
+   the branch name.
+2. **Pipeline.** Follow `ship-pipeline`. Spawn each phase agent with paths, including the path to
+   `ship-config.json`. Keep one line per phase in your context.
 3. **Questions.** On `NEEDS_INPUT`, apply `question-policy` for the resolved mode. When you ask,
    render each question through `AskUserQuestion` as the contract specifies, at most four per
    call, options in the given order, no "Other". Write `answers.json`, then resume the agent.
@@ -52,9 +54,9 @@ that output instead; arguments beat every other source.
    stop. Never open a PR for a blocked story.
 5. **Pull request.** Unless `--no-pr`: push the branch and open a PR with `gh pr create`. Body
    sections, in order: Summary, the plan's AC trace table, "Decisions made autonomously" copied
-   verbatim from `decisions.md`, "Advisory findings" listing every `fixable` finding below the
-   severity floor and any `EXHAUSTED` blocking findings with their ids, and the test command with
-   its result line. Never merge.
+   verbatim from `decisions.md`, "Advisory findings" listing, from the final round of each gate,
+   every `fixable` finding below the severity floor and any `EXHAUSTED` blocking findings with
+   their ids, and the test command with its result line. Never merge.
 6. **Reply.** At most fifteen lines: status, PR link or blocked reason, rounds used per gate with
    their outcomes, open decisions count, and the test result line.
 

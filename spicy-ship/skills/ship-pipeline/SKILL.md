@@ -16,8 +16,9 @@ envelopes, nothing else.
 - The story: text plus acceptance criteria, already written to `story.md` in the context folder.
 - The context folder `/context/[nnn]-{slug}/`. [references/artifacts.md](references/artifacts.md)
   lists every file that lives there.
-- The resolved config JSON from `ship_config.py`.
-- The question mode, from that config.
+- `ship-config.json` in the context folder: the config resolved once at the start of the story.
+  Agents get its path; the question mode and the gate parameters come from it, never from a
+  second resolution.
 
 ## Phases
 
@@ -50,8 +51,9 @@ Follow `review-loop` exactly. Per round `n`:
      --fix-floor <cfg.review.<phase>.fix_floor>
    ```
 
-3. On `CONTINUE`, spawn the fixer with the findings file, the `fixable` ids, and the mode. Then
-   the next round.
+3. On `CONTINUE`, spawn the fixer with the findings file, the `fixable` ids, the mode, and in
+   `code` mode the progress file, whose recorded test command the fixer must run. Then the next
+   round.
 4. On anything else, record the outcome in `ship-state.json` and act on it per the review-loop
    outcomes table.
 
@@ -64,9 +66,10 @@ fails the gate too, set `status: blocked` with the gate's message and stop.
 - `DONE`: record the artifact in `ship-state.json` and move on. The agent has already appended its
   `decisions` to `decisions.md`; the envelope copy is for your reply and the PR summary, never for
   writing to the log a second time.
-- `NEEDS_INPUT`: apply `question-policy` for the resolved mode. After answers exist in
-  `answers.json`, resume the same agent when the harness allows it; otherwise spawn a fresh one
-  with the same inputs plus the answers path. All state is on disk, so a fresh agent loses nothing.
+- `NEEDS_INPUT`: write the envelope's questions to `questions.json`, set `status: needs_input`,
+  then apply `question-policy` for the resolved mode. After answers exist in `answers.json`,
+  resume the same agent when the harness allows it; otherwise spawn a fresh one with the same
+  inputs plus the answers path. All state is on disk, so a fresh agent loses nothing.
 - `FAILED`: set `status: blocked` with the summary and stop. Do not retry a `FAILED` phase without
   a change in inputs.
 
@@ -91,7 +94,11 @@ every phase and every gate:
 ```
 
 To resume, read it and continue from `phase` and `round`. Never redo a phase whose artifact exists
-and whose gate passed.
+and whose gate passed. With `status: needs_input` and no `answers.json`, the questions in
+`questions.json` are still open; ask them before anything else. Inside a review loop the files
+decide the next step: no findings file for `round` means spawn the reviewer; findings but no fixes
+file means run the gate again, which is idempotent, and act on it; both present means the next
+round.
 
 ## Rules
 
