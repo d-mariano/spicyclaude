@@ -57,8 +57,8 @@ Map each confirmed finding to the contract: `id`, `title`, `severity`, `confiden
 `category`, `problem`, `fix`. On a re-review, decide `resolved`, `unresolved`, or `regressed` for
 every prior id first, judging rejections in the fixes file on their merits, and re-use the prior id
 for the same issue. New ids continue the sequence. Write
-`/context/[nnn]-{slug}/code-review-r{round}.json`. A round with nothing confirmed writes a `PASS`
-verdict with an empty findings list; that is a valid, expected result.
+`/context/[nnn]-{slug}/code-review-r{round}.json`. A round with nothing confirmed writes an empty
+findings list; that is a valid, expected result.
 
 ## Output
 
