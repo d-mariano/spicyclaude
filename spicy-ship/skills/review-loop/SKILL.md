@@ -103,9 +103,9 @@ instead of hiding it in a third identical report.
 
 ## Roles
 
-The phase agents in this plugin implement these roles: `spicy-ship:phase:plan-reviewer` and
-`spicy-ship:phase:code-reviewer` review, `spicy-ship:phase:fixer` fixes, and the orchestrating
-skill runs the gate.
+The phase agents in this plugin implement the first two roles: `spicy-ship:phase:plan-reviewer` and
+`spicy-ship:phase:code-reviewer` review, `spicy-ship:phase:fixer` fixes. Whatever drives the loop,
+a skill in the main session or an agent one level up, is the orchestrator and runs the gate.
 
 **Reviewer.** Read-only. Reviews only the target it is given against the story's acceptance
 criteria and the codebase. On a re-review it first verifies every prior finding, reading the

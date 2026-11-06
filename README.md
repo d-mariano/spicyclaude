@@ -28,7 +28,13 @@ The day-to-day **scope → plan → build** loop, all in a single context window
 
 ## 🧪 Skills that complement every workflow
 
-The **[spicy-skills](spicy-skills/)** plugin holds the craft skills `/execute`, SPICE and the ship agents load on demand:
+The **[spicy-skills](spicy-skills/)** plugin holds the craft skills `/execute`, `/planner`, SPICE and the ship agents load by name. Install it even if you use this repo as your `~/.claude` rather than through the marketplace; those commands stop at their first `Skill()` call without it.
+
+```bash
+/plugin install spicy-skills --marketplace d-mariano/spicyclaude
+```
+
+Skills in the plugin:
 
 - **[test-driven-development](spicy-skills/skills/test-driven-development/)** — RED/GREEN/REFACTOR cycle, test-double guidance, anti-patterns. Loaded unconditionally during implementation.
 - **[python-development](spicy-skills/skills/python-development/)** — Python typing, structure, tooling (uv, ruff, mypy, pytest).
