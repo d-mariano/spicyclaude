@@ -15,7 +15,9 @@ Everything else is delegated to `spicy-ship:phase:*` agents by following `ship-p
 
 !`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/ship_config.py --plugin-config maxReviewRounds=${user_config.maxReviewRounds} --plugin-config minReviewSeverity=${user_config.minReviewSeverity} --plugin-config questionMode=${user_config.questionMode}`
 
-If the block above is empty or an error, run the same command yourself before anything else. If
+If the block above is empty or an error, run `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/ship_config.py`
+yourself with no `--plugin-config` flags before anything else, and say in the final reply that
+plugin options were not applied to this run. If
 `$ARGUMENTS` contains any `--max-review-rounds`, `--min-severity`, `--fix-floor`, `--questions`,
 `--escalate`, `--plan-*` or `--code-*` flag, re-run the command with those flags appended and use
 that output instead; arguments beat every other source.

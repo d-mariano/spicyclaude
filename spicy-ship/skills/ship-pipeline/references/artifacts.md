@@ -8,7 +8,7 @@ three-digit number under `/context/`; `slug` is kebab-case from the story title,
 | `story.md` | orchestrator | the story text and acceptance criteria as given |
 | `ship-state.json` | orchestrator | phase, round, status, gates, base_sha; the resume point |
 | `ship-config.json` | orchestrator | the config resolved once at the start; every agent and gate reads this, never a fresh resolution |
-| `questions.json` | orchestrator | questions still open from the last NEEDS_INPUT, until answers.json exists |
+| `questions.json` | orchestrator | the phase and questions array from the last NEEDS_INPUT; replaced each time |
 | `research-[nnn].md` | explorer | findings, usage examples, Open Questions table |
 | `plan-[nnn].md` | planner, then fixer in plan mode | the plan; its `## Tasks` checklist is the execution protocol |
 | `plan-review-r{n}.json` | plan-reviewer | round `n` findings, per the review-loop contract |
@@ -18,7 +18,9 @@ three-digit number under `/context/`; `slug` is kebab-case from the story title,
 | `code-review-r{n}.json` | code-reviewer | round `n` findings |
 | `code-fixes-r{n}.json` | fixer | round `n` resolutions |
 | `decisions.md` | every agent, append-only | one line per autonomous decision; copied into the PR body |
-| `answers.json` | orchestrator | the user's answers, keyed by question id |
+| `answers.json` | orchestrator | the user's answers, keyed by `<phase>:<id>`, accumulated across the story |
 
-`nnn` inside file names matches the folder. Rounds start at 1. Nothing here is ever deleted or
-rewritten except `ship-state.json` and the plan.
+`nnn` inside file names matches the folder. Rounds start at 1. Research and every review and
+fixes JSON are write-once. The plan and `progress-[nnn].md` are updated in place, `decisions.md`
+and `answers.json` only grow, and `ship-state.json` and `questions.json` are replaced. Nothing is
+deleted.

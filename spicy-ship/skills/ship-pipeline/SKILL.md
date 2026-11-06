@@ -66,7 +66,8 @@ fails the gate too, set `status: blocked` with the gate's message and stop.
 - `DONE`: record the artifact in `ship-state.json` and move on. The agent has already appended its
   `decisions` to `decisions.md`; the envelope copy is for your reply and the PR summary, never for
   writing to the log a second time.
-- `NEEDS_INPUT`: write the envelope's questions to `questions.json`, set `status: needs_input`,
+- `NEEDS_INPUT`: write the envelope's `questions` array to `questions.json` as it is, with the
+  agent's phase alongside (`{"phase": "planner", "questions": [...]}`), set `status: needs_input`,
   then apply `question-policy` for the resolved mode. After answers exist in `answers.json`,
   resume the same agent when the harness allows it; otherwise spawn a fresh one with the same
   inputs plus the answers path. All state is on disk, so a fresh agent loses nothing.
@@ -94,8 +95,8 @@ every phase and every gate:
 ```
 
 To resume, read it and continue from `phase` and `round`. Never redo a phase whose artifact exists
-and whose gate passed. With `status: needs_input` and no `answers.json`, the questions in
-`questions.json` are still open; ask them before anything else. Inside a review loop the files
+and whose gate passed. With `status: needs_input`, every question in `questions.json` whose
+`<phase>:<id>` key is absent from `answers.json` is still open; ask those before anything else. Inside a review loop the files
 decide the next step: no findings file for `round` means spawn the reviewer; findings but no fixes
 file means run the gate again, which is idempotent, and act on it; both present means the next
 round.

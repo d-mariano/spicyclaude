@@ -112,8 +112,10 @@ the cheapest place to revisit a call that was made without them.
 
 ## Resuming after an answer
 
-The orchestrator writes `answers.json` keyed by question id: the chosen option's label as a string,
-a list of labels for a `multiSelect` question, or the user's free text when they typed their own
-answer, for example `{"Q4": "bcrypt hash (Recommended)", "Q5": ["test_login", "test_refresh"]}`.
-It resumes the same agent with the path. The agent records each answer as a decision with `why: "user"` and
+The orchestrator writes `answers.json` keyed by `<phase>:<id>`, since every agent numbers its own
+questions from `Q1`: the chosen option's label as a string, a list of labels for a `multiSelect`
+question, or the user's free text when they typed their own answer, for example
+`{"planner:Q4": "bcrypt hash (Recommended)", "planner:Q5": ["test_login", "test_refresh"]}`. The
+file accumulates across the story; an answer is never removed. It resumes the same agent with the
+path, and the agent reads only the keys that carry its own phase. The agent records each answer as a decision with `why: "user"` and
 continues from where it stopped. It never re-asks a question that has an entry in `answers.json`.
