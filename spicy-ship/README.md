@@ -17,12 +17,22 @@ The code-reviewer fans out to the review lenses one subagent level below itself.
 
 Without it the code-reviewer falls back to a single consolidated pass and says so in its summary.
 
+## Usage
+
+```
+/spicy-ship:ship-it path/to/story.md
+/spicy-ship:ship-it "Add refresh-token rotation; AC-1 ..., AC-2 ..." --questions=raise
+/spicy-ship:ship-it --resume /context/012-auth-refresh
+```
+
+`ship-it` runs in the main session, delegates every phase to an agent, asks you only what the question policy lets through, and ends with a pull request or a named reason it stopped. Artifacts live in `/context/[nnn]-{slug}/`; `ship-state.json` there is the resume point.
+
 ## Skills
 
-Both are model-invoked only; they are reference material for orchestrators and agents, not commands.
-
-- [review-loop](skills/review-loop/SKILL.md): the reviewer and fixer loop, its findings contract, and the four outcomes.
-- [question-policy](skills/question-policy/SKILL.md): how agents that cannot ask the user still surface decisions, and when the main session asks.
+- [ship-it](skills/ship-it/SKILL.md): the user-invoked orchestrator for one story.
+- [ship-pipeline](skills/ship-pipeline/SKILL.md): the per-story procedure ship-it follows, with the [artifact layout](skills/ship-pipeline/references/artifacts.md). Model-invoked only.
+- [review-loop](skills/review-loop/SKILL.md): the reviewer and fixer loop, its findings contract, and the four outcomes. Model-invoked only.
+- [question-policy](skills/question-policy/SKILL.md): how agents that cannot ask the user still surface decisions, and when the main session asks. Model-invoked only.
 
 ## Agents
 

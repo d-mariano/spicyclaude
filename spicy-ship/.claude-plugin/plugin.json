@@ -1,7 +1,7 @@
 {
   "name": "spicy-ship",
-  "version": "0.2.0",
-  "description": "Unattended story shipping: phase agents (explore, plan, review, execute, fix), shared review-loop and question-policy contracts, deterministic config resolution and review gating.",
+  "version": "0.3.0",
+  "description": "Unattended story shipping: ship-it orchestrator, phase agents (explore, plan, review, execute, fix), shared review-loop and question-policy contracts, deterministic config resolution and review gating.",
   "author": {
     "name": "dave",
     "email": "developer.dave@outlook.com"
