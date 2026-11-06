@@ -2,12 +2,14 @@
 """Resolve spicy-ship configuration and print it as JSON.
 
 Precedence, highest first: CLI flags, SPICY_* environment variables, the
-project file .claude/spicyclaude.json, plugin userConfig values passed as
---plugin-config KEY=VALUE, built-in defaults. Invalid input exits non-zero.
+project file .claude/spicyclaude.json at the project root, plugin userConfig
+values passed as --plugin-config KEY=VALUE, built-in defaults. An empty value
+in any source means unset. Invalid input exits non-zero.
 """
 
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -16,7 +18,7 @@ MODES = ("auto", "raise", "batch")
 ESCALATIONS = ("irreversible", "external")
 REVIEWERS = ("plan", "code")
 REVIEW_KEYS = ("max_rounds", "min_severity", "fix_floor")
-PROJECT_FILE = Path(".claude/spicyclaude.json")
+PROJECT_FILE = Path(".claude", "spicyclaude.json")
 
 DEFAULTS = {
     "review": {"default": {"max_rounds": 3, "min_severity": "High", "fix_floor": "Medium"}},
@@ -58,13 +60,13 @@ class ConfigError(Exception):
     """Raised for any unknown key or invalid value. Never swallowed."""
 
 
-def resolve(argv, env, project_file=PROJECT_FILE):
+def resolve(argv, env, project_path=None):
     """Merge every config source in precedence order and return the resolved config."""
     flags, plugin_pairs = _split_argv(argv)
     layers = [
         DEFAULTS,
         _from_plugin_config(plugin_pairs),
-        _from_project_file(project_file),
+        _from_project_file(project_path if project_path is not None else project_file(env)),
         _from_paths(ENV_PATHS, env, "environment variable"),
         _from_flags(flags),
     ]
@@ -72,6 +74,19 @@ def resolve(argv, env, project_file=PROJECT_FILE):
     for layer in layers:
         _deep_merge(merged, layer)
     return _finalize(merged)
+
+
+def project_file(env, cwd=None):
+    """Locate .claude/spicyclaude.json from CLAUDE_PROJECT_DIR or the git top level, never the cwd."""
+    root = env.get("CLAUDE_PROJECT_DIR")
+    if not root:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"], cwd=cwd, capture_output=True, text=True
+        )
+        if result.returncode != 0:
+            raise ConfigError("cannot locate the project root: set CLAUDE_PROJECT_DIR or run inside a git repository")
+        root = result.stdout.strip()
+    return Path(root) / PROJECT_FILE
 
 
 def _split_argv(argv):
@@ -97,6 +112,8 @@ def _from_flags(flags):
         flag, value = raw.split("=", 1)
         if flag not in ARG_PATHS:
             raise ConfigError(f"unknown argument {flag!r}; known: {', '.join(sorted(ARG_PATHS))}")
+        if value == "":
+            continue
         _set(layer, ARG_PATHS[flag], _parse(ARG_PATHS[flag], value, f"argument {flag}"))
     return layer
 
@@ -125,43 +142,52 @@ def _from_paths(table, source, label):
     return layer
 
 
-def _from_project_file(project_file):
-    if project_file is None or not Path(project_file).is_file():
+def _from_project_file(path):
+    if not Path(path).is_file():
         return {}
     try:
-        data = json.loads(Path(project_file).read_text())
+        data = json.loads(Path(path).read_text())
     except json.JSONDecodeError as exc:
-        raise ConfigError(f"{project_file} is not valid JSON: {exc}") from exc
-    _validate_project_shape(data, project_file)
+        raise ConfigError(f"{path} is not valid JSON: {exc}") from exc
+    _validate_project_shape(data, path)
     return data
 
 
 def _validate_project_shape(data, project_file):
+    _require_object(data, project_file, "top level")
     allowed_top = {"review", "questions"}
     unknown = set(data) - allowed_top
     if unknown:
         raise ConfigError(f"{project_file}: unknown top-level keys {sorted(unknown)}")
-    for reviewer, section in data.get("review", {}).items():
+    review = data.get("review", {})
+    _require_object(review, project_file, "review")
+    for reviewer, section in review.items():
         if reviewer not in ("default",) + REVIEWERS:
             raise ConfigError(f"{project_file}: unknown review section {reviewer!r}")
+        _require_object(section, project_file, f"review.{reviewer}")
         for key, value in section.items():
             if key not in REVIEW_KEYS:
                 raise ConfigError(f"{project_file}: unknown review key {key!r}")
             section[key] = _parse(("review", reviewer, key), value, f"{project_file} review.{reviewer}.{key}")
     questions = data.get("questions", {})
+    _require_object(questions, project_file, "questions")
     for key, value in questions.items():
         if key not in ("mode", "escalate"):
             raise ConfigError(f"{project_file}: unknown questions key {key!r}")
         questions[key] = _parse(("questions", key), value, f"{project_file} questions.{key}")
 
 
+def _require_object(value, project_file, where):
+    if not isinstance(value, dict):
+        raise ConfigError(f"{project_file}: {where} must be a JSON object, got {type(value).__name__}")
+
+
 def _parse(path, value, where):
     leaf = path[-1]
     if leaf == "max_rounds":
-        try:
-            rounds = int(value)
-        except (TypeError, ValueError):
-            raise ConfigError(f"{where}: max_rounds must be an integer, got {value!r}") from None
+        rounds = _as_int(value)
+        if rounds is None:
+            raise ConfigError(f"{where}: max_rounds must be an integer, got {value!r}")
         if rounds < 1:
             raise ConfigError(f"{where}: max_rounds must be at least 1, got {rounds}")
         return rounds
@@ -182,6 +208,16 @@ def _parse(path, value, where):
                 raise ConfigError(f"{where}: escalate entries must be in {ESCALATIONS} or 'none', got {item!r}")
         return items
     raise ConfigError(f"{where}: unknown config key {leaf!r}")
+
+
+def _as_int(value):
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str) and value.strip().isdigit():
+        return int(value)
+    return None
 
 
 def _set(layer, path, value):

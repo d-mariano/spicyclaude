@@ -18,6 +18,7 @@ Resolve once per run and pass the `plan` or `code` section to the gate:
 python3 ${CLAUDE_PLUGIN_ROOT}/scripts/ship_config.py \
   --plugin-config maxReviewRounds=${user_config.maxReviewRounds} \
   --plugin-config minReviewSeverity=${user_config.minReviewSeverity} \
+  --plugin-config questionMode=${user_config.questionMode} \
   <skill arguments>
 ```
 
@@ -65,9 +66,13 @@ Each round the reviewer writes `<phase>-review-r<round>.json` in the story's con
 Rules the gate enforces:
 
 - `verdict` is `PASS` with an empty `findings` list, or `CHANGES_REQUESTED` otherwise.
-- Every prior finding gets a `status`. A prior finding that is `unresolved` or `regressed` is
-  re-listed in `findings` under the same `id`, with a fresh location and confidence.
-- Ids are unique within a round and stable across rounds for the same issue.
+- Every round after the first is gated with `--prior` pointing at the previous round's file.
+  Every finding in that file gets a `status`, and no id outside it may appear. A prior finding
+  that is `unresolved` or `regressed` is re-listed in `findings` under the same `id`, with a fresh
+  location and confidence; one marked `resolved` may not be.
+- Ids look like `F12`, are unique within a round, and stay stable across rounds for the same issue.
+- `category` is one of the schema's enumerated values and `location` is `path`, `path:line` or
+  `path:start-end`, so fingerprints compare like with like.
 - Identity across rounds is the fingerprint of category, file path, and normalized title, so a
   finding that moves a few lines after a fix still counts as the same finding.
 
