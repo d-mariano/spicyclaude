@@ -1,0 +1,46 @@
+{
+  "name": "spicy-ship",
+  "version": "0.3.0",
+  "description": "Unattended story shipping: ship-it orchestrator, phase agents (explore, plan, review, execute, fix), shared review-loop and question-policy contracts, deterministic config resolution and review gating.",
+  "author": {
+    "name": "dave",
+    "email": "developer.dave@outlook.com"
+  },
+  "license": "MIT",
+  "dependencies": [
+    "spicy-skills",
+    "spicy-review"
+  ],
+  "userConfig": {
+    "maxReviewRounds": {
+      "type": "number",
+      "title": "Max review rounds",
+      "description": "Reviewer and fixer rounds per gate before the loop reports EXHAUSTED.",
+      "default": 3,
+      "min": 1
+    },
+    "minReviewSeverity": {
+      "type": "string",
+      "title": "Minimum severity that triggers another round",
+      "description": "Findings below this severity are fixed opportunistically but never cause a re-review.",
+      "default": "High",
+      "options": [
+        "Critical",
+        "High",
+        "Medium",
+        "Low"
+      ]
+    },
+    "questionMode": {
+      "type": "string",
+      "title": "Open-question mode",
+      "description": "auto decides and logs; raise asks immediately; batch asks at checkpoints.",
+      "default": "auto",
+      "options": [
+        "auto",
+        "raise",
+        "batch"
+      ]
+    }
+  }
+}

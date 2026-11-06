@@ -28,15 +28,38 @@ The day-to-day **scope → plan → build** loop, all in a single context window
 
 ## 🧪 Skills that complement every workflow
 
-These get loaded by `/execute` (and SPICE) on demand:
+The **[spicy-skills](spicy-skills/)** plugin holds the craft skills `/execute`, `/planner`, SPICE and the ship agents load by name. Install it even if you use this repo as your `~/.claude` rather than through the marketplace; those commands stop at their first `Skill()` call without it.
 
-- **[test-driven-development](skills/test-driven-development/)** — RED/GREEN/REFACTOR cycle, test-double guidance, anti-patterns. Loaded unconditionally during implementation.
-- **[python-development](skills/python-development/)** — Python typing, structure, tooling (uv, ruff, mypy, pytest).
+```bash
+/plugin install spicy-skills --marketplace d-mariano/spicyclaude
+```
+
+Skills in the plugin:
+
+- **[test-driven-development](spicy-skills/skills/test-driven-development/)** — RED/GREEN/REFACTOR cycle, test-double guidance, anti-patterns. Loaded unconditionally during implementation.
+- **[python-development](spicy-skills/skills/python-development/)** — Python typing, structure, tooling (uv, ruff, mypy, pytest).
+- **[terraform-development](spicy-skills/skills/terraform-development/)** — Modules, state, security, testing.
 
 ## 🔍 Review
 
-- [`/review:pragmatic-code-review`](commands/review/pragmatic-code-review.md) — Pragmatic review of the current branch; focuses on real issues, not nitpicks.
-- [`/review:my-developer-plan`](commands/review/my-developer-plan.md) — Independent review of a plan before you start executing it.
+The review suite ships as the **[spicy-review](spicy-review/)** plugin: `/spicy-review:review-heavy` for a risk-tiered, multi-reviewer pass with verification, `/spicy-review:code-review-light` for a fast single pass. Both score against one shared severity rubric and never approve or merge.
+
+Legacy single-prompt reviews remain as commands: [`/review:pragmatic-code-review`](commands/review/pragmatic-code-review.md) and [`/review:my-developer-plan`](commands/review/my-developer-plan.md).
+
+## 🚢 Ship
+
+**[spicy-ship](spicy-ship/)** ships one story unattended: `/spicy-ship:ship-it <story>` explores, plans, reviews the plan, implements, reviews the code, and opens a PR, delegating each phase to an agent. Its `review-loop` has a deterministic gate script and its `question-policy` says when you get asked.
+
+## 📦 Plugins
+
+The repo is a Claude Code plugin marketplace. Plugins live in their own folders and are listed in [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json).
+
+```bash
+/plugin marketplace add d-mariano/spicyclaude
+/plugin install spicy-review --marketplace d-mariano/spicyclaude
+```
+
+Validate locally with `claude plugin validate --strict .` for the marketplace or `claude plugin validate --strict ./spicy-ship` for one plugin.
 
 ## 🤝 Agents
 
@@ -47,7 +70,6 @@ Specialized subagents (planner, researcher, executer, iterator, reviewers, crawl
 - **[commands/README.md](commands/README.md)** — All slash commands, including the `aidevtools` PRD/task generators, `/crawl`, and the `/design` router with its greenfield/integrate variants.
 - **[agents/README.md](agents/README.md)** — Full agent catalog.
 - **[skills/spice/README.md](skills/spice/README.md)** — SPICE deep dive.
-- **[references.md](references.md)** — Inspirations, video talks, and external resources.
 - **[CLAUDE.md](CLAUDE.md)** — The full philosophy.
 
 ## 🌶️ Statusline

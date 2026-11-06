@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/d-mariano/spicyclaude/spicy-ship/review-loop/findings.schema.json",
+  "title": "Review round findings",
+  "description": "One reviewer round. review_gate.py enforces this shape plus the cross-field rules listed in SKILL.md.",
+  "type": "object",
+  "required": ["reviewer", "target", "round", "prior_findings", "findings"],
+  "additionalProperties": false,
+  "properties": {
+    "reviewer": {"type": "string", "minLength": 1},
+    "target": {"type": "string", "minLength": 1, "description": "Plan file path or git range reviewed."},
+    "round": {"type": "integer", "minimum": 1},
+    "prior_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "status": {"enum": ["resolved", "unresolved", "regressed"]}
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/finding"}
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "required": ["id", "title", "severity", "confidence", "location", "category", "problem", "fix"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^F[0-9]+$"},
+        "title": {"type": "string", "minLength": 1, "description": "Fewest words that name the issue; part of the cross-round fingerprint."},
+        "severity": {"enum": ["Critical", "High", "Medium", "Low"]},
+        "confidence": {"type": "integer", "minimum": 0, "maximum": 100, "description": "Per the spicy-review rubric; under 80 is dropped by the gate."},
+        "location": {"type": "string", "pattern": "^[^:]+(:[0-9]+(-[0-9]+)?)?$", "description": "path or path:line or path:start-end"},
+        "category": {"enum": ["correctness", "security", "tests", "design", "ac-coverage", "mental-alignment", "code-quality", "documentation", "performance", "deps", "observability", "simplification"]},
+        "problem": {"type": "string", "minLength": 1, "description": "The concrete bad outcome."},
+        "fix": {"type": "string", "minLength": 1, "description": "A specific, actionable change."}
+      }
+    }
+  }
+}

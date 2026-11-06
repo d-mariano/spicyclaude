@@ -1,0 +1,25 @@
+{
+  "name": "spicyclaude",
+  "owner": {
+    "name": "dave",
+    "email": "developer.dave@outlook.com"
+  },
+  "description": "Structured, iterative AI-assisted development workflows for Claude Code.",
+  "plugins": [
+    {
+      "name": "spicy-skills",
+      "source": "./spicy-skills",
+      "description": "Craft skills shared by the other plugins: test-driven-development, python-development, terraform-development."
+    },
+    {
+      "name": "spicy-review",
+      "source": "./spicy-review",
+      "description": "Risk-tiered multi-reviewer code review with a shared severity rubric and verification pass."
+    },
+    {
+      "name": "spicy-ship",
+      "source": "./spicy-ship",
+      "description": "Unattended story shipping: ship-it orchestrator, phase agents (explore, plan, review, execute, fix), shared review-loop and question-policy contracts, deterministic config resolution and review gating."
+    }
+  ]
+}
