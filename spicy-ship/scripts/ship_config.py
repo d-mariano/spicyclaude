@@ -13,7 +13,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-SEVERITIES = ("Critical", "High", "Medium", "Low")
+from severities import SEVERITIES, at_least
+
 MODES = ("auto", "raise", "batch")
 ESCALATIONS = ("irreversible", "external")
 REVIEWERS = ("plan", "code")
@@ -80,9 +81,12 @@ def project_file(env, cwd=None):
     """Locate .claude/spicyclaude.json from CLAUDE_PROJECT_DIR or the git top level, never the cwd."""
     root = env.get("CLAUDE_PROJECT_DIR")
     if not root:
-        result = subprocess.run(
-            ["git", "rev-parse", "--show-toplevel"], cwd=cwd, capture_output=True, text=True
-        )
+        try:
+            result = subprocess.run(
+                ["git", "rev-parse", "--show-toplevel"], cwd=cwd, capture_output=True, text=True
+            )
+        except OSError as exc:
+            raise ConfigError(f"cannot run git to locate the project root ({exc}); set CLAUDE_PROJECT_DIR") from exc
         if result.returncode != 0:
             raise ConfigError("cannot locate the project root: set CLAUDE_PROJECT_DIR or run inside a git repository")
         root = result.stdout.strip()
@@ -143,10 +147,15 @@ def _from_paths(table, source, label):
 
 
 def _from_project_file(path):
-    if not Path(path).is_file():
+    path = Path(path)
+    if not path.exists() and not path.is_symlink():
         return {}
+    if not path.is_file():
+        raise ConfigError(f"{path} exists but is not a readable file")
     try:
-        data = json.loads(Path(path).read_text())
+        data = json.loads(path.read_text())
+    except OSError as exc:
+        raise ConfigError(f"{path} cannot be read: {exc}") from exc
     except json.JSONDecodeError as exc:
         raise ConfigError(f"{path} is not valid JSON: {exc}") from exc
     _validate_project_shape(data, path)
@@ -241,7 +250,7 @@ def _finalize(merged):
     for reviewer in REVIEWERS:
         section = dict(default)
         section.update(merged["review"].get(reviewer, {}))
-        if SEVERITIES.index(section["fix_floor"]) < SEVERITIES.index(section["min_severity"]):
+        if at_least(section["fix_floor"], section["min_severity"]) and section["fix_floor"] != section["min_severity"]:
             raise ConfigError(
                 f"review.{reviewer}: fix_floor {section['fix_floor']!r} is stricter than "
                 f"min_severity {section['min_severity']!r}; a fix floor can only be equal or looser"

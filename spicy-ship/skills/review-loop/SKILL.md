@@ -82,7 +82,7 @@ Rules the gate enforces:
 for round in 1..max_rounds:
     reviewer writes <phase>-review-r<round>.json (round 1 has no prior)
     decision = review_gate.py <current> [--prior <previous>] --max-rounds N --min-severity S --fix-floor F
-    PASS      -> stop; the gate is green
+    PASS      -> stop; the gate is green; decision.fixable, if any, goes to the PR body unfixed
     EXHAUSTED -> stop; apply the question policy to the blocking findings
     STALLED   -> stop; reviewer and fixer disagree, escalate
     CONTINUE  -> fixer applies decision.fixable by id, records fixed or rejected-with-reason
@@ -96,7 +96,7 @@ instead of hiding it in a third identical report.
 
 | Outcome | In `auto` mode | In `raise` or `batch` mode |
 |---|---|---|
-| `PASS` | proceed | proceed |
+| `PASS` | proceed; list `fixable` findings in the PR body under "Advisory findings" | same |
 | `EXHAUSTED`, no `Critical` | proceed, list blocking findings in the PR body under "Unresolved findings" | ask the user |
 | `EXHAUSTED`, `critical: true` | mark the story blocked; never open the PR | ask the user |
 | `STALLED` | mark the story blocked | ask the user |

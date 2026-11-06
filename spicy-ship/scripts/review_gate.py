@@ -13,7 +13,8 @@ import re
 import sys
 from pathlib import Path
 
-SEVERITIES = ("Critical", "High", "Medium", "Low")
+from severities import SEVERITIES, at_least
+
 CONFIDENCE_GATE = 80
 VERDICTS = ("PASS", "CHANGES_REQUESTED")
 PRIOR_STATUSES = ("resolved", "unresolved", "regressed")
@@ -46,8 +47,8 @@ def decide(current, prior=None, *, max_rounds=3, min_severity="High", fix_floor=
 
     confident = [f for f in current["findings"] if f["confidence"] >= CONFIDENCE_GATE]
     dropped = [f["id"] for f in current["findings"] if f["confidence"] < CONFIDENCE_GATE]
-    blocking = [f for f in confident if _at_least(f["severity"], min_severity)]
-    fixable = [f["id"] for f in confident if _at_least(f["severity"], fix_floor)]
+    blocking = [f for f in confident if at_least(f["severity"], min_severity)]
+    fixable = [f["id"] for f in confident if at_least(f["severity"], fix_floor)]
 
     result = {
         "outcome": None,
@@ -63,7 +64,7 @@ def decide(current, prior=None, *, max_rounds=3, min_severity="High", fix_floor=
         result["outcome"] = "PASS"
     elif current["round"] >= max_rounds:
         result["outcome"] = "EXHAUSTED"
-    elif prior is not None and _blocking_fingerprints(prior, min_severity) == {fingerprint(f) for f in blocking}:
+    elif prior is not None and _stalled(blocking, _blocking(prior, min_severity)):
         result["outcome"] = "STALLED"
     else:
         result["outcome"] = "CONTINUE"
@@ -79,6 +80,10 @@ def fingerprint(finding):
 
 def _reconcile_priors(current, prior):
     prior_ids = {f["id"] for f in prior["findings"]}
+    listed = [p["id"] for p in current["prior_findings"]]
+    duplicates = sorted({i for i in listed if listed.count(i) > 1})
+    if duplicates:
+        raise GateError(f"current: prior_findings lists {duplicates} more than once")
     statuses = {p["id"]: p["status"] for p in current["prior_findings"]}
     missing = sorted(prior_ids - set(statuses))
     if missing:
@@ -92,16 +97,18 @@ def _reconcile_priors(current, prior):
         raise GateError(f"current: {relisted_resolved} marked resolved but still listed in findings")
 
 
-def _blocking_fingerprints(report, min_severity):
-    return {
-        fingerprint(f)
-        for f in report["findings"]
-        if f["confidence"] >= CONFIDENCE_GATE and _at_least(f["severity"], min_severity)
-    }
+def _blocking(report, min_severity):
+    return [
+        f for f in report["findings"]
+        if f["confidence"] >= CONFIDENCE_GATE and at_least(f["severity"], min_severity)
+    ]
 
 
-def _at_least(severity, floor):
-    return SEVERITIES.index(severity) <= SEVERITIES.index(floor)
+def _stalled(blocking, prior_blocking):
+    """Same blocking set as last round, by stable id or, for a renumbered re-raise, by fingerprint."""
+    same_ids = {f["id"] for f in blocking} == {f["id"] for f in prior_blocking}
+    same_prints = {fingerprint(f) for f in blocking} == {fingerprint(f) for f in prior_blocking}
+    return same_ids or same_prints
 
 
 def _validate_report(report, label):
