@@ -66,8 +66,9 @@ Each round the reviewer writes `<phase>-review-r<round>.json` in the story's con
 Rules the gate enforces:
 
 - `verdict` is `PASS` with an empty `findings` list, or `CHANGES_REQUESTED` otherwise.
-- Every round after the first is gated with `--prior` pointing at the previous round's file.
-  Every finding in that file gets a `status`, and no id outside it may appear. A prior finding
+- Every round after the first is gated with `--prior` pointing at the previous round's findings
+  and `--fixes` pointing at the fixer's `<phase>-fixes-r<round-1>.json`.
+  Every finding in the prior file gets a `status`, and no id outside it may appear. A prior finding
   that is `unresolved` or `regressed` is re-listed in `findings` under the same `id`, with a fresh
   location and confidence; one marked `resolved` may not be.
 - Ids look like `F12`, are unique within a round, and stay stable across rounds for the same issue.
@@ -81,16 +82,17 @@ Rules the gate enforces:
 ```
 for round in 1..max_rounds:
     reviewer writes <phase>-review-r<round>.json (round 1 has no prior)
-    decision = review_gate.py <current> [--prior <previous>] --max-rounds N --min-severity S --fix-floor F
+    decision = review_gate.py <current> [--prior <previous> --fixes <previous fixes>] --max-rounds N --min-severity S --fix-floor F
     PASS      -> stop; the gate is green; decision.fixable, if any, goes to the PR body unfixed
     EXHAUSTED -> stop; apply the question policy to the blocking findings
     STALLED   -> stop; reviewer and fixer disagree, escalate
     CONTINUE  -> fixer applies decision.fixable by id, records fixed or rejected-with-reason
 ```
 
-`STALLED` fires when the blocking set this round has the same fingerprints as the previous
-round. That costs one round less than waiting for the budget and surfaces a disagreement
-instead of hiding it in a third identical report.
+`STALLED` fires when every blocking finding this round repeats one from the previous round, by id
+or by fingerprint, and the fixer recorded `rejected` for each of them. That is a disagreement, and
+another round would only restate it, however many other findings the fixer did resolve. A repeat after a fix the fixer recorded as `fixed` is
+progress the reviewer judged insufficient; the loop continues while the budget lasts.
 
 ## Outcomes
 

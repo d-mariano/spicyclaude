@@ -4,7 +4,7 @@
   "title": "Open question",
   "description": "A question an agent could not resolve from its inputs, shaped so the main session can relay it through AskUserQuestion unchanged.",
   "type": "object",
-  "required": ["id", "phase", "header", "question", "options", "recommended", "reversibility", "impact"],
+  "required": ["id", "phase", "header", "question", "options", "reversibility", "impact"],
   "additionalProperties": false,
   "properties": {
     "id": {"type": "string", "pattern": "^Q[0-9]+$"},
@@ -26,7 +26,7 @@
         }
       }
     },
-    "recommended": {"type": "string", "description": "Label of the first option, which ends with (Recommended)."},
+    "recommended": {"type": "string", "description": "Label of the first option, which ends with (Recommended). Omit when the inputs give no evidence-backed lean; the question is then guarded in auto mode."},
     "reversibility": {"enum": ["reversible", "costly", "irreversible"]},
     "impact": {"enum": ["local", "cross-story", "external"]},
     "multiSelect": {"type": "boolean", "default": false}

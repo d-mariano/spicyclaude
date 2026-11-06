@@ -14,7 +14,7 @@ whether to ask, using the mode resolved by `ship_config.py`.
 
 | Mode | Agent behavior | Orchestrator behavior |
 |---|---|---|
-| `auto` (default) | pick `recommended`, append to `decisions.md`, continue | copy `decisions.md` into the PR body under "Decisions made autonomously" |
+| `auto` (default) | pick `recommended`, append to `decisions.md`, continue; a question with no `recommended` is guarded (below) | copy `decisions.md` into the PR body under "Decisions made autonomously" |
 | `raise` | stop and return `NEEDS_INPUT` with the questions | ask at once, write `answers.json`, resume the same agent |
 | `batch` | proceed on `recommended` provisionally, log the question as `provisional` | ask at the next checkpoint; an answer that differs from the recommendation re-runs the phase |
 
@@ -24,8 +24,10 @@ before opening a PR.
 ## Escalation guard
 
 `escalate` lists question properties that are never auto-decided. The default is
-`["irreversible"]`; `"external"` adds questions whose `impact` is `external`. A guarded question in
-`auto` mode is queued for the next checkpoint instead of decided. In a headless run, where nothing
+`["irreversible"]`; `"external"` adds questions whose `impact` is `external`. A question with no
+`recommended` option is always guarded, whatever `escalate` says: a recommendation exists only
+with an evidence-backed lean, and a coin flip logged as a decision would misrepresent itself. A
+guarded question in `auto` mode is queued for the next checkpoint instead of decided. In a headless run, where nothing
 can be asked, a queued question marks the story `blocked` rather than guessing. Set
 `--escalate=none` to disable the guard.
 
@@ -35,8 +37,9 @@ Agents return questions inside their envelope. [references/question.schema.json]
 is the normative schema. The shape mirrors the house rules every interactive command in this
 marketplace already follows, so a question renders faithfully through `AskUserQuestion`:
 
-- Two to four options. The recommended option is first and its label ends with `(Recommended)`;
-  mark one only with an evidence-backed lean, never from absence of contrary signal.
+- Two to four options. When the inputs support a lean, the recommended option is first, its label
+  ends with `(Recommended)`, and `recommended` carries that label. Never mark one from absence of
+  contrary signal; omit `recommended` instead.
 - Every option's description is `<implication> · Counter: <trade-off or objection>`. The recommended
   option carries the strongest counter.
 - A defer option is always present unless work cannot proceed without an answer:
@@ -99,6 +102,8 @@ the cheapest place to revisit a call that was made without them.
 
 ## Resuming after an answer
 
-The orchestrator writes `answers.json` as `{"Q4": "bcrypt hash (Recommended)"}` and resumes the
-same agent with the path. The agent records each answer as a decision with `why: "user"` and
+The orchestrator writes `answers.json` keyed by question id: the chosen option's label as a string,
+a list of labels for a `multiSelect` question, or the user's free text when they typed their own
+answer, for example `{"Q4": "bcrypt hash (Recommended)", "Q5": ["test_login", "test_refresh"]}`.
+It resumes the same agent with the path. The agent records each answer as a decision with `why: "user"` and
 continues from where it stopped. It never re-asks a question that has an entry in `answers.json`.
