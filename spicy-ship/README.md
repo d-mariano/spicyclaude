@@ -21,7 +21,7 @@ Both are model-invoked only; they are reference material for orchestrators and a
 Standard library only, so they run wherever Claude Code runs.
 
 - `scripts/ship_config.py` resolves configuration and prints JSON.
-- `scripts/review_gate.py` validates a round's findings and prints the loop decision.
+- `scripts/review_gate.py` validates a round's findings and prints the loop decision. After round 1 it needs `--prior` (the previous round's findings) and `--fixes` (the fixer's resolutions for that round).
 
 Run the tests with:
 

@@ -16,7 +16,7 @@ whether to ask, using the mode resolved by `ship_config.py`.
 |---|---|---|
 | `auto` (default) | pick `recommended`, append to `decisions.md`, continue; a question with no `recommended` is guarded (below) | copy `decisions.md` into the PR body under "Decisions made autonomously" |
 | `raise` | stop and return `NEEDS_INPUT` with the questions | ask at once, write `answers.json`, resume the same agent |
-| `batch` | proceed on `recommended` provisionally, log the question as `provisional` | ask at the next checkpoint; an answer that differs from the recommendation re-runs the phase |
+| `batch` | proceed on `recommended` provisionally, log the question as `provisional`; a question with no `recommended` is guarded (below) | ask at the next checkpoint; an answer that differs from the recommendation re-runs the phase |
 
 Checkpoints in `batch` mode are the natural seams: after decomposition, after each plan gate, and
 before opening a PR.
@@ -27,9 +27,19 @@ before opening a PR.
 `["irreversible"]`; `"external"` adds questions whose `impact` is `external`. A question with no
 `recommended` option is always guarded, whatever `escalate` says: a recommendation exists only
 with an evidence-backed lean, and a coin flip logged as a decision would misrepresent itself. A
-guarded question in `auto` mode is queued for the next checkpoint instead of decided. In a headless run, where nothing
-can be asked, a queued question marks the story `blocked` rather than guessing. Set
-`--escalate=none` to disable the guard.
+guarded question is never decided by the agent in any mode.
+
+What each party does with a guarded question:
+
+- **The agent** commits whatever is complete, returns `NEEDS_INPUT` with the question, and stops.
+  This is the same in `auto`, `batch` and `raise`; an agent cannot queue anything.
+- **The orchestrator** asks at once in `raise` mode, and in `auto` and `batch` holds the question
+  until the next checkpoint, where it asks and then resumes the agent with `answers.json`.
+- **Headless**, where nothing can be asked, the orchestrator marks the story `blocked` with the
+  question in its status rather than guessing.
+
+Set `--escalate=none` to drop the `irreversible` guard. Questions with no `recommended` option
+stay guarded regardless.
 
 ## Question contract
 

@@ -46,7 +46,6 @@ Each round the reviewer writes `<phase>-review-r<round>.json` in the story's con
   "reviewer": "code-reviewer",
   "target": "plan-012.md or a git range",
   "round": 2,
-  "verdict": "CHANGES_REQUESTED",
   "prior_findings": [{"id": "F1", "status": "resolved"}, {"id": "F2", "status": "unresolved"}],
   "findings": [
     {
@@ -65,12 +64,16 @@ Each round the reviewer writes `<phase>-review-r<round>.json` in the story's con
 
 Rules the gate enforces:
 
-- `verdict` is `PASS` with an empty `findings` list, or `CHANGES_REQUESTED` otherwise.
+- An empty `findings` list is the only way to say the round is clean; there is no separate verdict
+  field, the gate derives the outcome.
 - Every round after the first is gated with `--prior` pointing at the previous round's findings
   and `--fixes` pointing at the fixer's `<phase>-fixes-r<round-1>.json`.
   Every finding in the prior file gets a `status`, and no id outside it may appear. A prior finding
   that is `unresolved` or `regressed` is re-listed in `findings` under the same `id`, with a fresh
   location and confidence; one marked `resolved` may not be.
+- The fixes file has exactly one entry for every prior finding at or above the fix floor that
+  passed the confidence gate, each `fixed` or `rejected` with a note. A finding the fixer never
+  mentions fails the round, so a skip cannot hide as progress.
 - Ids look like `F12`, are unique within a round, and stay stable across rounds for the same issue.
 - `category` is one of the schema's enumerated values and `location` is `path`, `path:line` or
   `path:start-end`, so fingerprints compare like with like.

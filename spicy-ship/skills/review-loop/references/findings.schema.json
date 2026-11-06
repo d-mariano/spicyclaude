@@ -4,13 +4,12 @@
   "title": "Review round findings",
   "description": "One reviewer round. review_gate.py enforces this shape plus the cross-field rules listed in SKILL.md.",
   "type": "object",
-  "required": ["reviewer", "target", "round", "verdict", "prior_findings", "findings"],
+  "required": ["reviewer", "target", "round", "prior_findings", "findings"],
   "additionalProperties": false,
   "properties": {
     "reviewer": {"type": "string", "minLength": 1},
     "target": {"type": "string", "minLength": 1, "description": "Plan file path or git range reviewed."},
     "round": {"type": "integer", "minimum": 1},
-    "verdict": {"enum": ["PASS", "CHANGES_REQUESTED"]},
     "prior_findings": {
       "type": "array",
       "items": {

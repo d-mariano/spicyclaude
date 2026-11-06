@@ -24,7 +24,6 @@ def report(round_no, findings, prior=(), reviewer="code-reviewer"):
         "reviewer": reviewer,
         "target": "src",
         "round": round_no,
-        "verdict": "CHANGES_REQUESTED" if findings else "PASS",
         "prior_findings": list(prior),
         "findings": findings,
     }
@@ -144,11 +143,6 @@ class SchemaTest(unittest.TestCase):
         with self.assertRaises(GateError):
             decide(report(1, [finding("F1"), finding("F1")]))
 
-    def test_verdict_must_match_findings(self):
-        bad = report(1, [finding("F1")])
-        bad["verdict"] = "PASS"
-        with self.assertRaises(GateError):
-            decide(bad)
 
 
 if __name__ == "__main__":
@@ -263,3 +257,27 @@ class StallNeedsRejectionTest(unittest.TestCase):
         current = report(2, [finding("F1", "High")], prior=[{"id": "F1", "status": "unresolved"}])
         with self.assertRaises(GateError):
             decide(current, prior, [{"id": "F1", "resolution": "maybe", "note": "x"}])
+
+
+class FixesCompletenessTest(unittest.TestCase):
+    def test_missing_entry_for_fixable_prior_finding_fails_loud(self):
+        prior = report(1, [finding("F1", "High"), finding("F2", "High", title="Race on write", location="src/b.py:3")])
+        current = report(2, [finding("F2", "High", title="Race on write", location="src/b.py:3")], prior=[{"id": "F1", "status": "resolved"}, {"id": "F2", "status": "unresolved"}])
+        with self.assertRaises(GateError) as ctx:
+            decide(current, prior, fixed("F1"))
+        self.assertIn("F2", str(ctx.exception))
+
+    def test_entries_not_required_below_fix_floor_or_confidence_gate(self):
+        prior = report(1, [finding("F1", "High"), finding("F2", "Low", title="Naming", location="src/c.py:1"), finding("F3", "Critical", confidence=50, title="Maybe", location="src/d.py:1")])
+        current = report(2, [], prior=[{"id": "F1", "status": "resolved"}, {"id": "F2", "status": "resolved"}, {"id": "F3", "status": "resolved"}])
+        self.assertEqual(decide(current, prior, fixed("F1"))["outcome"], "PASS")
+
+    def test_duplicate_ids_in_fixes_fail_loud(self):
+        prior = report(1, [finding("F1", "High")])
+        current = report(2, [finding("F1", "High")], prior=[{"id": "F1", "status": "unresolved"}])
+        with self.assertRaises(GateError):
+            decide(current, prior, fixed("F1") + rejected("F1"))
+
+    def test_fixes_without_prior_fails_loud(self):
+        with self.assertRaises(GateError):
+            review_gate.decide(report(1, [finding("F1")]), None, fixed("F1"))
