@@ -169,3 +169,32 @@ class ProjectRootTest(unittest.TestCase):
         with TemporaryDirectory() as d:
             with self.assertRaises(ship_config.ConfigError):
                 ship_config.project_file({}, cwd=Path(d))
+
+
+class ProjectFileErrorsTest(unittest.TestCase):
+    def test_directory_at_project_file_path_fails_loud(self):
+        with TemporaryDirectory() as d:
+            with self.assertRaises(ship_config.ConfigError):
+                resolve(project_file=Path(d))
+
+    def test_dangling_symlink_fails_loud(self):
+        with TemporaryDirectory() as d:
+            link = Path(d) / "spicyclaude.json"
+            link.symlink_to(Path(d) / "missing.json")
+            with self.assertRaises(ship_config.ConfigError):
+                resolve(project_file=link)
+
+    def test_unreadable_project_file_fails_loud(self):
+        from unittest.mock import patch
+        with TemporaryDirectory() as d:
+            f = Path(d) / "spicyclaude.json"
+            f.write_text("{}")
+            with patch.object(Path, "read_text", side_effect=PermissionError("denied")):
+                with self.assertRaises(ship_config.ConfigError):
+                    resolve(project_file=f)
+
+    def test_missing_git_binary_fails_loud(self):
+        from unittest.mock import patch
+        with patch.object(ship_config.subprocess, "run", side_effect=FileNotFoundError("git")):
+            with self.assertRaises(ship_config.ConfigError):
+                ship_config.project_file({})

@@ -188,3 +188,26 @@ class FindingShapeTest(unittest.TestCase):
             decide(report(1, [finding("F1", location="C:\\x\\a.py:3:4")]))
         self.assertEqual(decide(report(1, [finding("F1", location="src/a.py:3-9")]))["outcome"], "CONTINUE")
         self.assertEqual(decide(report(1, [finding("F1", location="src/a.py")]))["outcome"], "CONTINUE")
+
+
+class StallByIdTest(unittest.TestCase):
+    def test_stalled_when_same_id_is_reraised_with_reworded_title(self):
+        prior = report(1, [finding("F1", "High", title="Refresh token stored in plaintext")])
+        current = report(2, [finding("F1", "High", title="Plaintext refresh token persisted")], prior=[{"id": "F1", "status": "unresolved"}])
+        self.assertEqual(decide(current, prior)["outcome"], "STALLED")
+
+    def test_stalled_when_renumbered_but_same_fingerprint(self):
+        prior = report(1, [finding("F1", "High")])
+        current = report(2, [finding("F2", "High", location="src/a.py:40")], prior=[{"id": "F1", "status": "resolved"}])
+        self.assertEqual(decide(current, prior)["outcome"], "STALLED")
+
+    def test_continue_when_one_of_two_blocking_was_fixed(self):
+        prior = report(1, [finding("F1", "High"), finding("F2", "High", title="Race on write", location="src/b.py:3")])
+        current = report(2, [finding("F2", "High", title="Race on write", location="src/b.py:3")], prior=[{"id": "F1", "status": "resolved"}, {"id": "F2", "status": "unresolved"}])
+        self.assertEqual(decide(current, prior)["outcome"], "CONTINUE")
+
+    def test_duplicate_prior_ids_fail_loud(self):
+        prior = report(1, [finding("F1")])
+        current = report(2, [], prior=[{"id": "F1", "status": "unresolved"}, {"id": "F1", "status": "resolved"}])
+        with self.assertRaises(GateError):
+            decide(current, prior)
