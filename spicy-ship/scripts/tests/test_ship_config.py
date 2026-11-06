@@ -8,7 +8,10 @@ from tempfile import TemporaryDirectory
 import ship_config
 
 
-def resolve(argv=(), env=None, project_file=None):
+ABSENT = Path("/nonexistent/spicyclaude.json")
+
+
+def resolve(argv=(), env=None, project_file=ABSENT):
     return ship_config.resolve(list(argv), env or {}, project_file)
 
 
@@ -114,3 +117,55 @@ class ValidationTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class EmptyValueTest(unittest.TestCase):
+    def test_empty_flag_value_is_unset_not_cleared(self):
+        cfg = resolve(["--escalate=", "--max-review-rounds="])
+        self.assertEqual(cfg["questions"]["escalate"], ["irreversible"])
+        self.assertEqual(cfg["review"]["code"]["max_rounds"], 3)
+
+
+class StrictTypesTest(unittest.TestCase):
+    def test_float_rounds_fail_loud(self):
+        with TemporaryDirectory() as d:
+            f = Path(d) / "spicyclaude.json"
+            f.write_text(json.dumps({"review": {"default": {"max_rounds": 2.9}}}))
+            with self.assertRaises(ship_config.ConfigError):
+                resolve(project_file=f)
+
+    def test_bool_rounds_fail_loud(self):
+        with TemporaryDirectory() as d:
+            f = Path(d) / "spicyclaude.json"
+            f.write_text(json.dumps({"review": {"default": {"max_rounds": True}}}))
+            with self.assertRaises(ship_config.ConfigError):
+                resolve(project_file=f)
+
+    def test_non_object_sections_fail_loud(self):
+        for payload in ({"review": [1]}, {"review": {"default": "nope"}}, {"questions": 3}, [1]):
+            with TemporaryDirectory() as d:
+                f = Path(d) / "spicyclaude.json"
+                f.write_text(json.dumps(payload))
+                with self.assertRaises(ship_config.ConfigError):
+                    resolve(project_file=f)
+
+
+class ProjectRootTest(unittest.TestCase):
+    def test_project_file_anchored_on_claude_project_dir(self):
+        with TemporaryDirectory() as d:
+            (Path(d) / ".claude").mkdir()
+            (Path(d) / ".claude" / "spicyclaude.json").write_text(json.dumps({"review": {"default": {"max_rounds": 1}}}))
+            self.assertEqual(ship_config.project_file({"CLAUDE_PROJECT_DIR": d}), Path(d) / ".claude" / "spicyclaude.json")
+
+    def test_project_file_falls_back_to_git_toplevel(self):
+        import subprocess
+        with TemporaryDirectory() as d:
+            subprocess.run(["git", "init", "-q", d], check=True)
+            nested = Path(d) / "pkg" / "api"
+            nested.mkdir(parents=True)
+            self.assertEqual(ship_config.project_file({}, cwd=nested).resolve(), (Path(d) / ".claude" / "spicyclaude.json").resolve())
+
+    def test_no_project_root_fails_loud(self):
+        with TemporaryDirectory() as d:
+            with self.assertRaises(ship_config.ConfigError):
+                ship_config.project_file({}, cwd=Path(d))

@@ -19,6 +19,12 @@ VERDICTS = ("PASS", "CHANGES_REQUESTED")
 PRIOR_STATUSES = ("resolved", "unresolved", "regressed")
 REPORT_KEYS = ("reviewer", "target", "round", "verdict", "prior_findings", "findings")
 FINDING_KEYS = ("id", "title", "severity", "confidence", "location", "category", "problem", "fix")
+CATEGORIES = (
+    "correctness", "security", "tests", "design", "ac-coverage", "mental-alignment",
+    "code-quality", "documentation", "performance", "deps", "observability", "simplification",
+)
+ID_PATTERN = re.compile(r"^F[0-9]+$")
+LOCATION_PATTERN = re.compile(r"^[^:]+(:[0-9]+(-[0-9]+)?)?$")
 
 
 class GateError(Exception):
@@ -28,10 +34,13 @@ class GateError(Exception):
 def decide(current, prior=None, *, max_rounds=3, min_severity="High", fix_floor="Medium"):
     """Apply the review-loop algorithm to one round and return the decision as a dict."""
     _validate_report(current, "current")
+    if current["round"] > 1 and prior is None:
+        raise GateError(f"round {current['round']} needs --prior with round {current['round'] - 1}")
     if prior is not None:
         _validate_report(prior, "prior")
         if prior["round"] != current["round"] - 1:
             raise GateError(f"prior round is {prior['round']} but current round is {current['round']}")
+        _reconcile_priors(current, prior)
     if current["round"] > max_rounds:
         raise GateError(f"round {current['round']} exceeds max_rounds {max_rounds}")
 
@@ -66,6 +75,21 @@ def fingerprint(finding):
     path = finding["location"].split(":", 1)[0]
     title = re.sub(r"\s+", " ", finding["title"].strip().lower())
     return hashlib.sha1(f"{finding['category']}|{path}|{title}".encode()).hexdigest()
+
+
+def _reconcile_priors(current, prior):
+    prior_ids = {f["id"] for f in prior["findings"]}
+    statuses = {p["id"]: p["status"] for p in current["prior_findings"]}
+    missing = sorted(prior_ids - set(statuses))
+    if missing:
+        raise GateError(f"current: prior findings {missing} have no status in prior_findings")
+    phantom = sorted(set(statuses) - prior_ids)
+    if phantom:
+        raise GateError(f"current: prior_findings lists {phantom}, which are not in the prior round")
+    current_ids = {f["id"] for f in current["findings"]}
+    relisted_resolved = sorted(i for i, st in statuses.items() if st == "resolved" and i in current_ids)
+    if relisted_resolved:
+        raise GateError(f"current: {relisted_resolved} marked resolved but still listed in findings")
 
 
 def _blocking_fingerprints(report, min_severity):
@@ -123,6 +147,12 @@ def _validate_finding(finding, label):
     for key in ("id", "title", "location", "category", "problem", "fix"):
         if not isinstance(finding[key], str) or not finding[key].strip():
             raise GateError(f"{label}: finding {finding.get('id', '?')!r} {key} must be a non-empty string")
+    if not ID_PATTERN.match(finding["id"]):
+        raise GateError(f"{label}: finding id {finding['id']!r} must look like F12")
+    if finding["category"] not in CATEGORIES:
+        raise GateError(f"{label}: finding {finding['id']!r} category must be one of {CATEGORIES}")
+    if not LOCATION_PATTERN.match(finding["location"]):
+        raise GateError(f"{label}: finding {finding['id']!r} location must be path, path:line or path:start-end")
 
 
 def _load(path):
