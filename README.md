@@ -28,10 +28,11 @@ The day-to-day **scope → plan → build** loop, all in a single context window
 
 ## 🧪 Skills that complement every workflow
 
-These get loaded by `/execute` (and SPICE) on demand:
+The **[spicy-skills](spicy-skills/)** plugin holds the craft skills `/execute`, SPICE and the ship agents load on demand:
 
-- **[test-driven-development](skills/test-driven-development/)** — RED/GREEN/REFACTOR cycle, test-double guidance, anti-patterns. Loaded unconditionally during implementation.
-- **[python-development](skills/python-development/)** — Python typing, structure, tooling (uv, ruff, mypy, pytest).
+- **[test-driven-development](spicy-skills/skills/test-driven-development/)** — RED/GREEN/REFACTOR cycle, test-double guidance, anti-patterns. Loaded unconditionally during implementation.
+- **[python-development](spicy-skills/skills/python-development/)** — Python typing, structure, tooling (uv, ruff, mypy, pytest).
+- **[terraform-development](spicy-skills/skills/terraform-development/)** — Modules, state, security, testing.
 
 ## 🔍 Review
 

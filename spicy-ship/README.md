@@ -7,7 +7,15 @@ Building blocks for shipping a story unattended: the contracts that review loops
 /plugin install spicy-ship --marketplace d-mariano/spicyclaude
 ```
 
-Depends on `spicy-review` for the severity rubric and the reviewer agents.
+Depends on `spicy-skills` for the craft skills the planner, executor and fixer load, and on `spicy-review` for the severity rubric and the reviewer agents.
+
+The code-reviewer fans out to the review lenses one subagent level below itself. Set the spawn depth explicitly in the project's settings so that level exists wherever the pipeline runs:
+
+```json
+{"env": {"CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "3"}}
+```
+
+Without it the code-reviewer falls back to a single consolidated pass and says so in its summary.
 
 ## Skills
 

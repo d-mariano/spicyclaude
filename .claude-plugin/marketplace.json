@@ -7,6 +7,11 @@
   "description": "Structured, iterative AI-assisted development workflows for Claude Code.",
   "plugins": [
     {
+      "name": "spicy-skills",
+      "source": "./spicy-skills",
+      "description": "Craft skills shared by the other plugins: test-driven-development, python-development, terraform-development."
+    },
+    {
       "name": "spicy-review",
       "source": "./spicy-review",
       "description": "Risk-tiered multi-reviewer code review with a shared severity rubric and verification pass."

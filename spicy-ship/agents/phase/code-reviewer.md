@@ -33,6 +33,15 @@ Issue all Agent calls in one message so they run in parallel. Always run `spicy-
 dependency manifest, or changes a public interface, as the spicy-review risk tiering describes.
 Give each lens the absolute context path and tell it to review only the changed code.
 
+## 2a. If the Agent tool is not available
+
+Claude Code withholds `Agent` at the subagent depth limit. When that happens, do not improvise a
+partial fan-out. Run one consolidated pass yourself over the shared context file with the four
+Tier-1 lenses' questions in mind: does the diff do what the story says, is anything concretely
+exploitable, is there needless complexity, does each behavior change have a test that would fail
+without it. Score with the same rubric, skip step 3, and state `single-pass: Agent tool withheld`
+in the envelope summary so the orchestrator can decide whether to re-run with more depth.
+
 ## 3. Verify
 
 Drop candidates with confidence under 80 and merge duplicates across lenses, keeping the best-fit

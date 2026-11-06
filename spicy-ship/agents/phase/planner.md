@@ -15,8 +15,8 @@ Prioritize rapid iteration and MVP. Do not add scope. You cannot ask the user an
 ## Inputs
 
 Paths, never pasted content: the story file, `research-[nnn].md`, the context folder, the resolved
-config JSON with `questions.mode`, `answers.json` when resumed, and on a fix round the current
-plan plus the findings file to apply.
+config JSON with `questions.mode`, and `answers.json` when resumed. Review findings against a plan
+go to the fixer, never back to you.
 
 ## Phase 0: load skills
 
@@ -110,8 +110,7 @@ says why in place of the RED subtask. Grouping-only parents say `**Structural pa
 
 ## Output
 
-Write `/context/[nnn]-{slug}/plan-[nnn].md`. On a fix round, edit the existing plan in place and
-record each finding id as fixed or rejected in `plan-fixes-r{n}.json`.
+Write `/context/[nnn]-{slug}/plan-[nnn].md`.
 
 End your reply with the return envelope from the question policy: `status`, `artifact`,
 `summary` (at most five lines), `questions`, `decisions`.

@@ -1,0 +1,10 @@
+{
+  "name": "spicy-skills",
+  "version": "1.0.0",
+  "description": "Craft skills loaded by planners and executors: test-driven-development, python-development, terraform-development.",
+  "author": {
+    "name": "dave",
+    "email": "developer.dave@outlook.com"
+  },
+  "license": "MIT"
+}
