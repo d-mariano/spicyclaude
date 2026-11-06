@@ -42,10 +42,11 @@ the envelope.
 ## Questions mid-execution
 
 A fork the plan does not settle is a question. In `auto` mode, never block: take the recommended
-option, log it in `decisions.md`, and continue. A question marked irreversible under the
-escalation guard is the exception; stop and return `NEEDS_INPUT` with the completed tasks
-committed. In `raise` mode, return `NEEDS_INPUT` at the first question. In `batch` mode, proceed
-provisionally and list the question in the envelope.
+option, log it in `decisions.md`, and continue. In `batch` mode, proceed provisionally and list
+the question in the envelope. In `raise` mode, return `NEEDS_INPUT` at the first question. A
+guarded question, one that is irreversible, external when escalation includes it, or has no
+evidence-backed recommendation, is the exception in every mode: stop and return `NEEDS_INPUT` with
+the completed tasks committed.
 
 ## Output
 

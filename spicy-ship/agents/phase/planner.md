@@ -43,8 +43,11 @@ Read the code before drafting anything and record the answers in a "Pre-flight f
 
 Forks the pre-flight uncovers that the story cannot answer are questions. In `auto` mode decide
 on the recommended option, log it in `decisions.md`, and put it in the Key decisions table. In
-`raise` or `batch` mode return `NEEDS_INPUT`. Upstream ambiguity that research should have caught
-is a research gap: name it, commit to a working assumption, and move on.
+`batch` mode do the same provisionally and list the questions in the envelope. In `raise` mode
+return `NEEDS_INPUT`. A guarded question, one that is irreversible, external when escalation
+includes it, or has no evidence-backed recommendation, is returned as `NEEDS_INPUT` in every mode.
+Upstream ambiguity that research should have caught is a research gap: name it, commit to a
+working assumption, and move on.
 
 ## Phase 2: the plan
 

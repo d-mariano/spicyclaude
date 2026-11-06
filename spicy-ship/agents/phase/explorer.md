@@ -36,8 +36,12 @@ but does not pin down. Low-stakes navigation is not a question; pick and proceed
 
 - In `auto` mode, decide each fork using the recommended option, record it in `decisions.md`
   per the question policy, and add a row to the Open Questions table with the working assumption.
-- In `raise` or `batch` mode, return `NEEDS_INPUT` with the questions in the question contract.
-  When resumed with `answers.json`, fold each answer in and never re-ask it.
+- In `batch` mode, do the same provisionally and also list the questions in the envelope so the
+  checkpoint can confirm or override them.
+- In `raise` mode, return `NEEDS_INPUT` with the questions in the question contract.
+- A guarded question, one that is irreversible, external when escalation includes it, or has no
+  evidence-backed recommendation, is returned as `NEEDS_INPUT` in every mode.
+- When resumed with `answers.json`, fold each answer in and never re-ask it.
 
 ## Output
 

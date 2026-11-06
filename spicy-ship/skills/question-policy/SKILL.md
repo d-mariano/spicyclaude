@@ -95,8 +95,9 @@ Every phase agent ends with one fenced JSON block:
 }
 ```
 
-`questions` is non-empty only with `NEEDS_INPUT`. `decisions` lists what the agent decided itself
-this run.
+`questions` is non-empty with `NEEDS_INPUT`, and in `batch` mode also with `DONE`, where it lists
+the questions the agent decided provisionally so the orchestrator can ask them at the checkpoint.
+`decisions` lists what the agent decided itself this run.
 
 ## Decisions log
 
