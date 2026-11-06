@@ -13,7 +13,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from severities import SEVERITIES, at_least
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from severities import SEVERITIES, at_least  # noqa: E402
 
 MODES = ("auto", "raise", "batch")
 ESCALATIONS = ("irreversible", "external")

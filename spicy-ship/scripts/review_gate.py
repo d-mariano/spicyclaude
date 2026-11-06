@@ -13,11 +13,13 @@ import re
 import sys
 from pathlib import Path
 
-from severities import SEVERITIES, at_least
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from severities import SEVERITIES, at_least  # noqa: E402
 
 CONFIDENCE_GATE = 80
 VERDICTS = ("PASS", "CHANGES_REQUESTED")
 PRIOR_STATUSES = ("resolved", "unresolved", "regressed")
+RESOLUTIONS = ("fixed", "rejected")
 REPORT_KEYS = ("reviewer", "target", "round", "verdict", "prior_findings", "findings")
 FINDING_KEYS = ("id", "title", "severity", "confidence", "location", "category", "problem", "fix")
 CATEGORIES = (
@@ -32,16 +34,22 @@ class GateError(Exception):
     """Raised when a findings file violates the contract. Never swallowed."""
 
 
-def decide(current, prior=None, *, max_rounds=3, min_severity="High", fix_floor="Medium"):
-    """Apply the review-loop algorithm to one round and return the decision as a dict."""
+def decide(current, prior=None, fixes=None, *, max_rounds=3, min_severity="High", fix_floor="Medium"):
+    """Apply the review-loop algorithm to one round and return the decision as a dict.
+
+    After round 1, prior is the previous round's findings and fixes is the fixer's
+    resolutions for that round; both are required so stall detection can tell a
+    rejected finding from a fix the reviewer judged insufficient.
+    """
     _validate_report(current, "current")
-    if current["round"] > 1 and prior is None:
-        raise GateError(f"round {current['round']} needs --prior with round {current['round'] - 1}")
+    if current["round"] > 1 and (prior is None or fixes is None):
+        raise GateError(f"round {current['round']} needs --prior and --fixes from round {current['round'] - 1}")
     if prior is not None:
         _validate_report(prior, "prior")
         if prior["round"] != current["round"] - 1:
             raise GateError(f"prior round is {prior['round']} but current round is {current['round']}")
         _reconcile_priors(current, prior)
+        _validate_fixes(fixes, prior)
     if current["round"] > max_rounds:
         raise GateError(f"round {current['round']} exceeds max_rounds {max_rounds}")
 
@@ -64,7 +72,7 @@ def decide(current, prior=None, *, max_rounds=3, min_severity="High", fix_floor=
         result["outcome"] = "PASS"
     elif current["round"] >= max_rounds:
         result["outcome"] = "EXHAUSTED"
-    elif prior is not None and _stalled(blocking, _blocking(prior, min_severity)):
+    elif prior is not None and _stalled(blocking, _blocking(prior, min_severity), fixes):
         result["outcome"] = "STALLED"
     else:
         result["outcome"] = "CONTINUE"
@@ -104,11 +112,34 @@ def _blocking(report, min_severity):
     ]
 
 
-def _stalled(blocking, prior_blocking):
-    """Same blocking set as last round, by stable id or, for a renumbered re-raise, by fingerprint."""
-    same_ids = {f["id"] for f in blocking} == {f["id"] for f in prior_blocking}
-    same_prints = {fingerprint(f) for f in blocking} == {fingerprint(f) for f in prior_blocking}
-    return same_ids or same_prints
+def _stalled(blocking, prior_blocking, fixes):
+    """True when every blocking finding repeats one the fixer rejected last round.
+
+    A repeat is the same id or, for a renumbered re-raise, the same fingerprint. A
+    repeat after an attempted fix is progress the reviewer judged insufficient, not a
+    stall, so another round runs.
+    """
+    rejected = {f["id"] for f in fixes if f["resolution"] == "rejected"}
+    by_id = {f["id"]: f for f in prior_blocking}
+    by_print = {fingerprint(f): f for f in prior_blocking}
+    for f in blocking:
+        match = by_id.get(f["id"]) or by_print.get(fingerprint(f))
+        if match is None or match["id"] not in rejected:
+            return False
+    return True
+
+
+def _validate_fixes(fixes, prior):
+    if not isinstance(fixes, list):
+        raise GateError("fixes: file must be a JSON list of {id, resolution, note}")
+    prior_ids = {f["id"] for f in prior["findings"]}
+    for entry in fixes:
+        if not isinstance(entry, dict) or set(entry) != {"id", "resolution", "note"}:
+            raise GateError("fixes: each entry needs exactly id, resolution and note")
+        if entry["resolution"] not in RESOLUTIONS:
+            raise GateError(f"fixes: resolution for {entry['id']!r} must be one of {RESOLUTIONS}")
+        if entry["id"] not in prior_ids:
+            raise GateError(f"fixes: {entry['id']!r} is not a finding of the prior round")
 
 
 def _validate_report(report, label):
@@ -173,7 +204,8 @@ def main(argv=None):
     """CLI entry point: print the decision as JSON; exit 2 on a contract violation."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("current", help="this round's findings JSON")
-    parser.add_argument("--prior", help="previous round's findings JSON, for stall detection")
+    parser.add_argument("--prior", help="previous round's findings JSON; required after round 1")
+    parser.add_argument("--fixes", help="previous round's fixes JSON from the fixer; required after round 1")
     parser.add_argument("--max-rounds", type=int, default=3)
     parser.add_argument("--min-severity", choices=SEVERITIES, default="High")
     parser.add_argument("--fix-floor", choices=SEVERITIES, default="Medium")
@@ -182,6 +214,7 @@ def main(argv=None):
         result = decide(
             _load(args.current),
             _load(args.prior) if args.prior else None,
+            _load(args.fixes) if args.fixes else None,
             max_rounds=args.max_rounds,
             min_severity=args.min_severity,
             fix_floor=args.fix_floor,

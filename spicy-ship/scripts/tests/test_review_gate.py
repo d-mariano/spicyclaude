@@ -30,8 +30,18 @@ def report(round_no, findings, prior=(), reviewer="code-reviewer"):
     }
 
 
-def decide(current, prior=None, max_rounds=3, min_severity="High", fix_floor="Medium"):
-    return review_gate.decide(current, prior, max_rounds=max_rounds, min_severity=min_severity, fix_floor=fix_floor)
+def rejected(*ids):
+    return [{"id": i, "resolution": "rejected", "note": "disagree"} for i in ids]
+
+
+def fixed(*ids):
+    return [{"id": i, "resolution": "fixed", "note": "done"} for i in ids]
+
+
+def decide(current, prior=None, fixes=None, max_rounds=3, min_severity="High", fix_floor="Medium"):
+    if prior is not None and fixes is None:
+        fixes = rejected(*[f["id"] for f in prior["findings"]])
+    return review_gate.decide(current, prior, fixes, max_rounds=max_rounds, min_severity=min_severity, fix_floor=fix_floor)
 
 
 class OutcomeTest(unittest.TestCase):
@@ -201,13 +211,55 @@ class StallByIdTest(unittest.TestCase):
         current = report(2, [finding("F2", "High", location="src/a.py:40")], prior=[{"id": "F1", "status": "resolved"}])
         self.assertEqual(decide(current, prior)["outcome"], "STALLED")
 
-    def test_continue_when_one_of_two_blocking_was_fixed(self):
+    def test_remaining_rejected_finding_stalls_even_after_other_was_fixed(self):
         prior = report(1, [finding("F1", "High"), finding("F2", "High", title="Race on write", location="src/b.py:3")])
         current = report(2, [finding("F2", "High", title="Race on write", location="src/b.py:3")], prior=[{"id": "F1", "status": "resolved"}, {"id": "F2", "status": "unresolved"}])
-        self.assertEqual(decide(current, prior)["outcome"], "CONTINUE")
+        self.assertEqual(decide(current, prior, fixed("F1") + rejected("F2"))["outcome"], "STALLED")
+        self.assertEqual(decide(current, prior, fixed("F1", "F2"))["outcome"], "CONTINUE")
+
+    def test_new_blocking_finding_alongside_rejected_repeat_continues(self):
+        prior = report(1, [finding("F1", "High")])
+        current = report(2, [finding("F1", "High"), finding("F2", "High", title="Race on write", location="src/b.py:3")], prior=[{"id": "F1", "status": "unresolved"}])
+        self.assertEqual(decide(current, prior, rejected("F1"))["outcome"], "CONTINUE")
 
     def test_duplicate_prior_ids_fail_loud(self):
         prior = report(1, [finding("F1")])
         current = report(2, [], prior=[{"id": "F1", "status": "unresolved"}, {"id": "F1", "status": "resolved"}])
         with self.assertRaises(GateError):
             decide(current, prior)
+
+
+class StallNeedsRejectionTest(unittest.TestCase):
+    def test_repeated_id_after_attempted_fix_continues(self):
+        prior = report(1, [finding("F1", "High")])
+        current = report(2, [finding("F1", "High")], prior=[{"id": "F1", "status": "unresolved"}])
+        self.assertEqual(decide(current, prior, fixed("F1"))["outcome"], "CONTINUE")
+
+    def test_repeated_id_after_rejection_stalls(self):
+        prior = report(1, [finding("F1", "High")])
+        current = report(2, [finding("F1", "High")], prior=[{"id": "F1", "status": "unresolved"}])
+        self.assertEqual(decide(current, prior, rejected("F1"))["outcome"], "STALLED")
+
+    def test_mixed_resolutions_continue(self):
+        prior = report(1, [finding("F1", "High"), finding("F2", "High", title="Race on write", location="src/b.py:3")])
+        current = report(2, [finding("F1", "High"), finding("F2", "High", title="Race on write", location="src/b.py:3")],
+                         prior=[{"id": "F1", "status": "unresolved"}, {"id": "F2", "status": "unresolved"}])
+        self.assertEqual(decide(current, prior, rejected("F1") + fixed("F2"))["outcome"], "CONTINUE")
+
+    def test_prior_without_fixes_fails_loud(self):
+        prior = report(1, [finding("F1", "High")])
+        current = report(2, [finding("F1", "High")], prior=[{"id": "F1", "status": "unresolved"}])
+        with self.assertRaises(GateError):
+            review_gate.decide(current, prior, None)
+
+    def test_fixes_for_unknown_id_fail_loud(self):
+        prior = report(1, [finding("F1", "High")])
+        current = report(2, [finding("F1", "High")], prior=[{"id": "F1", "status": "unresolved"}])
+        with self.assertRaises(GateError):
+            decide(current, prior, rejected("F1", "F9"))
+
+    def test_malformed_fixes_fail_loud(self):
+        prior = report(1, [finding("F1", "High")])
+        current = report(2, [finding("F1", "High")], prior=[{"id": "F1", "status": "unresolved"}])
+        with self.assertRaises(GateError):
+            decide(current, prior, [{"id": "F1", "resolution": "maybe", "note": "x"}])
