@@ -16,6 +16,19 @@ Both are model-invoked only; they are reference material for orchestrators and a
 - [review-loop](skills/review-loop/SKILL.md): the reviewer and fixer loop, its findings contract, and the four outcomes.
 - [question-policy](skills/question-policy/SKILL.md): how agents that cannot ask the user still surface decisions, and when the main session asks.
 
+## Agents
+
+Phase agents under `agents/phase/`, addressed as `spicy-ship:phase:<name>`. Each takes paths, not content, cannot ask the user, and ends with the return envelope the question policy defines.
+
+| Agent | Writes | Model |
+|---|---|---|
+| `explorer` | `research-[nnn].md` | sonnet |
+| `planner` | `plan-[nnn].md` | opus |
+| `plan-reviewer` | `plan-review-r{n}.json` | opus |
+| `executor` | code, commits, `progress-[nnn].md` | sonnet |
+| `code-reviewer` | `code-review-r{n}.json`, fanning out to the `spicy-review` lenses | opus |
+| `fixer` | plan or code fixes, `<mode>-fixes-r{n}.json` | sonnet |
+
 ## Scripts
 
 Standard library only, so they run wherever Claude Code runs.

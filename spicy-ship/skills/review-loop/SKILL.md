@@ -98,14 +98,19 @@ instead of hiding it in a third identical report.
 
 ## Roles
 
+The phase agents in this plugin implement these roles: `spicy-ship:phase:plan-reviewer` and
+`spicy-ship:phase:code-reviewer` review, `spicy-ship:phase:fixer` fixes, and the orchestrating
+skill runs the gate.
+
 **Reviewer.** Read-only. Reviews only the target it is given against the story's acceptance
-criteria and the codebase. On a re-review it first verifies every prior finding, then looks for
+criteria and the codebase. On a re-review it first verifies every prior finding, reading the
+fixer's `<phase>-fixes-r<round>.json` to judge rejections on their merits, then looks for
 regressions the fixes introduced. Writes the findings file; returns a two-line summary.
 
 **Fixer.** Applies only the findings it is handed, by id. For each it records `fixed` or
-`rejected` with a one-sentence reason, so the next review can judge the rejection. It never widens
-scope and never touches findings below the fix floor unless they share a file with one it is
-already fixing.
+`rejected` with a one-sentence reason in `<phase>-fixes-r<round>.json`, so the next review can
+judge the rejection. It never widens scope and never touches findings below the fix floor unless
+they share a file and a root cause with one it is already fixing.
 
 **Orchestrator.** Passes paths, not content. Keeps one line per round in its own context. Runs
 the gate script; never guesses the outcome.
