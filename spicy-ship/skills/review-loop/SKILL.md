@@ -12,15 +12,10 @@ model: `review_gate.py` computes it from the findings file.
 
 ## Configuration
 
-Resolve once per run and pass the `plan` or `code` section to the gate:
-
-```
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/ship_config.py \
-  --plugin-config maxReviewRounds=${user_config.maxReviewRounds} \
-  --plugin-config minReviewSeverity=${user_config.minReviewSeverity} \
-  --plugin-config questionMode=${user_config.questionMode} \
-  <skill arguments>
-```
+Resolve once per run with `${CLAUDE_PLUGIN_ROOT}/scripts/ship_config.py`, adding
+`--plugin-config KEY=VALUE` for each plugin option that is set and the skill's own flags last, and
+pass the `plan` or `code` section to the gate. The orchestrator skill owns that call; this skill
+only consumes its output.
 
 | Key | Default | Meaning |
 |---|---|---|
