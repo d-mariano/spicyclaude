@@ -115,9 +115,6 @@ class ValidationTest(unittest.TestCase):
             resolve(["--min-severity=Low", "--fix-floor=High"])
 
 
-if __name__ == "__main__":
-    unittest.main()
-
 
 class EmptyValueTest(unittest.TestCase):
     def test_empty_flag_value_is_unset_not_cleared(self):
@@ -198,3 +195,6 @@ class ProjectFileErrorsTest(unittest.TestCase):
         with patch.object(ship_config.subprocess, "run", side_effect=FileNotFoundError("git")):
             with self.assertRaises(ship_config.ConfigError):
                 ship_config.project_file({})
+
+if __name__ == "__main__":
+    unittest.main()

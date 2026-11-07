@@ -145,9 +145,6 @@ class SchemaTest(unittest.TestCase):
 
 
 
-if __name__ == "__main__":
-    unittest.main()
-
 
 class PriorReconciliationTest(unittest.TestCase):
     def test_round_two_without_prior_fails_loud(self):
@@ -281,3 +278,6 @@ class FixesCompletenessTest(unittest.TestCase):
     def test_fixes_without_prior_fails_loud(self):
         with self.assertRaises(GateError):
             review_gate.decide(report(1, [finding("F1")]), None, fixed("F1"))
+
+if __name__ == "__main__":
+    unittest.main()
