@@ -72,7 +72,8 @@ fails the gate too, set `status: blocked` with the gate's message and stop.
   resume the same agent when the harness allows it; otherwise spawn a fresh one with the same
   inputs plus the answers path. All state is on disk, so a fresh agent loses nothing.
 - `FAILED`: set `status: blocked` with the summary and stop. Do not retry a `FAILED` phase without
-  a change in inputs.
+  a change in inputs. A permission denial, a missing tool, or an unreadable path is `FAILED`, not
+  `NEEDS_INPUT`: no question to the user changes it, and the fix is in the environment.
 
 ## State
 
@@ -104,6 +105,14 @@ round.
 ## Rules
 
 - Paths, not content. Never paste an artifact into a prompt.
+- Spawn every phase agent in the foreground and wait for its envelope. Nothing in this pipeline
+  can proceed without the previous phase's artifact, and a background spawn tempts you to reply
+  before the story is done.
+- Tell every agent, in its prompt, to read files with Read, Grep and Glob and to use Bash only
+  for git, the plugin scripts, and the test command recorded in the plan or progress file. That
+  is the whole shell surface an unattended run has to pre-approve.
+- Run the gate as the only command in its Bash call. An appended `echo` or `&&` is a second
+  command the allowlist may not cover, and a denied call costs a round trip for nothing.
 - One agent per phase at a time; the two agents of a review loop alternate, they never overlap.
 - The executor's test run is the executor's claim. Before the story is called done, run the
   command it recorded in `progress-[nnn].md` once yourself and keep it with its result line.
