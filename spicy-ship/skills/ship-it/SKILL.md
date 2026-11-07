@@ -39,7 +39,9 @@ Never put a `${...}` placeholder into a shell command; the command is refused be
 
 ## Procedure
 
-1. **Story.** `$ARGUMENTS` minus the flags is a file path or the story text. With `--resume`,
+1. **Story.** `$ARGUMENTS` minus the flags is a file path or the story text; a story carries
+   context, numbered acceptance criteria, the test command, and what is out of scope, shaped like
+   [references/example-story.md](references/example-story.md). With `--resume`,
    read `ship-state.json` in the named folder, check out its `branch`, use the folder's
    `ship-config.json` instead of the config above, and continue from its `phase` per the pipeline's
    resume rules; skip the rest of this step. Otherwise pick the next `nnn` and the slug, and if you
