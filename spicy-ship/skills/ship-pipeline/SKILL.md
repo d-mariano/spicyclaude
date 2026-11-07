@@ -105,9 +105,9 @@ round.
 ## Rules
 
 - Paths, not content. Never paste an artifact into a prompt.
-- Spawn every phase agent in the foreground and wait for its envelope. Nothing in this pipeline
-  can proceed without the previous phase's artifact, and a background spawn tempts you to reply
-  before the story is done.
+- Spawn every phase agent with `run_in_background: false` and wait for its envelope. The Agent
+  tool backgrounds by default, and a backgrounded phase tempts you to reply before the story is
+  done; nothing in this pipeline can proceed without the previous phase's artifact.
 - Tell every agent, in its prompt, to read files with Read, Grep and Glob and to use Bash only
   for git, the plugin scripts, and the test command recorded in the plan or progress file. That
   is the whole shell surface an unattended run has to pre-approve.
