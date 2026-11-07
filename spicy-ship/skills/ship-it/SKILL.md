@@ -13,14 +13,20 @@ Everything else is delegated to `spicy-ship:phase:*` agents by following `ship-p
 
 ## Config
 
-!`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/ship_config.py --plugin-config maxReviewRounds=${user_config.maxReviewRounds} --plugin-config minReviewSeverity=${user_config.minReviewSeverity} --plugin-config questionMode=${user_config.questionMode}`
+!`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/ship_config.py`
 
-If the block above is empty or an error, run `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/ship_config.py`
-yourself with no `--plugin-config` flags before anything else, and say in the final reply that
-plugin options were not applied to this run. If
-`$ARGUMENTS` contains any `--max-review-rounds`, `--min-severity`, `--fix-floor`, `--questions`,
-`--escalate`, `--plan-*` or `--code-*` flag, re-run the command with those flags appended and use
-that output instead; arguments beat every other source.
+That is the baseline: environment, project file and defaults. Two more sources may apply, and
+if either does you run the command once yourself and use its output instead:
+
+- **Plugin options.** As configured: `maxReviewRounds=${user_config.maxReviewRounds}`,
+  `minReviewSeverity=${user_config.minReviewSeverity}`, `questionMode=${user_config.questionMode}`.
+  An option whose value above still reads `${user_config...}` is unset, or the plugin was loaded
+  from a directory rather than installed; skip it. Pass each set one as `--plugin-config KEY=VALUE`.
+- **Skill arguments.** Any `--max-review-rounds`, `--min-severity`, `--fix-floor`, `--questions`,
+  `--escalate`, `--plan-*` or `--code-*` flag in `$ARGUMENTS` is appended after the plugin options;
+  arguments beat every other source.
+
+Never put a `${...}` placeholder into a shell command; the command is refused before it runs.
 
 ## Preflight
 

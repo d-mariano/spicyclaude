@@ -69,7 +69,7 @@ Highest precedence first.
 | Skill arguments | `--max-review-rounds=5 --min-severity=Medium --plan-rounds=2 --questions=batch` |
 | Environment | `SPICY_MAX_REVIEW_ROUNDS`, `SPICY_REVIEW_MIN_SEVERITY`, `SPICY_QUESTION_MODE`, `SPICY_PLAN_MAX_ROUNDS`, `SPICY_CODE_MIN_SEVERITY` |
 | Project file | `.claude/spicyclaude.json`, see below |
-| Plugin options | `/plugin configure spicy-ship@spicyclaude` |
+| Plugin options | `/plugin configure spicy-ship@spicyclaude`; an option reaches the skill only when it is set and the plugin is installed from a marketplace, never from a `--plugin-dir` load |
 | Defaults | 3 rounds, `High`, fix floor `Medium`, mode `auto`, escalate `irreversible` |
 
 ```json
