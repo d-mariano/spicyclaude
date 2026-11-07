@@ -41,6 +41,13 @@ What each party does with a guarded question:
 Set `--escalate=none` to drop the `irreversible` guard. Questions with no `recommended` option
 stay guarded regardless.
 
+## What is not a question
+
+A permission denial, a missing tool, a command that will not run, or a path that does not exist is
+an operational block, not a fork in the work. An agent that hits one returns `FAILED` with the
+blocker in `summary` and does not dress it up as a question; the orchestrator marks the story
+blocked and names the blocker, because the remedy is in the environment, not in an answer.
+
 ## Question contract
 
 Agents return questions inside their envelope. [references/question.schema.json](references/question.schema.json)
