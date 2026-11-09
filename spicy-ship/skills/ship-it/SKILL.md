@@ -31,12 +31,17 @@ before it runs. `${CLAUDE_PLUGIN_ROOT}` is substituted by the harness before you
 
 ## Preflight
 
-!`git status --porcelain --untracked-files=no | head -5; git branch --show-current; printenv CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH || echo "depth unset"`
+Each block below is one simple command on purpose: a pipe, a `;` or a `||` makes the permission
+check split it into parts that each need approval, and a refused block ends the run.
 
-- Tracked changes in the tree stop the run. Say what is uncommitted and stop. The untracked
-  `context/` folder is expected and is not a reason to stop.
-- An unset depth is fine for `ship-it`: phases run one level down and the code-reviewer's lenses
-  two levels down, within the default. Mention it in the final reply so the user knows.
+!`git status --porcelain --untracked-files=no`
+
+!`git branch --show-current`
+
+- Any line from the first block is a tracked change; say what is uncommitted and stop. The
+  untracked `context/` folder never shows here and is expected.
+- Subagent depth needs no check for `ship-it`: phases run one level down and the code-reviewer's
+  lenses two levels down, within Claude Code's default.
 
 ## Procedure
 
@@ -47,9 +52,9 @@ before it runs. `${CLAUDE_PLUGIN_ROOT}` is substituted by the harness before you
    `ship-config.json` instead of the config above, and continue from its `phase` per the pipeline's
    resume rules; skip the rest of this step. Otherwise pick the next `nnn` and the slug, and if you
    are on the default branch create and check out `ship/[nnn]-{slug}`; on any other branch stay on
-   it. Then create `/context/[nnn]-{slug}/`, write `story.md`, write the resolved config to
-   `ship-config.json`, and write `ship-state.json` with `status: running`, `phase: explore`, and
-   the branch name.
+   it. Then write `story.md` into `/context/[nnn]-{slug}/` with the Write tool, which creates the
+   folder; never shell out for `mkdir`. Write the resolved config to `ship-config.json` and
+   `ship-state.json` with `status: running`, `phase: explore`, and the branch name.
 2. **Pipeline.** Follow `ship-pipeline`. Spawn each phase agent with paths, including the path to
    `ship-config.json`. Keep one line per phase in your context.
 3. **Questions.** On `NEEDS_INPUT`, apply `question-policy` for the resolved mode. When you ask,

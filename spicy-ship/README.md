@@ -68,7 +68,7 @@ Phase agents read files with the file tools, use the shell only for git, the plu
 {"permissions": {"allow": ["Bash(git *)", "Bash(python3 *)", "Edit", "Write", "Skill", "WebSearch", "WebFetch"]}}
 ```
 
-Add the project's own test runner if it is not `python3`. `ship-it` itself pre-approves `gh` for the pull request step through its own frontmatter. A headless run (`claude -p`) that hits anything outside the allowlist fails loud at that step and the story ends `blocked` with the denied command named; nothing is retried around a denial.
+Add the project's own test runner if it is not `python3`. Agents run each command plain, from the repository root, with no `cd`, pipe or `&&`, because a compound command stops matching these rules and prompts. `ship-it` itself pre-approves `gh` for the pull request step through its own frontmatter. A headless run (`claude -p`) that hits anything outside the allowlist fails loud at that step and the story ends `blocked` with the denied command named; nothing is retried around a denial.
 
 ## Configuration
 

@@ -105,13 +105,16 @@ round.
 ## Rules
 
 - Paths, not content. Never paste an artifact into a prompt.
-- Spawn every phase agent with `run_in_background: false` and wait for its envelope. The Agent
-  tool backgrounds by default, and a backgrounded phase tempts you to reply before the story is
-  done; nothing in this pipeline can proceed without the previous phase's artifact.
+- Spawn every phase agent with `run_in_background: false`, and whatever the harness does with that
+  flag, wait for the agent's envelope before the next step. Agents spawned from the main session
+  run in the background in interactive sessions regardless; their completion arrives as a
+  notification, and nothing in this pipeline can proceed without the previous phase's artifact.
+  Never reply to the user, in part or in full, while a phase agent is still running.
 - Every phase agent's definition confines its shell use to git, the plugin scripts, and the
   recorded test command; you do not need to repeat that, only to pass the paths it needs.
-- Run the gate as the only command in its Bash call. An appended `echo` or `&&` is a second
-  command the allowlist may not cover, and a denied call costs a round trip for nothing.
+- Run every shell command you issue, the gate above all, as one plain command from the
+  repository root: no `cd`, no pipe, no `&&`, `;` or `echo`. The same allow rules the agents live
+  under apply to you, and a compound command stops matching them and prompts or fails.
 - One agent per phase at a time; the two agents of a review loop alternate, they never overlap.
 - The executor's test run is the executor's claim. Before the story is called done, run the
   command it recorded in `progress-[nnn].md` once yourself and keep it with its result line.
