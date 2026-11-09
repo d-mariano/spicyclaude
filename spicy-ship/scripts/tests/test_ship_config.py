@@ -145,7 +145,7 @@ class ValidationTest(unittest.TestCase):
         self.assertIn("--questions", failing(resolve, ["--questions=yolo"]))
 
     def test_unknown_arg_fails_loud(self):
-        self.assertIn("--max-rounds", failing(resolve, ["--max-rounds=3"]))
+        self.assertIn("unknown argument '--max-rounds'", failing(resolve, ["--max-rounds=3"]))
 
     def test_flag_without_value_fails_loud(self):
         self.assertIn("--questions", failing(resolve, ["--questions"]))
@@ -154,7 +154,7 @@ class ValidationTest(unittest.TestCase):
         self.assertIn("--plugin-config", failing(resolve, ["--plugin-config"]))
 
     def test_unknown_plugin_option_fails_loud(self):
-        self.assertIn("bogus", failing(resolve, ["--plugin-config", "bogus=1"]))
+        self.assertIn("unknown plugin option 'bogus'", failing(resolve, ["--plugin-config", "bogus=1"]))
 
     def test_unknown_project_key_fails_loud(self):
         self.assertIn("rounds", failing(resolve_project, {"review": {"default": {"rounds": 3}}}))
@@ -174,6 +174,11 @@ class ValidationTest(unittest.TestCase):
     def test_fix_floor_above_min_severity_fails_loud(self):
         self.assertIn("'Critical' is stricter", failing(resolve, ["--min-severity=High", "--fix-floor=Critical"]))
 
+    def test_fix_floor_check_covers_each_reviewer_alone(self):
+        self.assertIn("review.plan:", failing(resolve, ["--plan-min-severity=Low"]))
+        self.assertIn("review.code:", failing(resolve, ["--code-min-severity=Low"]))
+        self.assertIn("review.code:", failing(resolve_project, {"review": {"code": {"fix_floor": "High"}}}, argv=["--min-severity=Medium"]))
+
     def test_fix_floor_from_argument_and_environment_takes_effect(self):
         self.assertEqual(resolve(["--fix-floor=Low"])["review"]["code"]["fix_floor"], "Low")
         self.assertEqual(resolve(env={"SPICY_REVIEW_FIX_FLOOR": "Low"})["review"]["plan"]["fix_floor"], "Low")
@@ -190,6 +195,7 @@ class ValidationTest(unittest.TestCase):
         self.assertIn("unknown questions key 'max_rounds'", failing(resolve_project, {"questions": {"max_rounds": 2}}))
         self.assertIn("unknown review.plan key 'mode'", failing(resolve_project, {"review": {"plan": {"mode": "auto"}}}))
         self.assertIn("unknown review.default key 'rounds'", failing(resolve_project, {"review": {"default": {"rounds": ""}}}))
+        self.assertIn("spicyclaude.json", failing(resolve_project, {"questions": {"max_rounds": 2}}))
 
 
 
@@ -222,7 +228,9 @@ class StrictTypesTest(unittest.TestCase):
         self.assertIn("review.default.max_rounds", failing(resolve_project, {"review": {"default": {"max_rounds": True}}}))
 
     def test_invalid_reviewer_value_names_its_key(self):
-        self.assertIn("review.plan.max_rounds", failing(resolve_project, {"review": {"plan": {"max_rounds": "many"}}}))
+        message = failing(resolve_project, {"review": {"plan": {"max_rounds": "many"}}})
+        self.assertIn("review.plan.max_rounds", message)
+        self.assertIn("spicyclaude.json", message)
 
     def test_invalid_questions_value_names_its_key(self):
         self.assertIn("questions.mode", failing(resolve_project, {"questions": {"mode": "yolo"}}))
