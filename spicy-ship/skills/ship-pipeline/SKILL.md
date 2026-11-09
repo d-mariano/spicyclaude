@@ -89,7 +89,7 @@ fails the gate too, set `status: blocked` with the gate's message and stop.
 
 ## State
 
-`ship-state.json` is the resume point: the only file a resume reads to decide where to continue. Write it after
+`ship-state.json` is the resume point; the files named below decide the step within a phase. Write it after
 every phase and every gate:
 
 ```json
