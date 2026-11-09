@@ -51,7 +51,7 @@ Phase agents under `agents/phase/`, addressed as `spicy-ship:phase:<name>`. Each
 
 Standard library only, so they run wherever Claude Code runs.
 
-- `scripts/ship_config.py` resolves configuration and prints JSON.
+- `scripts/ship_config.py` resolves configuration and prints JSON, or with `--gate-flags=plan|code` the `review_gate.py` flags for that reviewer.
 - `scripts/review_gate.py` validates a round's findings and prints the loop decision. After round 1 it needs `--prior` (the previous round's findings) and `--fixes` (the fixer's resolutions for that round).
 
 Run the tests with:
