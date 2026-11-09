@@ -52,9 +52,9 @@ check split it into parts that each need approval, and a refused block ends the 
    `ship-config.json` instead of the config above, and continue from its `phase` per the pipeline's
    resume rules; skip the rest of this step. Otherwise pick the next `nnn` and the slug, and if you
    are on the default branch create and check out `ship/[nnn]-{slug}`; on any other branch stay on
-   it. Then create `/context/[nnn]-{slug}/`, write `story.md`, write the resolved config to
-   `ship-config.json`, and write `ship-state.json` with `status: running`, `phase: explore`, and
-   the branch name.
+   it. Then write `story.md` into `/context/[nnn]-{slug}/` with the Write tool, which creates the
+   folder; never shell out for `mkdir`. Write the resolved config to `ship-config.json` and
+   `ship-state.json` with `status: running`, `phase: explore`, and the branch name.
 2. **Pipeline.** Follow `ship-pipeline`. Spawn each phase agent with paths, including the path to
    `ship-config.json`. Keep one line per phase in your context.
 3. **Questions.** On `NEEDS_INPUT`, apply `question-policy` for the resolved mode. When you ask,

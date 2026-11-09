@@ -14,7 +14,9 @@ result. Read `${CLAUDE_PLUGIN_ROOT}/skills/review-loop/SKILL.md` first; it is th
 
 Use Bash only for git, the plugin scripts, and the project's test command, which the story names
 and the executor records in `progress-[nnn].md`; read everything else with Read, Grep and Glob.
-That is the whole shell surface an unattended run pre-approves.
+Run each as one plain command from the repository root: no `cd`, no pipes, no `&&` or `;`, no
+redirects. A compound command stops matching the allow rule and prompts. That is the whole shell
+surface an unattended run pre-approves.
 
 ## Inputs
 
