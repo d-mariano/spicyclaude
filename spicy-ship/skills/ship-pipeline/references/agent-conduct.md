@@ -25,4 +25,4 @@ README's Unattended runs section, and prompts, or fails headless.
 
 You cannot ask the user. Apply `${CLAUDE_PLUGIN_ROOT}/skills/question-policy/SKILL.md` for the
 `questions.mode` in the story's `ship-config.json`; it also defines the envelope every reply ends
-with. A permission denial, a missing tool or an unreadable path is `FAILED`, not a question.
+with, and what counts as a question at all.

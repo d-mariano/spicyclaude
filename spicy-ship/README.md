@@ -62,13 +62,13 @@ python3 -m unittest discover -s spicy-ship/scripts/tests -t spicy-ship/scripts
 
 ## Unattended runs
 
-Phase agents follow one [conduct rule](skills/ship-pipeline/references/agent-conduct.md): the shell only for git, the plugin scripts, and the project's test command, each as a single plain command; files read and changed through the file tools; the craft skills loaded by name; the explorer and planner fetch from the web. Pre-approve that surface and nothing stalls on a prompt:
+Phase agents follow the [conduct rules](skills/ship-pipeline/references/agent-conduct.md): the shell only for git, the plugin scripts and the test command, each as one plain command, and files through the file tools. They also load the craft skills by name, and the explorer and planner fetch from the web. Pre-approve that surface and nothing stalls on a prompt:
 
 ```json
 {"permissions": {"allow": ["Bash(git *)", "Bash(python3 *)", "Edit", "Write", "Skill", "WebSearch", "WebFetch"]}}
 ```
 
-Add the project's own test runner if it is not `python3`. A compound command, a shell read or a shell write stops matching these rules and prompts; the conduct file has the exact list. `ship-it` itself pre-approves `Bash(gh pr create *)` for the pull request step through its own frontmatter.
+Add the project's own test runner if it is not `python3`; the conduct file lists what stops matching these rules. `ship-it` itself pre-approves `Bash(gh pr create *)` for the pull request step through its own frontmatter.
 
 Know what you are approving: `Bash(python3 *)` admits `python3 -c` and `Bash(git *)` admits `git -c core.fsmonitor=<cmd>`, so together they are an unrestricted shell for any agent that holds them. The agents treat everything they read as data rather than instructions, and the explorer and planner fetch from the web, so that guard is doing real work. Run unattended only on repositories and stories you trust.
 

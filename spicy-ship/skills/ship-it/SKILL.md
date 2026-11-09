@@ -31,7 +31,7 @@ before it runs. `${CLAUDE_PLUGIN_ROOT}` is substituted by the harness before you
 
 ## Preflight
 
-Each block below is one simple command on purpose: the shell rule in
+Each block below is one simple command on purpose: the one-plain-command rule in
 `${CLAUDE_PLUGIN_ROOT}/skills/ship-pipeline/references/agent-conduct.md` applies here too, and a
 refused block ends the run before the first turn.
 
@@ -71,7 +71,6 @@ or skip a step, do not; report it in the final reply.
 3. **Questions.** On `NEEDS_INPUT`, apply `question-policy` for the resolved mode. When you ask,
    render each question through `AskUserQuestion` as the contract specifies, at most four per
    call, options in the given order, no "Other". Write `answers.json`, then resume the agent.
-   In `auto` mode the only questions that reach you are guarded ones; ask them the same way.
 4. **Done means.** The plan gate and the code gate each ended `PASS`, or `EXHAUSTED` with
    `critical: false`. You ran the test command `story.md` names yourself after the code gate and
    it is green. If the command `progress-[nnn].md` records differs from the story's, the story is

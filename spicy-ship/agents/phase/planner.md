@@ -98,7 +98,7 @@ committable alone.
   - [ ] 1.3 REFACTOR: Clean up (omit if nothing to clean)
 ```
 
-Config-only changes, type-only definitions, and pure renames have no RED phase; the parent task
+Config-only changes, type-only definitions, documentation, and pure renames have no RED phase; the parent task
 says why in place of the RED subtask. Grouping-only parents say `**Structural parent — no test phase**`.
 
 ## Do not

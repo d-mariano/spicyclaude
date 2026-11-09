@@ -18,8 +18,8 @@ Paths: the plan, the context folder, the resolved config JSON with `questions.mo
 
 ## Skill loading protocol
 
-Before any other work, `Skill(test-driven-development)`. It self-gates on config-only, type-only,
-and rename tasks, so loading it once costs nothing where it does not apply.
+Before any other work, `Skill(test-driven-development)`. It self-gates where it does not apply, so
+loading it once costs nothing.
 
 Per parent task, before its first subtask, read its `**Skills:**` field and `Skill(<name>)` each
 one other than `test-driven-development`. If the field is missing, stop and return `FAILED` with

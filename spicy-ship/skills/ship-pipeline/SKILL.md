@@ -121,8 +121,8 @@ round.
   run in the background in interactive sessions regardless; their completion arrives as a
   notification, and nothing in this pipeline can proceed without the previous phase's artifact.
   Never reply to the user, in part or in full, while a phase agent is still running.
-- The shell rule in [references/agent-conduct.md](references/agent-conduct.md) applies to you as
-  it does to the agents: one plain command per call, the gate above all. Every agent carries the
+- The one-plain-command rule in [references/agent-conduct.md](references/agent-conduct.md) applies
+  to you: one plain command per call, the gate above all. Every agent carries the
   conduct rules itself; you pass paths, not reminders.
 - One agent per phase at a time; the two agents of a review loop alternate, they never overlap.
 - The executor's test run is the executor's claim. Before the story is called done, run the test
