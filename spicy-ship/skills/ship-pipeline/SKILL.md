@@ -52,8 +52,7 @@ Follow `review-loop` exactly. Per round `n`:
    ```
 
 3. On `CONTINUE`, spawn the fixer with the findings file, the `fixable` ids, the mode, and in
-   `code` mode the progress file, whose recorded test command the fixer must run. Then the next
-   round.
+   `code` mode `story.md`, whose test command the fixer runs. Then the next round.
 4. On anything else, record the outcome in `ship-state.json` and act on it per the review-loop
    outcomes table.
 
@@ -116,6 +115,7 @@ round.
   repository root: no `cd`, no pipe, no `&&`, `;` or `echo`. The same allow rules the agents live
   under apply to you, and a compound command stops matching them and prompts or fails.
 - One agent per phase at a time; the two agents of a review loop alternate, they never overlap.
-- The executor's test run is the executor's claim. Before the story is called done, run the
-  command it recorded in `progress-[nnn].md` once yourself and keep it with its result line.
+- The executor's test run is the executor's claim. Before the story is called done, run the test
+  command `story.md` names once yourself and keep it with its result line; if `progress-[nnn].md`
+  records a different one, the story is blocked with both commands named.
 - Only the main session asks the user. If you are an agent, `NEEDS_INPUT` goes up, not out.

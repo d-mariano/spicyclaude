@@ -18,6 +18,9 @@ action — the print-only path stays the default.
   `--request-changes` and the verdict is *Needs Work*; otherwise use `COMMENT`.
 - **Post once.** One review per run. Before posting, check for an existing open review from this
   bot on the PR (`gh api repos/{owner}/{repo}/pulls/{n}/reviews`) and don't duplicate it.
+- **Every `gh api` call asks for permission.** None is pre-approved: a wildcard rule that matches
+  the reviews endpoint also matches an approval or a merge. The human approving the prompt is the
+  confirmation an opt-in post deserves.
 
 ## Comment format
 
