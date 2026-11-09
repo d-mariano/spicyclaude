@@ -257,7 +257,7 @@ class StallNeedsRejectionTest(unittest.TestCase):
         prior = report(1, [finding("F1", "High")])
         current = report(2, [finding("F1", "High")], prior=[{"id": "F1", "status": "unresolved"}])
         with self.assertRaises(GateError):
-            review_gate.decide(current, prior, None)
+            decide(current, prior, None)
 
     def test_fixes_for_unknown_id_fail_loud(self):
         prior = report(1, [finding("F1", "High")])
@@ -293,7 +293,7 @@ class FixesCompletenessTest(unittest.TestCase):
 
     def test_fixes_without_prior_fails_loud(self):
         with self.assertRaises(GateError):
-            review_gate.decide(report(1, [finding("F1")]), None, fixed("F1"))
+            decide(report(1, [finding("F1")]), None, fixed("F1"))
 
 
 class ConfidenceBoundaryTest(unittest.TestCase):
@@ -377,12 +377,19 @@ class MainTest(unittest.TestCase):
         self.assertEqual((code, out), (2, ""))
         self.assertTrue(err.startswith("review_gate: "))
 
-    def test_missing_and_invalid_files_exit_two(self):
+    def test_missing_and_invalid_files_exit_two_naming_the_file(self):
         with TemporaryDirectory() as tmp:
-            self.assertEqual(run_main(["/nonexistent/r1.json"])[0], 2)
-            self.assertEqual(run_main([self.write(tmp, "r1.json", "{not json")])[0], 2)
+            code, _, err = run_main(["/nonexistent/r1.json"])
+            self.assertEqual(code, 2)
+            self.assertIn("/nonexistent/r1.json", err)
+            invalid = self.write(tmp, "r1.json", "{not json")
+            code, _, err = run_main([invalid])
+            self.assertEqual(code, 2)
+            self.assertIn(f"{invalid}: Expecting", err)
             r2 = self.write(tmp, "r2.json", report(2, [finding("F1")], prior=[{"id": "F1", "status": "unresolved"}]))
-            self.assertEqual(run_main([r2, "--prior", "/nonexistent/r1.json", "--fixes", "/nonexistent/f.json"])[0], 2)
+            code, _, err = run_main([r2, "--prior", "/nonexistent/r1.json", "--fixes", "/nonexistent/f.json"])
+            self.assertEqual(code, 2)
+            self.assertIn("/nonexistent/r1.json", err)
 
     def test_gate_options_reach_the_decision(self):
         with TemporaryDirectory() as tmp:
