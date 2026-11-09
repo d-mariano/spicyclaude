@@ -4,7 +4,7 @@ description: Fast single-pass code review of a diff. Use for a quick read-only r
 argument-hint: "[pr-number | branch | files]"
 context: fork
 agent: Explore
-allowed-tools: Bash(gh pr view *), Bash(gh pr diff *), Bash(git *), Read, Grep, Glob
+allowed-tools: Bash(gh pr view *), Bash(gh pr diff *), Bash(git diff *), Bash(git log *), Bash(git merge-base *), Read, Grep, Glob
 ---
 
 # Light Code Review (single pass)
