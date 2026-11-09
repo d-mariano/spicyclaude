@@ -198,27 +198,22 @@ class EmptyValueTest(unittest.TestCase):
 
 class StrictTypesTest(unittest.TestCase):
     def test_float_rounds_fail_loud(self):
-        with TemporaryDirectory() as d:
-            f = Path(d) / "spicyclaude.json"
-            f.write_text(json.dumps({"review": {"default": {"max_rounds": 2.9}}}))
-            with self.assertRaises(ship_config.ConfigError):
-                resolve(project_file=f)
+        self.assertIn("review.default.max_rounds", failing(resolve_project, {"review": {"default": {"max_rounds": 2.9}}}))
 
     def test_bool_rounds_fail_loud(self):
-        with TemporaryDirectory() as d:
-            f = Path(d) / "spicyclaude.json"
-            f.write_text(json.dumps({"review": {"default": {"max_rounds": True}}}))
-            with self.assertRaises(ship_config.ConfigError):
-                resolve(project_file=f)
+        self.assertIn("review.default.max_rounds", failing(resolve_project, {"review": {"default": {"max_rounds": True}}}))
+
+    def test_invalid_reviewer_value_names_its_key(self):
+        self.assertIn("review.plan.max_rounds", failing(resolve_project, {"review": {"plan": {"max_rounds": "many"}}}))
+
+    def test_invalid_questions_value_names_its_key(self):
+        self.assertIn("questions.mode", failing(resolve_project, {"questions": {"mode": "yolo"}}))
 
     def test_non_object_sections_fail_loud(self):
-        for payload in ({"review": [1]}, {"review": {"default": "nope"}}, {"questions": 3}, [1]):
-            with TemporaryDirectory() as d:
-                f = Path(d) / "spicyclaude.json"
-                f.write_text(json.dumps(payload))
-                with self.assertRaises(ship_config.ConfigError):
-                    resolve(project_file=f)
-
+        cases = {'{"review": [1]}': "review", '{"review": {"default": "nope"}}': "review.default", '{"questions": 3}': "questions", "[1]": "top level"}
+        for payload, where in cases.items():
+            with self.subTest(payload=payload):
+                self.assertIn(where, failing(resolve_project, payload))
 
 class ProjectRootTest(unittest.TestCase):
     def test_project_file_anchored_on_claude_project_dir(self):
