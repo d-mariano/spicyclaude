@@ -24,6 +24,7 @@ REVIEWERS = ("plan", "code")
 REVIEW_KEYS = ("max_rounds", "min_severity", "fix_floor")
 PROJECT_FILE = Path(".claude", "spicyclaude.json")
 GATE_FLAGS = "--gate-flags"
+FROM = "--from"
 
 DEFAULTS = {
     "review": {"default": {"max_rounds": 3, "min_severity": "High", "fix_floor": "Medium"}},
@@ -263,21 +264,15 @@ def _finalize(merged):
     return {"review": review, "questions": merged["questions"]}
 
 
-def _pop_gate_flags(argv: list[str]) -> tuple[str | None, list[str]]:
-    """Split --gate-flags out of argv and return (reviewer or None, remaining argv).
-
-    The last occurrence wins; a bare flag counts as an empty value. Raises ConfigError naming
-    the allowed reviewers when the flag is present with anything other than plan or code.
-    """
-    reviewer, rest = None, []
+def _pop_option(argv: list[str], name: str) -> tuple[str | None, list[str]]:
+    """Split one --name[=value] option out of argv; the last occurrence wins, a bare flag is ''."""
+    value, rest = None, []
     for raw in argv:
-        if raw == GATE_FLAGS or raw.startswith(GATE_FLAGS + "="):
-            reviewer = raw.partition("=")[2]
+        if raw == name or raw.startswith(name + "="):
+            value = raw.partition("=")[2]
         else:
             rest.append(raw)
-    if reviewer is not None and reviewer not in REVIEWERS:
-        raise ConfigError(f"{GATE_FLAGS} must be one of {', '.join(REVIEWERS)}, got {reviewer!r}")
-    return reviewer, rest
+    return value, rest
 
 
 def _gate_flags_line(section: dict[str, int | str]) -> str:
@@ -285,17 +280,48 @@ def _gate_flags_line(section: dict[str, int | str]) -> str:
     return " ".join(f"--{key.replace('_', '-')} {section[key]}" for key in REVIEW_KEYS)
 
 
+def _frozen_section(path: str, reviewer: str) -> dict[str, int | str]:
+    """Read a review section from a ship-config.json this script wrote earlier, validating each value."""
+    try:
+        data = json.loads(Path(path).read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ConfigError(f"{FROM}: cannot read {path}: {exc}") from exc
+    section = data.get("review", {}).get(reviewer) if isinstance(data, dict) else None
+    if not isinstance(section, dict):
+        raise ConfigError(f"{FROM}: {path} has no review.{reviewer} section")
+    missing = [key for key in REVIEW_KEYS if key not in section]
+    if missing:
+        raise ConfigError(f"{FROM}: {path} review.{reviewer} is missing {missing}")
+    return {key: _parse(("review", reviewer, key), section[key], f"{path} review.{reviewer}.{key}") for key in REVIEW_KEYS}
+
+
+def _gate_flags(reviewer: str, from_path: str | None, rest: list[str]) -> str:
+    """Resolve the flags line for a reviewer, from the frozen file when given, else from live sources."""
+    if reviewer not in REVIEWERS:
+        raise ConfigError(f"{GATE_FLAGS} must be one of {', '.join(REVIEWERS)}, got {reviewer!r}")
+    if from_path is None:
+        return _gate_flags_line(resolve(rest, os.environ)["review"][reviewer])
+    if from_path == "":
+        raise ConfigError(f"{FROM} needs the path of a ship-config.json")
+    if rest:
+        raise ConfigError(f"{FROM} renders the frozen config; other flags do not apply: {' '.join(rest)}")
+    return _gate_flags_line(_frozen_section(from_path, reviewer))
+
+
 def main(argv=None):
     """CLI entry point: print the resolved config, or with --gate-flags=plan|code that reviewer's
-    review_gate.py flags on one line. On error print the message to stderr and exit non-zero."""
+    review_gate.py flags on one line, read from --from <ship-config.json> when given so a story's
+    frozen config is what the gate sees. On error print the message to stderr and exit non-zero."""
     try:
         argv = sys.argv[1:] if argv is None else argv
-        reviewer, rest = _pop_gate_flags(argv)
-        config = resolve(rest, os.environ)
+        reviewer, rest = _pop_option(argv, GATE_FLAGS)
+        from_path, rest = _pop_option(rest, FROM)
         if reviewer is None:
-            print(json.dumps(config, indent=2))
+            if from_path is not None:
+                raise ConfigError(f"{FROM} only applies together with {GATE_FLAGS}=plan|code")
+            print(json.dumps(resolve(rest, os.environ), indent=2))
         else:
-            print(_gate_flags_line(config["review"][reviewer]))
+            print(_gate_flags(reviewer, from_path, rest))
     except ConfigError as exc:
         print(f"ship_config: {exc}", file=sys.stderr)
         return 1

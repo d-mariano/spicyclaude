@@ -17,8 +17,8 @@ envelopes, nothing else.
 - The context folder `/context/[nnn]-{slug}/`. [references/artifacts.md](references/artifacts.md)
   lists every file that lives there.
 - `ship-config.json` in the context folder: the config resolved once at the start of the story.
-  Agents get its path; the question mode and the gate parameters come from it, never from a
-  second resolution.
+  Agents get its path; the question mode comes from it, and the gate parameters are rendered from
+  it with `ship_config.py --gate-flags=<phase> --from=<path>`, never from a second resolution.
 
 ## Phases
 
@@ -41,14 +41,20 @@ Follow `review-loop` exactly. Per round `n`:
 
 1. Spawn the reviewer with the target, the story, the round number, and for `n > 1` the previous
    findings file and the previous fixes file.
-2. Run the gate. Never guess its outcome.
+2. Run the gate. Never guess its outcome, and never hand-copy the gate parameters: render them
+   from the story's frozen config with one plain command, then paste the printed line into the
+   gate call as a second plain command. No `$(...)` substitution; that is a compound command.
+
+   ```
+   python3 ${CLAUDE_PLUGIN_ROOT}/scripts/ship_config.py --gate-flags=<phase> --from=<context>/ship-config.json
+   ```
+
+   prints, for example, `--max-rounds 3 --min-severity High --fix-floor Medium`. Then:
 
    ```
    python3 ${CLAUDE_PLUGIN_ROOT}/scripts/review_gate.py <phase>-review-r{n}.json \
      [--prior <phase>-review-r{n-1}.json --fixes <phase>-fixes-r{n-1}.json] \
-     --max-rounds <cfg.review.<phase>.max_rounds> \
-     --min-severity <cfg.review.<phase>.min_severity> \
-     --fix-floor <cfg.review.<phase>.fix_floor>
+     <the printed line>
    ```
 
 3. On `CONTINUE`, spawn the fixer with the findings file, the `fixable` ids, the mode, and in

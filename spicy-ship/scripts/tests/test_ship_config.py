@@ -284,3 +284,65 @@ class GateFlagsTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class GateFlagsFromTest(unittest.TestCase):
+    FROZEN = {
+        "review": {
+            "plan": {"max_rounds": 2, "min_severity": "Medium", "fix_floor": "Low"},
+            "code": {"max_rounds": 4, "min_severity": "Critical", "fix_floor": "Critical"},
+        },
+        "questions": {"mode": "raise", "escalate": []},
+    }
+
+    def frozen(self, tmp, payload=None):
+        path = Path(tmp) / "ship-config.json"
+        path.write_text(json.dumps(self.FROZEN if payload is None else payload))
+        return str(path)
+
+    def test_from_renders_the_frozen_section_and_ignores_live_sources(self):
+        with TemporaryDirectory() as tmp:
+            code, out, err = run_main(["--gate-flags=plan", f"--from={self.frozen(tmp)}"], env={"SPICY_PLAN_MAX_ROUNDS": "9"})
+        self.assertEqual((code, out, err), (0, "--max-rounds 2 --min-severity Medium --fix-floor Low\n", ""))
+
+    def test_from_reads_the_code_section_too(self):
+        with TemporaryDirectory() as tmp:
+            code, out, _ = run_main(["--gate-flags=code", f"--from={self.frozen(tmp)}"])
+        self.assertEqual((code, out), (0, "--max-rounds 4 --min-severity Critical --fix-floor Critical\n"))
+
+    def test_from_rejects_other_flags(self):
+        with TemporaryDirectory() as tmp:
+            code, out, err = run_main(["--gate-flags=plan", f"--from={self.frozen(tmp)}", "--plan-rounds=7"])
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("--plan-rounds", err)
+
+    def test_from_without_gate_flags_fails_loud(self):
+        with TemporaryDirectory() as tmp:
+            code, out, err = run_main([f"--from={self.frozen(tmp)}"])
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("only applies together with --gate-flags", err)
+
+    def test_from_missing_file_fails_loud(self):
+        code, out, err = run_main(["--gate-flags=plan", "--from=/nonexistent/ship-config.json"])
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("/nonexistent/ship-config.json", err)
+
+    def test_from_file_missing_section_fails_loud(self):
+        with TemporaryDirectory() as tmp:
+            path = self.frozen(tmp, {"review": {"plan": self.FROZEN["review"]["plan"]}, "questions": {}})
+            code, out, err = run_main(["--gate-flags=code", f"--from={path}"])
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("review.code", err)
+
+    def test_from_file_with_invalid_value_fails_loud(self):
+        with TemporaryDirectory() as tmp:
+            bad = json.loads(json.dumps(self.FROZEN))
+            bad["review"]["plan"]["max_rounds"] = "many"
+            code, out, err = run_main(["--gate-flags=plan", f"--from={self.frozen(tmp, bad)}"])
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("max_rounds", err)
+
+    def test_empty_from_fails_loud(self):
+        code, out, err = run_main(["--gate-flags=plan", "--from="])
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("--from needs the path", err)
