@@ -11,6 +11,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
+import review_gate
 import ship_config
 
 
@@ -390,11 +391,22 @@ class GateFlagsFromTest(unittest.TestCase):
         self.assertEqual((code, out), (1, ""))
         self.assertIn("--from needs the path", err)
 
+    def test_from_rejects_fix_floor_stricter_than_min_severity(self):
+        bad = {"review": {"plan": {"max_rounds": 3, "min_severity": "Medium", "fix_floor": "High"}}}
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ship-config.json"
+            path.write_text(json.dumps(bad))
+            code, out, err = run_main(["--gate-flags=plan", f"--from={path}"])
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("stricter than", err)
+
     def test_from_malformed_files_fail_loud(self):
         cases = {
             "{not json": "cannot read",
-            "[1, 2]": "has no review.plan section",
+            "[1, 2]": "top level must be a JSON object",
             '{"review": {"plan": []}}': "has no review.plan section",
+            '{"review": []}': "review must be a JSON object",
+            '{"review": null}': "review must be a JSON object",
             '{"review": {"plan": {"max_rounds": 2}}}': "is missing ['min_severity', 'fix_floor']",
         }
         for payload, fragment in cases.items():
@@ -406,7 +418,6 @@ class GateFlagsFromTest(unittest.TestCase):
                 self.assertIn(fragment, err)
 
     def test_printed_line_is_accepted_by_review_gate(self):
-        import review_gate
         flags = run_main(["--gate-flags=plan"])[1].split()
         with TemporaryDirectory() as tmp:
             findings = Path(tmp) / "r1.json"
