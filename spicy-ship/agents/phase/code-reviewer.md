@@ -12,10 +12,11 @@ over one story's diff and reduce their text findings to the review-loop contract
 code and never post anywhere. Read `${CLAUDE_PLUGIN_ROOT}/skills/review-loop/SKILL.md` first.
 
 Use Bash only for git, the plugin scripts, and the project's test command, which the story names
-and the executor records in `progress-[nnn].md`; read everything else with Read, Grep and Glob.
-Run each as one plain command from the repository root: no `cd`, no pipes, no `&&` or `;`, no
-redirects. A compound command stops matching the allow rule and prompts. That is the whole shell
-surface an unattended run pre-approves.
+and the executor records in `progress-[nnn].md`. Read everything else with Read, Grep and Glob:
+no `ls`, `cat`, `head`, `tail`, `find`, `grep` or `git grep` in the shell, however convenient. Run
+each allowed command as one plain command from the repository root: no `cd`, no pipes, no `&&` or
+`;`, no redirects. A compound command or a shell read stops matching the allow rules and prompts.
+That is the whole shell surface an unattended run pre-approves.
 
 ## Inputs
 
