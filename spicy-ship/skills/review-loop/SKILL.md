@@ -101,7 +101,7 @@ change them.
 
 | Outcome | What the orchestrator does |
 |---|---|
-| `PASS` | proceed; list `fixable` findings below the floor in the PR body under "Advisory findings" |
+| `PASS` | proceed; list the `fixable` findings, which are all below `min_severity` once the gate passed, in the PR body under "Advisory findings" |
 | `EXHAUSTED`, no `Critical` | proceed; list the blocking findings in the PR body under "Unresolved findings" |
 | `EXHAUSTED`, `critical: true` | mark the story blocked; never open the PR |
 | `STALLED` | mark the story blocked |

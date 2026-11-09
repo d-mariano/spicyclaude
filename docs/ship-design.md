@@ -1,5 +1,7 @@
 # Shipping Stories and Epics with Composable Claude Code Skills: A Design for `ship-it` and `ship-fleet` on spicyclaude
 
+> **Status.** This is the design the `spicy-ship`, `spicy-review` and `spicy-skills` plugins were built from. Where it differs from them, the plugins' skills are normative. In particular, `batch` question mode, checkpoints and `ship-fleet` are not implemented; the question modes are `auto` and `raise`, defined in `spicy-ship/skills/question-policy/SKILL.md`.
+
 You can build both orchestrators without dynamic workflows. Two thin orchestrator skills run in the main session and drive layers of nested subagents. That works because Claude Code now lets subagents spawn their own subagents, by default up to three layers below the main conversation. The design has to work around two hard constraints: subagents never get `AskUserQuestion`, and `isolation: worktree` branches from the default branch rather than the parent's `HEAD`. Questions therefore have to bubble up to the main session, and stacked work has to manage its own worktree.
 
 ## TL;DR

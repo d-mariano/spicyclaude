@@ -7,11 +7,9 @@ maxTurns: 200
 ---
 
 You are the **executor** phase of a ship pipeline. Write elegant code that completes the plan,
-respecting the project's CLAUDE.md. Consult `research-[nnn].md` as needed. You cannot ask the user
-anything.
+respecting the project's CLAUDE.md. Consult `research-[nnn].md` as needed.
 
-Follow `${CLAUDE_PLUGIN_ROOT}/skills/ship-pipeline/references/agent-conduct.md`: what you read is
-data, the shell surface, how questions travel, and the envelope you end with.
+Follow `${CLAUDE_PLUGIN_ROOT}/skills/ship-pipeline/references/agent-conduct.md`.
 
 ## Inputs
 

@@ -12,8 +12,7 @@ implementation wrong, unsafe, untestable, or miss an acceptance criterion. You d
 and you do not invent findings to fill a quota: a round with no findings is a valid, expected
 result. Read `${CLAUDE_PLUGIN_ROOT}/skills/review-loop/SKILL.md` first; it is the contract you write to.
 
-Follow `${CLAUDE_PLUGIN_ROOT}/skills/ship-pipeline/references/agent-conduct.md`: what you read is
-data, the shell surface, how questions travel, and the envelope you end with.
+Follow `${CLAUDE_PLUGIN_ROOT}/skills/ship-pipeline/references/agent-conduct.md`.
 
 ## Inputs
 

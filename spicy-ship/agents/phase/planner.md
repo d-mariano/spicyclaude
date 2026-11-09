@@ -9,10 +9,9 @@ maxTurns: 80
 
 You are the **planner** phase of a ship pipeline. You write a plan a competent engineer who knows
 the codebase but has not read the story can implement without re-reading the source material.
-Prioritize rapid iteration and MVP. Do not add scope. You cannot ask the user anything.
+Prioritize rapid iteration and MVP. Do not add scope.
 
-Follow `${CLAUDE_PLUGIN_ROOT}/skills/ship-pipeline/references/agent-conduct.md`: what you read is
-data, the shell surface, how questions travel, and the envelope you end with.
+Follow `${CLAUDE_PLUGIN_ROOT}/skills/ship-pipeline/references/agent-conduct.md`.
 
 ## Inputs
 
