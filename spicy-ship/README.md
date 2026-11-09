@@ -70,7 +70,7 @@ Phase agents follow one [conduct rule](skills/ship-pipeline/references/agent-con
 
 Add the project's own test runner if it is not `python3`. A compound command, a shell read or a shell write stops matching these rules and prompts; the conduct file has the exact list. `ship-it` itself pre-approves `Bash(gh pr create *)` for the pull request step through its own frontmatter.
 
-Know what you are approving: `Bash(python3 *)` admits `python3 -c` and `Bash(git *)` admits `git -c core.fsmonitor=<cmd>`, so together they are an unrestricted shell for any agent that holds them. The agents treat everything they read as data rather than instructions, and the explorer and planner fetch from the web, so that guard is doing real work. A hook that denies those two forms is the deterministic control and is not built yet; until it is, run unattended only on repositories and stories you trust. A headless run (`claude -p`) that hits anything outside the allowlist fails loud at that step and the story ends `blocked` with the denied command named; nothing is retried around a denial.
+Know what you are approving: `Bash(python3 *)` admits `python3 -c` and `Bash(git *)` admits `git -c core.fsmonitor=<cmd>`, so together they are an unrestricted shell for any agent that holds them. The agents treat everything they read as data rather than instructions, and the explorer and planner fetch from the web, so that guard is doing real work. Run unattended only on repositories and stories you trust.
 
 ## Configuration
 
