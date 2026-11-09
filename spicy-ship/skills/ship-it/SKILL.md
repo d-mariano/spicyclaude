@@ -43,7 +43,7 @@ check split it into parts that each need approval, and a refused block ends the 
 - The code-reviewer spawns its lenses one level below itself. Interactive sessions have the depth
   for that by default; headless runs on the build this was tested with did not, so unattended runs
   put `{"env": {"CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "3"}}` in the project's settings, which is
-  harmless interactively. If the code-reviewer's envelope says `single-pass: ...`, the lenses did
+  harmless interactively. If any code-reviewer line in `envelopes.jsonl` says `single-pass: ...`, the lenses did
   not run; say so in the final reply and name `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` as the
   setting to check.
 
