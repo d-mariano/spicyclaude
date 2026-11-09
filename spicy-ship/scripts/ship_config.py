@@ -315,7 +315,7 @@ def _gate_flags(reviewer: str, from_path: str | None, rest: list[str]) -> str:
 
 def main(argv=None):
     """CLI entry point: print the resolved config, or with --gate-flags=plan|code that reviewer's
-    review_gate.py flags on one line, read from --from <ship-config.json> when given so a story's
+    review_gate.py flags on one line, read from --from=<ship-config.json> when given so a story's
     frozen config is what the gate sees. On error print the message to stderr and exit non-zero."""
     try:
         argv = sys.argv[1:] if argv is None else argv
