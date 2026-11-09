@@ -9,7 +9,7 @@ Ship one story unattended. `/spicy-ship:ship-it` explores, plans, reviews the pl
 
 Depends on `spicy-skills` for the craft skills the planner, executor and fixer load, and on `spicy-review` for the severity rubric and the reviewer agents.
 
-The code-reviewer fans out to the review lenses one subagent level below itself. Claude Code documents a default depth of three levels, but on the build this was tested with (2.1.319) a subagent had no Agent tool until the depth was set explicitly, so put this in the project's settings before any run, `ship-it` included; it is harmless where the default already works:
+The code-reviewer fans out to the review lenses one subagent level below itself. In an interactive session the documented default depth of three levels covers that. In a headless run (`claude -p`) on the build this was tested with (2.1.319), a subagent had no Agent tool until the depth was set explicitly, so unattended runs need this in the project's settings; it is harmless elsewhere:
 
 ```json
 {"env": {"CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "3"}}

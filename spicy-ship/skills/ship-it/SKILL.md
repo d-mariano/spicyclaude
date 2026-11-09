@@ -40,9 +40,9 @@ check split it into parts that each need approval, and a refused block ends the 
 
 - Any line from the first block is a tracked change; say what is uncommitted and stop. The
   untracked `context/` folder never shows here and is expected.
-- The code-reviewer spawns its lenses one level below itself. Set
-  `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` in the project's settings `env`; on the build this was
-  tested with, a subagent had no Agent tool without it, whatever the documented default. If the code-reviewer's envelope says `single-pass: Agent tool withheld`,
+- The code-reviewer spawns its lenses one level below itself. Interactive sessions have the depth
+  for that by default; headless runs on the build this was tested with did not, so unattended runs
+  set `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` in the project's settings `env`. If the code-reviewer's envelope says `single-pass: Agent tool withheld`,
   the variable was not set; say so in the final reply and name the setting.
 
 ## Procedure
