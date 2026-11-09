@@ -1,0 +1,4 @@
+[
+  {"id": "F1", "resolution": "fixed", "note": "invalid-config test argv reordered to [\"--gate-flags=plan\", \"--min-severity=Nit\"] so it is RED today; RED explanations in the test table and task 1.1 updated"},
+  {"id": "F2", "resolution": "fixed", "note": "main bullet now sets argv from sys.argv[1:] before _pop_gate_flags; test_cli_entry_point_defaults_to_sys_argv (subprocess) added to the test table, AC trace, imports and task 1.1; suite count 79 to 80, RED count seven to eight"}
+]

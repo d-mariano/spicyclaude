@@ -1,0 +1,12 @@
+{
+  "story": "story.md",
+  "slug": "001-ship-config-gate-flags",
+  "branch": "claude/ship-preflight-split-3ksj6d",
+  "base_sha": "d5193e23fc7e67a2baee18cef619a06a3843a85d",
+  "phase": "done",
+  "round": 1,
+  "status": "done",
+  "gates": {"plan": "PASS", "code": "PASS"},
+  "artifacts": {"research": "research-001.md", "plan": "plan-001.md", "progress": "progress-001.md"},
+  "blocked_reason": null
+}

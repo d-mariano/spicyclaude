@@ -1,0 +1,28 @@
+{
+  "reviewer": "plan-reviewer",
+  "target": "context/001-ship-config-gate-flags/plan-001.md",
+  "round": 1,
+  "prior_findings": [],
+  "findings": [
+    {
+      "id": "F1",
+      "title": "Invalid-config gate test passes before any code is written",
+      "severity": "High",
+      "confidence": 95,
+      "location": "context/001-ship-config-gate-flags/plan-001.md:171",
+      "category": "tests",
+      "problem": "test_invalid_config_with_gate_flags_fails_loud uses argv [\"--min-severity=Nit\", \"--gate-flags=plan\"]. _from_flags (ship_config.py:114-122) walks flags in order, so it raises on --min-severity=Nit before it ever reaches --gate-flags. Running today's CLI with that argv gives exit 1, empty stdout, and stderr 'argument --min-severity: severity must be one of ...', which already meets every assertion. The test is green at RED time, so the plan's claim 'RED today: stderr reads unknown argument --gate-flags' (lines 171 and 252) is false. Task 1.1 expects seven failures and will see six. This breaks AC-5's 'written RED first' for the AC-3 no-stdout trace row, and the test cannot tell whether the gate path surfaces config errors at all.",
+      "fix": "Put the gate flag first: [\"--gate-flags=plan\", \"--min-severity=Nit\"]. Today that argv fails with \"unknown argument '--gate-flags'\", so the test is RED by assertion. After 1.2 the leftover [\"--min-severity=Nit\"] reaches resolve and the severity error comes back, so it goes GREEN. Update the RED explanation on lines 171 and 252 to match."
+    },
+    {
+      "id": "F2",
+      "title": "main no longer defaults argv to sys.argv and the CLI path is untested",
+      "severity": "Medium",
+      "confidence": 80,
+      "location": "context/001-ship-config-gate-flags/plan-001.md:106-108",
+      "category": "correctness",
+      "problem": "The plan tells main to 'call _pop_gate_flags(argv), then resolve(rest, os.environ)' and to keep the argv=None signature. Today the `sys.argv[1:] if argv is None else argv` default is written inline in the resolve call (ship_config.py:266). Followed literally, the plan drops that default. A real `python3 ship_config.py ...` run then calls main() with argv=None, and iterating None raises TypeError. That breaks AC-1 and AC-4 as the story words them (via the CLI) and the no-argument call in skills/ship-it/SKILL.md:16. Every planned test goes through run_main(argv) with an explicit list, so the suite stays green.",
+      "fix": "In the main bullet, state that main first sets `argv = sys.argv[1:] if argv is None else argv` and then passes that to _pop_gate_flags. Add one test that runs the script as the story does: subprocess.run([sys.executable, ship_config.__file__, \"--gate-flags=plan\"], env={\"CLAUDE_PROJECT_DIR\": tmp}, capture_output=True, text=True). It should assert returncode 0 and stdout DEFAULT_LINE + \"\\n\". Raise the expected suite count to match."
+    }
+  ]
+}

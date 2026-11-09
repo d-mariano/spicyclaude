@@ -1,0 +1,10 @@
+{
+  "reviewer": "plan-reviewer",
+  "target": "context/001-ship-config-gate-flags/plan-001.md",
+  "round": 2,
+  "prior_findings": [
+    {"id": "F1", "status": "resolved"},
+    {"id": "F2", "status": "resolved"}
+  ],
+  "findings": []
+}

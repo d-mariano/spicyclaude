@@ -1,0 +1,20 @@
+{
+  "review": {
+    "plan": {
+      "max_rounds": 3,
+      "min_severity": "High",
+      "fix_floor": "Medium"
+    },
+    "code": {
+      "max_rounds": 3,
+      "min_severity": "High",
+      "fix_floor": "Medium"
+    }
+  },
+  "questions": {
+    "mode": "auto",
+    "escalate": [
+      "irreversible"
+    ]
+  }
+}

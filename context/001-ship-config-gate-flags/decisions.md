@@ -1,0 +1,6 @@
+- D1 · explorer · Where does --gate-flags get handled? → in main, stripped from argv before resolve() · reversible · keeps resolve() pure and every config source untouched; resolve would otherwise reject the flag as unknown
+- D2 · explorer · Bare --gate-flags with no value? → treated as empty value, fails with the reviewer list · reversible · AC-3 wants the allowed reviewers named
+- D3 · explorer · Repeated --gate-flags? → last wins · reversible · matches how repeated flags overwrite elsewhere in ship_config
+- D4 · planner · Validate the --gate-flags reviewer before or after resolve()? → before, at argv extraction · reversible · a bad argument is reported whatever state the environment is in (e.g. outside a git repo), matching how _from_flags validates at parse time; stdout stays empty either way
+- D5 · planner · Mention --gate-flags in spicy-ship/README.md? → yes, one clause on the existing ship_config.py Scripts line · reversible · README is the scripts map; SKILL.md files stay untouched per the story
+- D6 · planner · Public gate_flags() function or private helpers? → private _pop_gate_flags and _gate_flags_line · reversible · only main calls them; tests exercise the CLI through main, so a public API would have no consumer
