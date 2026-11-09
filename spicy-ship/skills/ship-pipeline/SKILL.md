@@ -111,7 +111,8 @@ and whose gate passed. With `status: needs_input`, every question in `questions.
 `<phase>:<id>` key is absent from `answers.json` is still open; ask those before anything else. Inside a review loop the files
 decide the next step: no findings file for `round` means spawn the reviewer; findings but no fixes
 file means run the gate again, which is idempotent, and act on it; both present means the next
-round.
+round. Earlier envelopes are in `envelopes.jsonl`; read it back for anything the final reply needs,
+such as whether the code review fanned out or ran single-pass.
 
 ## Rules
 
