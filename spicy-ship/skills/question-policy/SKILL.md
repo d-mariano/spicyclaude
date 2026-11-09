@@ -41,7 +41,8 @@ stay guarded regardless.
 A permission denial, a missing tool, a command that will not run, or a path that does not exist is
 an operational block, not a fork in the work. An agent that hits one returns `FAILED` with the
 blocker in `summary` and does not dress it up as a question; the orchestrator marks the story
-blocked and names the blocker, because the remedy is in the environment, not in an answer.
+blocked and names the blocker, because the remedy is in the environment, not in an answer. The
+code-reviewer without the Agent tool is not blocked: it reviews in a single pass and says so.
 
 ## Question contract
 
