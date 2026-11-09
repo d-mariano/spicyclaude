@@ -255,11 +255,7 @@ def _finalize(merged):
     for reviewer in REVIEWERS:
         section = dict(default)
         section.update(merged["review"].get(reviewer, {}))
-        if at_least(section["fix_floor"], section["min_severity"]) and section["fix_floor"] != section["min_severity"]:
-            raise ConfigError(
-                f"review.{reviewer}: fix_floor {section['fix_floor']!r} is stricter than "
-                f"min_severity {section['min_severity']!r}; a fix floor can only be equal or looser"
-            )
+        _check_floors(section, f"review.{reviewer}")
         review[reviewer] = section
     return {"review": review, "questions": merged["questions"]}
 
@@ -280,19 +276,33 @@ def _gate_flags_line(section: dict[str, int | str]) -> str:
     return " ".join(f"--{key.replace('_', '-')} {section[key]}" for key in REVIEW_KEYS)
 
 
+def _check_floors(section, label):
+    """Fail loud when a section's fix floor is stricter than its minimum severity."""
+    if at_least(section["fix_floor"], section["min_severity"]) and section["fix_floor"] != section["min_severity"]:
+        raise ConfigError(
+            f"{label}: fix_floor {section['fix_floor']!r} is stricter than "
+            f"min_severity {section['min_severity']!r}; a fix floor can only be equal or looser"
+        )
+
+
 def _frozen_section(path: str, reviewer: str) -> dict[str, int | str]:
     """Read a review section from a ship-config.json this script wrote earlier, validating each value."""
     try:
         data = json.loads(Path(path).read_text())
     except (OSError, json.JSONDecodeError) as exc:
         raise ConfigError(f"{FROM}: cannot read {path}: {exc}") from exc
-    section = data.get("review", {}).get(reviewer) if isinstance(data, dict) else None
+    _require_object(data, path, "top level")
+    review = data.get("review", {})
+    _require_object(review, path, "review")
+    section = review.get(reviewer)
     if not isinstance(section, dict):
         raise ConfigError(f"{FROM}: {path} has no review.{reviewer} section")
     missing = [key for key in REVIEW_KEYS if key not in section]
     if missing:
         raise ConfigError(f"{FROM}: {path} review.{reviewer} is missing {missing}")
-    return {key: _parse(("review", reviewer, key), section[key], f"{path} review.{reviewer}.{key}") for key in REVIEW_KEYS}
+    parsed = {key: _parse(("review", reviewer, key), section[key], f"{path} review.{reviewer}.{key}") for key in REVIEW_KEYS}
+    _check_floors(parsed, f"{path} review.{reviewer}")
+    return parsed
 
 
 def _gate_flags(reviewer: str, from_path: str | None, rest: list[str]) -> str:
