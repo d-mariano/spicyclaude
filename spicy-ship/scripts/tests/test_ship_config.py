@@ -282,9 +282,6 @@ class GateFlagsTest(unittest.TestCase):
         self.assertEqual(out, json.dumps(self.EXPECTED_DEFAULTS, indent=2) + "\n")
 
 
-if __name__ == "__main__":
-    unittest.main()
-
 
 class GateFlagsFromTest(unittest.TestCase):
     FROZEN = {
@@ -346,3 +343,31 @@ class GateFlagsFromTest(unittest.TestCase):
         code, out, err = run_main(["--gate-flags=plan", "--from="])
         self.assertEqual((code, out), (1, ""))
         self.assertIn("--from needs the path", err)
+
+    def test_from_malformed_files_fail_loud(self):
+        cases = {
+            "{not json": "cannot read",
+            "[1, 2]": "has no review.plan section",
+            '{"review": {"plan": []}}': "has no review.plan section",
+            '{"review": {"plan": {"max_rounds": 2}}}': "is missing ['min_severity', 'fix_floor']",
+        }
+        for payload, fragment in cases.items():
+            with self.subTest(payload=payload), TemporaryDirectory() as tmp:
+                path = Path(tmp) / "ship-config.json"
+                path.write_text(payload)
+                code, out, err = run_main(["--gate-flags=plan", f"--from={path}"])
+                self.assertEqual((code, out), (1, ""))
+                self.assertIn(fragment, err)
+
+    def test_printed_line_is_accepted_by_review_gate(self):
+        import review_gate
+        flags = run_main(["--gate-flags=plan"])[1].split()
+        with TemporaryDirectory() as tmp:
+            findings = Path(tmp) / "r1.json"
+            findings.write_text(json.dumps({"reviewer": "r", "target": "t", "round": 1, "prior_findings": [], "findings": []}))
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(review_gate.main([str(findings), *flags]), 0)
+
+
+if __name__ == "__main__":
+    unittest.main()
