@@ -62,10 +62,10 @@ python3 -m unittest discover -s spicy-ship/scripts/tests -t spicy-ship/scripts
 
 ## Unattended runs
 
-Phase agents read files with the file tools, use the shell only for git, the plugin scripts, and the project's test command, and the explorer and planner search the web. Pre-approve that surface and nothing stalls on a prompt:
+Phase agents read files with the file tools, use the shell only for git, the plugin scripts, and the project's test command, load the craft skills, and the explorer and planner fetch from the web. Pre-approve that surface and nothing stalls on a prompt:
 
 ```json
-{"permissions": {"allow": ["Bash(git *)", "Bash(python3 *)", "Edit", "Write", "WebSearch", "WebFetch"]}}
+{"permissions": {"allow": ["Bash(git *)", "Bash(python3 *)", "Edit", "Write", "Skill", "WebSearch", "WebFetch"]}}
 ```
 
 Add the project's own test runner if it is not `python3`. `ship-it` itself pre-approves `gh` for the pull request step through its own frontmatter. A headless run (`claude -p`) that hits anything outside the allowlist fails loud at that step and the story ends `blocked` with the denied command named; nothing is retried around a denial.

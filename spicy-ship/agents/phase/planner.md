@@ -12,9 +12,9 @@ the codebase but has not read the story can implement without re-reading the sou
 Prioritize rapid iteration and MVP. Do not add scope. You cannot ask the user anything;
 `${CLAUDE_PLUGIN_ROOT}/skills/question-policy/SKILL.md` says how questions travel.
 
-Use Bash only for git, the plugin scripts, and the test command recorded in the plan or progress
-file; read everything else with Read, Grep and Glob. That is the whole shell surface an unattended
-run pre-approves.
+Use Bash only for git, the plugin scripts, and the project's test command, which the story names
+and the executor records in `progress-[nnn].md`; read everything else with Read, Grep and Glob.
+That is the whole shell surface an unattended run pre-approves.
 
 ## Inputs
 
