@@ -50,9 +50,10 @@ check split it into parts that each need approval, and a refused block ends the 
    [references/example-story.md](references/example-story.md). With `--resume`,
    read `ship-state.json` in the named folder, check out its `branch`, use the folder's
    `ship-config.json` instead of the config above, and continue from its `phase` per the pipeline's
-   resume rules; skip the rest of this step. Otherwise pick the next `nnn` and the slug, and if you
-   are on the default branch create and check out `ship/[nnn]-{slug}`; on any other branch stay on
-   it. Then write `story.md` into `/context/[nnn]-{slug}/` with the Write tool, which creates the
+   resume rules; skip the rest of this step. Otherwise pick the next `nnn` and the slug, and create
+   and check out `ship/[nnn]-{slug}` from the current `HEAD`, whatever branch that is. Agent commits
+   land only on `ship/*` branches, so a run started on a shared branch never writes to it. Then
+   write `story.md` into `/context/[nnn]-{slug}/` with the Write tool, which creates the
    folder; never shell out for `mkdir`. Write the resolved config to `ship-config.json` and
    `ship-state.json` with `status: running`, `phase: explore`, and the branch name.
 2. **Pipeline.** Follow `ship-pipeline`. Spawn each phase agent with paths, including the path to
@@ -68,7 +69,9 @@ check split it into parts that each need approval, and a refused block ends the 
    code gate and it is green. Any
    `STALLED`, `FAILED`, or critical `EXHAUSTED` ends the run with `status: blocked`; say why and
    stop. Never open a PR for a blocked story.
-5. **Pull request.** Unless `--no-pr`: push the branch and open a PR with `gh pr create`. Body
+5. **Pull request.** Unless `--no-pr`: push only the story's branch, with
+   `git push -u origin ship/[nnn]-{slug}`, and open a PR with `gh pr create`, the one `gh` command
+   this skill pre-approves. Body
    sections, in order: Summary, the plan's AC trace table, "Decisions made autonomously" copied
    verbatim from `decisions.md`, "Advisory findings" listing, from the final round of each gate,
    every `fixable` finding below the severity floor and any `EXHAUSTED` blocking findings with
