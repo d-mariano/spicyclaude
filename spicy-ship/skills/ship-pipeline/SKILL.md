@@ -63,6 +63,9 @@ fails the gate too, set `status: blocked` with the gate's message and stop.
 
 ## Handling envelopes
 
+- Every envelope, whatever its status, is appended as one line to `envelopes.jsonl` in the
+  context folder, with the phase and round added. The summaries are the only record of what each
+  agent reported, including a code-reviewer's `single-pass: Agent tool withheld`.
 - `DONE`: record the artifact in `ship-state.json` and move on. The agent has already appended its
   `decisions` to `decisions.md`; the envelope copy is for your reply and the PR summary, never for
   writing to the log a second time.

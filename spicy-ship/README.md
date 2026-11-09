@@ -9,13 +9,13 @@ Ship one story unattended. `/spicy-ship:ship-it` explores, plans, reviews the pl
 
 Depends on `spicy-skills` for the craft skills the planner, executor and fixer load, and on `spicy-review` for the severity rubric and the reviewer agents.
 
-The code-reviewer fans out to the review lenses one subagent level below itself. From `ship-it` that is two levels below the main session, within Claude Code's default depth. An orchestrator that runs the pipeline from inside an agent pushes the lenses to level three; pin the depth in the project's settings for that case:
+The code-reviewer fans out to the review lenses one subagent level below itself. On current Claude Code a subagent receives no Agent tool unless the spawn depth is set, so put this in the project's settings before any run, `ship-it` included:
 
 ```json
 {"env": {"CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "3"}}
 ```
 
-When the level is not available the code-reviewer falls back to a single consolidated pass and says so in its summary.
+Without it the code-reviewer falls back to a single consolidated pass, says `single-pass: Agent tool withheld` in its envelope, and `ship-it` repeats that in its final reply. Every phase agent's envelope is appended to `envelopes.jsonl` in the story folder, so the record of what each phase reported survives the run.
 
 ## Usage
 

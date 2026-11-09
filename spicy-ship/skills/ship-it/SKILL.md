@@ -40,8 +40,10 @@ check split it into parts that each need approval, and a refused block ends the 
 
 - Any line from the first block is a tracked change; say what is uncommitted and stop. The
   untracked `context/` folder never shows here and is expected.
-- Subagent depth needs no check for `ship-it`: phases run one level down and the code-reviewer's
-  lenses two levels down, within Claude Code's default.
+- The code-reviewer spawns its lenses one level below itself, which needs
+  `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` set in the project's settings `env`; a subagent gets no
+  Agent tool otherwise. If the code-reviewer's envelope says `single-pass: Agent tool withheld`,
+  the variable was not set; say so in the final reply and name the setting.
 
 ## Procedure
 
@@ -74,7 +76,8 @@ check split it into parts that each need approval, and a refused block ends the 
    every `fixable` finding below the severity floor and any `EXHAUSTED` blocking findings with
    their ids, and the test command with its result line. Never merge.
 6. **Reply.** At most fifteen lines: status, PR link or blocked reason, rounds used per gate with
-   their outcomes, open decisions count, and the test result line.
+   their outcomes, whether the code review fanned out or ran single-pass, open decisions count,
+   and the test result line.
 
 ## Never
 
