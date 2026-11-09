@@ -162,21 +162,22 @@ def _validate_project_shape(data, project_file):
         if reviewer not in ("default",) + REVIEWERS:
             raise ConfigError(f"{project_file}: unknown review section {reviewer!r}")
         _require_object(section, project_file, f"review.{reviewer}")
-        _parse_section(section, REVIEW_KEYS, ("review", reviewer), f"{project_file} review.{reviewer}", project_file)
+        _parse_section(section, REVIEW_KEYS, ("review", reviewer), project_file)
     questions = data.get("questions", {})
     _require_object(questions, project_file, "questions")
-    _parse_section(questions, ("mode", "escalate"), ("questions",), f"{project_file} questions", project_file)
+    _parse_section(questions, ("mode", "escalate"), ("questions",), project_file)
 
 
-def _parse_section(section, allowed, path, where, project_file):
+def _parse_section(section, allowed, path, project_file):
     """Validate one project-file section in place: reject unknown keys, drop empty values, parse the rest."""
+    label = ".".join(path)
     for key in list(section):
         if key not in allowed:
-            raise ConfigError(f"{project_file}: unknown {'.'.join(path)} key {key!r}")
+            raise ConfigError(f"{project_file}: unknown {label} key {key!r}")
         if section[key] == "":
             del section[key]
             continue
-        section[key] = _parse(path + (key,), section[key], f"{where}.{key}")
+        section[key] = _parse(path + (key,), section[key], f"{project_file} {label}.{key}")
 
 
 def _require_object(value, project_file, where):
@@ -230,29 +231,20 @@ def _set(layer, path, value):
 
 
 def _finalize(layers):
-    """Pick each reviewer key from the highest source that sets it, reviewer-specific or default.
+    """Resolve each reviewer section by applying sources lowest to highest.
 
-    Sources are ordered lowest to highest. Within one source a reviewer-specific value beats
-    that source's default, but a higher source's default beats a lower source's reviewer value,
-    so an argument always wins over the project file.
+    Each source applies its default first and then its reviewer-specific values, so a reviewer
+    key beats the default inside one source, while any higher source beats every lower one: an
+    argument always wins over the project file.
     """
     review = {}
     for reviewer in REVIEWERS:
         section = {}
-        for key in REVIEW_KEYS:
-            for layer in reversed(layers):
-                sections = layer.get("review", {})
-                if key in sections.get(reviewer, {}):
-                    section[key] = sections[reviewer][key]
-                    break
-                if key in sections.get("default", {}):
-                    section[key] = sections["default"][key]
-                    break
-        if at_least(section["fix_floor"], section["min_severity"]) and section["fix_floor"] != section["min_severity"]:
-            raise ConfigError(
-                f"review.{reviewer}: fix_floor {section['fix_floor']!r} is stricter than "
-                f"min_severity {section['min_severity']!r}; a fix floor can only be equal or looser"
-            )
+        for layer in layers:
+            sections = layer.get("review", {})
+            section.update(sections.get("default", {}))
+            section.update(sections.get(reviewer, {}))
+        _check_floors(section, f"review.{reviewer}")
         review[reviewer] = section
     questions = {}
     for layer in layers:
@@ -276,19 +268,33 @@ def _gate_flags_line(section: dict[str, int | str]) -> str:
     return " ".join(f"--{key.replace('_', '-')} {section[key]}" for key in REVIEW_KEYS)
 
 
+def _check_floors(section, label):
+    """Fail loud when a section's fix floor is stricter than its minimum severity."""
+    if at_least(section["fix_floor"], section["min_severity"]) and section["fix_floor"] != section["min_severity"]:
+        raise ConfigError(
+            f"{label}: fix_floor {section['fix_floor']!r} is stricter than "
+            f"min_severity {section['min_severity']!r}; a fix floor can only be equal or looser"
+        )
+
+
 def _frozen_section(path: str, reviewer: str) -> dict[str, int | str]:
     """Read a review section from a ship-config.json this script wrote earlier, validating each value."""
     try:
         data = json.loads(Path(path).read_text())
     except (OSError, json.JSONDecodeError) as exc:
         raise ConfigError(f"{FROM}: cannot read {path}: {exc}") from exc
-    section = data.get("review", {}).get(reviewer) if isinstance(data, dict) else None
+    _require_object(data, path, "top level")
+    review = data.get("review", {})
+    _require_object(review, path, "review")
+    section = review.get(reviewer)
     if not isinstance(section, dict):
         raise ConfigError(f"{FROM}: {path} has no review.{reviewer} section")
     missing = [key for key in REVIEW_KEYS if key not in section]
     if missing:
         raise ConfigError(f"{FROM}: {path} review.{reviewer} is missing {missing}")
-    return {key: _parse(("review", reviewer, key), section[key], f"{path} review.{reviewer}.{key}") for key in REVIEW_KEYS}
+    parsed = {key: _parse(("review", reviewer, key), section[key], f"{path} review.{reviewer}.{key}") for key in REVIEW_KEYS}
+    _check_floors(parsed, f"{path} review.{reviewer}")
+    return parsed
 
 
 def _gate_flags(reviewer: str, from_path: str | None, rest: list[str]) -> str:

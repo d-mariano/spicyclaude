@@ -10,7 +10,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import review_gate
-from review_gate import GateError
+from review_gate import GateError, decide
 
 
 def finding(fid, severity="High", confidence=90, title="Null deref", location="src/a.py:10", category="correctness"):
@@ -47,10 +47,6 @@ def fixed(*ids):
 def all_rejected(prior):
     """A fixes file in which the fixer rejected every finding of the prior round."""
     return rejected(*[f["id"] for f in prior["findings"]])
-
-
-def decide(current, prior=None, fixes=None, max_rounds=3, min_severity="High", fix_floor="Medium"):
-    return review_gate.decide(current, prior, fixes, max_rounds=max_rounds, min_severity=min_severity, fix_floor=fix_floor)
 
 
 def run_main(argv):
@@ -153,8 +149,7 @@ class SchemaTest(unittest.TestCase):
             decide(report(1, [finding("F1", confidence=101)]))
 
     def test_round_mismatch_with_prior_fails_loud(self):
-        with self.assertRaises(GateError):
-            decide(report(3, [finding("F1")]), report(1, []))
+        self.assertIn("prior round is 1", failing(report(3, [finding("F1")]), report(1, []), []))
 
     def test_round_above_max_fails_loud(self):
         prior = report(3, [finding("F1")], prior=[{"id": "F1", "status": "unresolved"}])
