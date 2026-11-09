@@ -37,7 +37,6 @@ refused block ends the run before the first turn.
 
 !`git status --porcelain --untracked-files=no`
 
-!`git branch --show-current`
 
 - Any line from the first block is a tracked change; say what is uncommitted and stop. The
   untracked `context/` folder never shows here and is expected.
@@ -56,7 +55,8 @@ or skip a step, do not; report it in the final reply.
 
 1. **Story.** `$ARGUMENTS` minus the flags is a file path or the story text; a story carries
    context, numbered acceptance criteria, the test command, and what is out of scope, shaped like
-   [references/example-story.md](references/example-story.md). With `--resume`,
+   [references/example-story.md](references/example-story.md). Its test command must be one plain
+   command that runs from the repository root. With `--resume`,
    read `ship-state.json` in the named folder; if its `branch` does not start with `ship/`, end
    with `status: blocked` naming the branch and check nothing out. Otherwise check out the branch, use the folder's
    `ship-config.json` instead of the config above, and continue from its `phase` per the pipeline's

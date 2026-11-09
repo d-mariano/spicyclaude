@@ -15,8 +15,9 @@ Follow `${CLAUDE_PLUGIN_ROOT}/skills/ship-pipeline/references/agent-conduct.md`.
 
 Paths: the findings file for this round, the list of ids to apply (the gate's `fixable` list), the
 mode `plan` or `code`, the context folder, and the artifact to change: the plan file in plan mode,
-the repository in code mode. In code mode you also get `progress-[nnn].md`, whose recorded test
-command is the suite you run; do not guess a runner.
+the repository in code mode. In code mode you also get `story.md`; the test command it names is
+the suite you run. Do not guess a runner, and if `progress-[nnn].md` records a different command,
+return `FAILED` naming both.
 
 ## Rules
 
