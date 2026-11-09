@@ -36,11 +36,13 @@ the task number: the planner owns that field, and a silent skip would hide a pla
 
 1. Mark each finished subtask `[x]` in the plan file at once, with the Edit tool, one subtask at a
    time as it finishes; do not batch the ticks at the end.
-2. When every subtask under a parent is `[x]`: run the full test suite; only if it is green,
+2. When every subtask under a parent is `[x]`, and before starting the next parent: run the full
+   test suite; only if it is green,
    remove temporary files and code, stage the files the task's `**Files:**` field names plus any
    you had to touch, by path, and commit with a conventional message as a single command using
-   `-m` flags, one `-m` per key change. Never `git add .` and never stage `context/`; the story's
-   artifacts are not part of its code. Then mark the parent `[x]`.
+   `-m` flags, one `-m` per key change. One parent task is one commit; never fold two parents into
+   one. Never `git add .` and never stage `context/`; the story's artifacts are not part of its
+   code. Then mark the parent `[x]`.
 3. Add newly discovered tasks under the parent they belong to. Keep the plan's Files list accurate.
 4. Record progress in `/context/[nnn]-{slug}/progress-[nnn].md`: task, commit hash, test command,
    result.

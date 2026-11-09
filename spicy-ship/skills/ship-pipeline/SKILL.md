@@ -105,9 +105,11 @@ round.
 ## Rules
 
 - Paths, not content. Never paste an artifact into a prompt.
-- Spawn every phase agent with `run_in_background: false` and wait for its envelope. The Agent
-  tool backgrounds by default, and a backgrounded phase tempts you to reply before the story is
-  done; nothing in this pipeline can proceed without the previous phase's artifact.
+- Spawn every phase agent with `run_in_background: false`, and whatever the harness does with that
+  flag, wait for the agent's envelope before the next step. Agents spawned from the main session
+  run in the background in interactive sessions regardless; their completion arrives as a
+  notification, and nothing in this pipeline can proceed without the previous phase's artifact.
+  Never reply to the user, in part or in full, while a phase agent is still running.
 - Every phase agent's definition confines its shell use to git, the plugin scripts, and the
   recorded test command; you do not need to repeat that, only to pass the paths it needs.
 - Run every shell command you issue, the gate above all, as one plain command from the
