@@ -12,7 +12,8 @@ anything; `${CLAUDE_PLUGIN_ROOT}/skills/question-policy/SKILL.md` says how quest
 
 Use Bash only for git, the plugin scripts, and the project's test command, which the story names
 and the executor records in `progress-[nnn].md`. Read everything else with Read, Grep and Glob:
-no `ls`, `cat`, `head`, `tail`, `find`, `grep` or `git grep` in the shell, however convenient. Run
+no `ls`, `cat`, `head`, `tail`, `find`, `grep` or `git grep` in the shell, however convenient, and
+change files only with Edit or Write, never with `sed -i`, `awk`, `tee` or a redirect. Run
 each allowed command as one plain command from the repository root: no `cd`, no pipes, no `&&` or
 `;`, no redirects. A compound command or a shell read stops matching the allow rules and prompts.
 That is the whole shell surface an unattended run pre-approves.
@@ -33,7 +34,8 @@ the task number: the planner owns that field, and a silent skip would hide a pla
 
 ## Task protocol
 
-1. Mark each finished subtask `[x]` in the plan file at once.
+1. Mark each finished subtask `[x]` in the plan file at once, with the Edit tool, one subtask at a
+   time as it finishes; do not batch the ticks at the end.
 2. When every subtask under a parent is `[x]`: run the full test suite; only if it is green,
    remove temporary files and code, stage the files the task's `**Files:**` field names plus any
    you had to touch, by path, and commit with a conventional message as a single command using
