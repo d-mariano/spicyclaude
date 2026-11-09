@@ -1,7 +1,7 @@
 ---
 name: ship-it
 description: Implement one well-defined story end to end without supervision: explore, plan, plan review loop, execute, code review loop, pull request. Use when the user says ship it, ship this story, or implement this story unattended.
-argument-hint: "<story-file | story text> [--max-review-rounds=N] [--min-severity=Critical|High|Medium|Low] [--questions=auto|raise|batch] [--no-pr] [--resume <context-folder>]"
+argument-hint: "<story-file | story text> [--max-review-rounds=N] [--min-severity=Critical|High|Medium|Low] [--questions=auto|raise] [--no-pr] [--resume <context-folder>]"
 disable-model-invocation: true
 allowed-tools: Bash(git *) Bash(gh *) Bash(python3 *) Bash(ls *) Read Write Edit Glob Grep Agent AskUserQuestion
 ---
@@ -31,8 +31,9 @@ before it runs. `${CLAUDE_PLUGIN_ROOT}` is substituted by the harness before you
 
 ## Preflight
 
-Each block below is one simple command on purpose: a pipe, a `;` or a `||` makes the permission
-check split it into parts that each need approval, and a refused block ends the run.
+Each block below is one simple command on purpose: the shell rule in
+`${CLAUDE_PLUGIN_ROOT}/skills/ship-pipeline/references/agent-conduct.md` applies here too, and a
+refused block ends the run before the first turn.
 
 !`git status --porcelain --untracked-files=no`
 
@@ -63,9 +64,7 @@ check split it into parts that each need approval, and a refused block ends the 
 3. **Questions.** On `NEEDS_INPUT`, apply `question-policy` for the resolved mode. When you ask,
    render each question through `AskUserQuestion` as the contract specifies, at most four per
    call, options in the given order, no "Other". Write `answers.json`, then resume the agent.
-   In `auto` and `batch` mode the policy holds a guarded question until the next checkpoint. A
-   single story has no checkpoint that can run before the answer, since every later phase needs
-   the stopped agent's artifact, so the hold collapses to asking now.
+   In `auto` mode the only questions that reach you are guarded ones; ask them the same way.
 4. **Done means.** The plan gate and the code gate each ended `PASS`, or `EXHAUSTED` with
    `critical: false`. You ran the test command recorded in `progress-[nnn].md` yourself after the
    code gate and it is green. Any
@@ -75,9 +74,10 @@ check split it into parts that each need approval, and a refused block ends the 
    `git push -u origin ship/[nnn]-{slug}`, and open a PR with `gh pr create`, the one `gh` command
    this skill pre-approves. Body
    sections, in order: Summary, the plan's AC trace table, "Decisions made autonomously" copied
-   verbatim from `decisions.md`, "Advisory findings" listing, from the final round of each gate,
-   every `fixable` finding below the severity floor and any `EXHAUSTED` blocking findings with
-   their ids, and the test command with its result line. Never merge.
+   verbatim from `decisions.md`, "Advisory findings" listing every `fixable` finding below the
+   severity floor from the final round of each gate, "Unresolved findings" listing the blocking
+   findings of any gate that ended `EXHAUSTED`, with their ids, and the test command with its
+   result line. Omit an empty section. Never merge.
 6. **Reply.** At most fifteen lines: status, PR link or blocked reason, rounds used per gate with
    their outcomes, whether the code review fanned out or ran single-pass, open decisions count,
    and the test result line.

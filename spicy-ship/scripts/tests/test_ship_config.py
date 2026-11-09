@@ -73,9 +73,9 @@ class PrecedenceTest(unittest.TestCase):
         self.assertEqual(cfg["review"]["code"]["max_rounds"], 1)
 
     def test_plugin_config_beats_defaults(self):
-        cfg = resolve(["--plugin-config", "minReviewSeverity=Medium", "--plugin-config", "questionMode=batch"])
+        cfg = resolve(["--plugin-config", "minReviewSeverity=Medium", "--plugin-config", "questionMode=raise"])
         self.assertEqual(cfg["review"]["plan"]["min_severity"], "Medium")
-        self.assertEqual(cfg["questions"]["mode"], "batch")
+        self.assertEqual(cfg["questions"]["mode"], "raise")
 
     def test_empty_plugin_config_value_is_unset(self):
         cfg = resolve(["--plugin-config", "maxReviewRounds="])

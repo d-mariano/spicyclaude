@@ -119,11 +119,9 @@ round.
   run in the background in interactive sessions regardless; their completion arrives as a
   notification, and nothing in this pipeline can proceed without the previous phase's artifact.
   Never reply to the user, in part or in full, while a phase agent is still running.
-- Every phase agent's definition confines its shell use to git, the plugin scripts, and the
-  recorded test command; you do not need to repeat that, only to pass the paths it needs.
-- Run every shell command you issue, the gate above all, as one plain command from the
-  repository root: no `cd`, no pipe, no `&&`, `;` or `echo`. The same allow rules the agents live
-  under apply to you, and a compound command stops matching them and prompts or fails.
+- The shell rule in [references/agent-conduct.md](references/agent-conduct.md) applies to you as
+  it does to the agents: one plain command per call, the gate above all. Every agent carries the
+  conduct rules itself; you pass paths, not reminders.
 - One agent per phase at a time; the two agents of a review loop alternate, they never overlap.
 - The executor's test run is the executor's claim. Before the story is called done, run the
   command it recorded in `progress-[nnn].md` once yourself and keep it with its result line.

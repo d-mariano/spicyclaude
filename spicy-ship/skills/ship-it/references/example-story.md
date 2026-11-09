@@ -4,7 +4,7 @@
 
 `ship-pipeline` tells the orchestrator to call `review_gate.py` with `--max-rounds`, `--min-severity` and `--fix-floor` taken from the `plan` or `code` section of the config JSON that `ship_config.py` prints. Today the orchestrator reads the JSON and hand-maps three values into three flags on every round. A `--gate-flags=<reviewer>` option on `ship_config.py` removes that step: it prints the three flags for one reviewer on one line, ready to paste after the findings file.
 
-Code lives in `spicy-ship/scripts/`. Tests live in `spicy-ship/scripts/tests/` and run with `python3 -m unittest discover -s tests -t .` from `spicy-ship/scripts`. Standard library only; no new dependencies.
+Code lives in `spicy-ship/scripts/`. Tests live in `spicy-ship/scripts/tests/` and run from the repository root with `python3 -m unittest discover -s spicy-ship/scripts/tests -t spicy-ship/scripts`; a story's test command is always a single plain command runnable from the root. Standard library only; no new dependencies.
 
 ## Acceptance criteria
 

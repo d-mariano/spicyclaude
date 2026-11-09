@@ -62,13 +62,13 @@ python3 -m unittest discover -s spicy-ship/scripts/tests -t spicy-ship/scripts
 
 ## Unattended runs
 
-Phase agents read files with the file tools, use the shell only for git, the plugin scripts, and the project's test command, load the craft skills, and the explorer and planner fetch from the web. Pre-approve that surface and nothing stalls on a prompt:
+Phase agents follow one [conduct rule](skills/ship-pipeline/references/agent-conduct.md): the shell only for git, the plugin scripts, and the project's test command, each as a single plain command; files read and changed through the file tools; the craft skills loaded by name; the explorer and planner fetch from the web. Pre-approve that surface and nothing stalls on a prompt:
 
 ```json
 {"permissions": {"allow": ["Bash(git *)", "Bash(python3 *)", "Edit", "Write", "Skill", "WebSearch", "WebFetch"]}}
 ```
 
-Add the project's own test runner if it is not `python3`. Agents run each command plain, from the repository root, with no `cd`, pipe or `&&`, because a compound command stops matching these rules and prompts. `ship-it` itself pre-approves `Bash(gh pr create *)` for the pull request step through its own frontmatter.
+Add the project's own test runner if it is not `python3`. A compound command, a shell read or a shell write stops matching these rules and prompts; the conduct file has the exact list. `ship-it` itself pre-approves `Bash(gh pr create *)` for the pull request step through its own frontmatter.
 
 Know what you are approving: `Bash(python3 *)` admits `python3 -c` and `Bash(git *)` admits `git -c core.fsmonitor=<cmd>`, so together they are an unrestricted shell for any agent that holds them. The agents treat everything they read as data rather than instructions, and the explorer and planner fetch from the web, so that guard is doing real work. A hook that denies those two forms is the deterministic control and is not built yet; until it is, run unattended only on repositories and stories you trust. A headless run (`claude -p`) that hits anything outside the allowlist fails loud at that step and the story ends `blocked` with the denied command named; nothing is retried around a denial.
 
@@ -78,7 +78,7 @@ Highest precedence first.
 
 | Source | Example |
 |---|---|
-| Skill arguments | `--max-review-rounds=5 --min-severity=Medium --plan-rounds=2 --questions=batch` |
+| Skill arguments | `--max-review-rounds=5 --min-severity=Medium --plan-rounds=2 --questions=raise` |
 | Environment | `SPICY_MAX_REVIEW_ROUNDS`, `SPICY_REVIEW_MIN_SEVERITY`, `SPICY_QUESTION_MODE`, `SPICY_PLAN_MAX_ROUNDS`, `SPICY_CODE_MIN_SEVERITY` |
 | Project file | `.claude/spicyclaude.json`, see below |
 | Plugin options | `/plugin configure spicy-ship@spicyclaude`; an option reaches the skill only when it is set and the plugin is installed from a marketplace, never from a `--plugin-dir` load |

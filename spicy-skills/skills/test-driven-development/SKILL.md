@@ -5,14 +5,16 @@ description: >
   Use when implementing features, fixing bugs, refactoring, or writing any
   functional code. Triggers: 'write tests first', 'TDD', 'test-driven',
   'red-green-refactor', new feature, bug fix, refactor. Does not apply to
-  pure config files (JSON, YAML, .env), type-only definitions, or documentation.
+  pure config files (JSON, YAML, .env), type-only definitions, documentation, or pure renames
+  with no behavior change.
 ---
 
 # Test-Driven Development — Agent Protocol
 
 TDD is a design discipline. Tests drive the implementation, not the other way around.
 Every piece of functional code is preceded by a failing test. No exceptions unless
-the work is purely configuration, documentation, or type-only definitions.
+the work is purely configuration, documentation, type-only definitions, or a rename with no
+behavior change.
 
 ## Step 0: Discover the Project's Test Setup
 

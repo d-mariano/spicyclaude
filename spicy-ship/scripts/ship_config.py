@@ -18,7 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from severities import SEVERITIES, at_least  # noqa: E402
 
-MODES = ("auto", "raise", "batch")
+MODES = ("auto", "raise")
 ESCALATIONS = ("irreversible", "external")
 REVIEWERS = ("plan", "code")
 REVIEW_KEYS = ("max_rounds", "min_severity", "fix_floor")

@@ -1,6 +1,6 @@
 ---
 name: question-policy
-description: How ship pipelines handle open questions when the agent doing the work cannot ask the user. Defines the auto, raise, and batch modes, the irreversible-only escalation guard, the question contract agents return, and the decisions log that goes into the PR. Load when an agent hits a fork it cannot resolve from its inputs, or when an orchestrator receives NEEDS_INPUT.
+description: How ship pipelines handle open questions when the agent doing the work cannot ask the user. Defines the auto and raise modes, the irreversible-only escalation guard, the question contract agents return, and the decisions log that goes into the PR. Load when an agent hits a fork it cannot resolve from its inputs, or when an orchestrator receives NEEDS_INPUT.
 user-invocable: false
 ---
 
@@ -16,10 +16,6 @@ whether to ask, using the mode resolved by `ship_config.py`.
 |---|---|---|
 | `auto` (default) | pick `recommended`, append to `decisions.md`, continue; a question with no `recommended` is guarded (below) | copy `decisions.md` into the PR body under "Decisions made autonomously" |
 | `raise` | stop and return `NEEDS_INPUT` with the questions | ask at once, write `answers.json`, resume the same agent |
-| `batch` | proceed on `recommended` provisionally, log the question as `provisional`; a question with no `recommended` is guarded (below) | ask at the next checkpoint; an answer that differs from the recommendation re-runs the phase |
-
-Checkpoints in `batch` mode are the natural seams: after decomposition, after each plan gate, and
-before opening a PR.
 
 ## Escalation guard
 
@@ -29,12 +25,11 @@ before opening a PR.
 with an evidence-backed lean, and a coin flip logged as a decision would misrepresent itself. A
 guarded question is never decided by the agent in any mode.
 
-What each party does with a guarded question:
+What each party does with a guarded question, in either mode:
 
 - **The agent** commits whatever is complete, returns `NEEDS_INPUT` with the question, and stops.
-  This is the same in `auto`, `batch` and `raise`; an agent cannot queue anything.
-- **The orchestrator** asks at once in `raise` mode, and in `auto` and `batch` holds the question
-  until the next checkpoint, where it asks and then resumes the agent with `answers.json`.
+- **The orchestrator** asks at once, writes the answer to `answers.json`, and resumes the agent.
+  In `auto` mode guarded questions are the only ones that reach the user.
 - **Headless**, where nothing can be asked, the orchestrator marks the story `blocked` with the
   question in its status rather than guessing.
 
@@ -102,9 +97,8 @@ Every phase agent ends with one fenced JSON block:
 }
 ```
 
-`questions` is non-empty with `NEEDS_INPUT`, and in `batch` mode also with `DONE`, where it lists
-the questions the agent decided provisionally so the orchestrator can ask them at the checkpoint.
-`decisions` lists what the agent decided itself this run.
+`questions` is non-empty only with `NEEDS_INPUT`. `decisions` lists what the agent decided itself
+this run.
 
 ## Decisions log
 
@@ -116,9 +110,8 @@ file, which replaces what earlier phases logged:
 - D3 · planner · Hash or encrypt refresh tokens? → bcrypt hash · costly · AC-3 requires leak resistance; hashing needs no key management
 ```
 
-Provisional decisions in `batch` mode carry `· provisional` until the checkpoint confirms or
-overrides them. The PR body copies this file verbatim so reviewers can object in review, which is
-the cheapest place to revisit a call that was made without them.
+The PR body copies this file verbatim so reviewers can object in review, which is the cheapest
+place to revisit a call that was made without them.
 
 ## Resuming after an answer
 
