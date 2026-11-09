@@ -110,8 +110,9 @@ round.
   done; nothing in this pipeline can proceed without the previous phase's artifact.
 - Every phase agent's definition confines its shell use to git, the plugin scripts, and the
   recorded test command; you do not need to repeat that, only to pass the paths it needs.
-- Run the gate as the only command in its Bash call. An appended `echo` or `&&` is a second
-  command the allowlist may not cover, and a denied call costs a round trip for nothing.
+- Run every shell command you issue, the gate above all, as one plain command from the
+  repository root: no `cd`, no pipe, no `&&`, `;` or `echo`. The same allow rules the agents live
+  under apply to you, and a compound command stops matching them and prompts or fails.
 - One agent per phase at a time; the two agents of a review loop alternate, they never overlap.
 - The executor's test run is the executor's claim. Before the story is called done, run the
   command it recorded in `progress-[nnn].md` once yourself and keep it with its result line.
