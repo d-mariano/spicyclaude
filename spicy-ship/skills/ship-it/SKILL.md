@@ -31,12 +31,17 @@ before it runs. `${CLAUDE_PLUGIN_ROOT}` is substituted by the harness before you
 
 ## Preflight
 
-!`git status --porcelain --untracked-files=no | head -5; git branch --show-current; printenv CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH || echo "depth unset"`
+Each block below is one simple command on purpose: a pipe, a `;` or a `||` makes the permission
+check split it into parts that each need approval, and a refused block ends the run.
 
-- Tracked changes in the tree stop the run. Say what is uncommitted and stop. The untracked
-  `context/` folder is expected and is not a reason to stop.
-- An unset depth is fine for `ship-it`: phases run one level down and the code-reviewer's lenses
-  two levels down, within the default. Mention it in the final reply so the user knows.
+!`git status --porcelain --untracked-files=no`
+
+!`git branch --show-current`
+
+- Any line from the first block is a tracked change; say what is uncommitted and stop. The
+  untracked `context/` folder never shows here and is expected.
+- Subagent depth needs no check for `ship-it`: phases run one level down and the code-reviewer's
+  lenses two levels down, within Claude Code's default.
 
 ## Procedure
 
