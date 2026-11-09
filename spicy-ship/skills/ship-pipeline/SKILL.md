@@ -27,7 +27,7 @@ envelopes, nothing else.
 | 1 | `spicy-ship:phase:explorer` | `story.md` | `research-[nnn].md` | none |
 | 2 | `spicy-ship:phase:planner` | `story.md`, `research-[nnn].md` | `plan-[nnn].md` | none |
 | 3 | review loop: `spicy-ship:phase:plan-reviewer` and `spicy-ship:phase:fixer` in `plan` mode | `plan-[nnn].md`, `story.md` | `plan-review-r{n}.json`, `plan-fixes-r{n}.json` | `review.plan` |
-| 4 | `spicy-ship:phase:executor` | `plan-[nnn].md`, `research-[nnn].md` | commits, `progress-[nnn].md` | none |
+| 4 | `spicy-ship:phase:executor` | `plan-[nnn].md`, `research-[nnn].md`, `story.md` | commits, `progress-[nnn].md` | none |
 | 5 | review loop: `spicy-ship:phase:code-reviewer` and `spicy-ship:phase:fixer` in `code` mode | `base_sha..HEAD`, `story.md`, `plan-[nnn].md` | `code-review-r{n}.json`, `code-fixes-r{n}.json` | `review.code` |
 
 Phase 4 runs only after the plan gate is `PASS`, or `EXHAUSTED` with `critical: false`. Anything

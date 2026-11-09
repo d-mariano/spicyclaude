@@ -31,14 +31,13 @@ before it runs. `${CLAUDE_PLUGIN_ROOT}` is substituted by the harness before you
 
 ## Preflight
 
-Each block below is one simple command on purpose: the one-plain-command rule in
+The block below is one simple command on purpose: the one-plain-command rule in
 `${CLAUDE_PLUGIN_ROOT}/skills/ship-pipeline/references/agent-conduct.md` applies here too, and a
 refused block ends the run before the first turn.
 
 !`git status --porcelain --untracked-files=no`
 
-
-- Any line from the first block is a tracked change; say what is uncommitted and stop. The
+- Any line it prints is a tracked change; say what is uncommitted and stop. The
   untracked `context/` folder never shows here and is expected.
 - The code-reviewer spawns its lenses one level below itself. Interactive sessions have the depth
   for that by default; headless runs on the build this was tested with did not, so unattended runs
