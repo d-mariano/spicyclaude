@@ -64,8 +64,9 @@ fails the gate too, set `status: blocked` with the gate's message and stop.
 ## Handling envelopes
 
 - Every envelope, whatever its status, is appended as one line to `envelopes.jsonl` in the
-  context folder, with the phase and round added. The summaries are the only record of what each
-  agent reported, including a code-reviewer's `single-pass: Agent tool withheld`.
+  context folder, with the phase and round added: create it with Write when it does not exist,
+  otherwise append with the Edit tool, never Write over it. The summaries are the record of what
+  each agent reported, including a code-reviewer's `single-pass: ...`.
 - `DONE`: record the artifact in `ship-state.json` and move on. The agent has already appended its
   `decisions` to `decisions.md`; the envelope copy is for your reply and the PR summary, never for
   writing to the log a second time.
@@ -76,11 +77,13 @@ fails the gate too, set `status: blocked` with the gate's message and stop.
   inputs plus the answers path. All state is on disk, so a fresh agent loses nothing.
 - `FAILED`: set `status: blocked` with the summary and stop. Do not retry a `FAILED` phase without
   a change in inputs. A permission denial, a missing tool, or an unreadable path is `FAILED`, not
-  `NEEDS_INPUT`: no question to the user changes it, and the fix is in the environment.
+  `NEEDS_INPUT`: no question to the user changes it, and the fix is in the environment. The one
+  exception is the code-reviewer without the Agent tool: it reviews in a single consolidated pass
+  and reports `DONE` with `single-pass: ...`, which is a result, not a failure.
 
 ## State
 
-`ship-state.json` is the only memory that survives compaction or a new session. Write it after
+`ship-state.json` is the resume point: the only file a resume reads to decide where to continue. Write it after
 every phase and every gate:
 
 ```json
