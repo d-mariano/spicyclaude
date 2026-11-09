@@ -347,6 +347,22 @@ class ExactShapeTest(unittest.TestCase):
         bad["target"] = " "
         self.assertIn("target", failing(bad))
 
+    def test_non_string_reviewer_fails_loud(self):
+        bad = report(1, [finding("F1")])
+        bad["reviewer"] = 5
+        self.assertIn("reviewer", failing(bad))
+
+    def test_unexpected_prior_findings_key_fails_loud(self):
+        prior = report(1, [finding("F1")])
+        current = report(2, [], prior=[{"id": "F1", "status": "resolved", "note": "x"}])
+        self.assertIn("id and status", failing(current, prior, rejected("F1")))
+
+    def test_unexpected_fixes_key_fails_loud(self):
+        prior = report(1, [finding("F1")])
+        current = report(2, [], prior=[{"id": "F1", "status": "resolved"}])
+        fixes = [{"id": "F1", "resolution": "fixed", "note": "done", "fingerprint": "abc"}]
+        self.assertIn("exactly id, resolution and note", failing(current, prior, fixes))
+
 
 class MainTest(unittest.TestCase):
     def write(self, tmp, name, payload):
@@ -372,6 +388,17 @@ class MainTest(unittest.TestCase):
             self.assertEqual(run_main([self.write(tmp, "r1.json", "{not json")])[0], 2)
             r2 = self.write(tmp, "r2.json", report(2, [finding("F1")], prior=[{"id": "F1", "status": "unresolved"}]))
             self.assertEqual(run_main([r2, "--prior", "/nonexistent/r1.json", "--fixes", "/nonexistent/f.json"])[0], 2)
+
+    def test_gate_options_reach_the_decision(self):
+        with TemporaryDirectory() as tmp:
+            r1 = self.write(tmp, "r1.json", report(1, [finding("F1", "Medium"), finding("F2", "Low", title="Naming", location="src/b.py:1")]))
+            code, out, _ = run_main([r1, "--max-rounds", "1", "--min-severity", "Medium", "--fix-floor", "Low"])
+        decision = json.loads(out)
+        self.assertEqual(code, 0)
+        self.assertEqual(
+            (decision["outcome"], decision["max_rounds"], decision["min_severity"], decision["blocking"], decision["fixable"]),
+            ("EXHAUSTED", 1, "Medium", ["F1"], ["F1", "F2"]),
+        )
 
     def test_fixes_without_prior_exits_two(self):
         with TemporaryDirectory() as tmp:

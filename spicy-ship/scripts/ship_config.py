@@ -162,22 +162,21 @@ def _validate_project_shape(data, project_file):
         if reviewer not in ("default",) + REVIEWERS:
             raise ConfigError(f"{project_file}: unknown review section {reviewer!r}")
         _require_object(section, project_file, f"review.{reviewer}")
-        for key in list(section):
-            if key not in REVIEW_KEYS:
-                raise ConfigError(f"{project_file}: unknown review key {key!r}")
-            if section[key] == "":
-                del section[key]
-                continue
-            section[key] = _parse(("review", reviewer, key), section[key], f"{project_file} review.{reviewer}.{key}")
+        _parse_section(section, REVIEW_KEYS, ("review", reviewer), f"{project_file} review.{reviewer}", project_file)
     questions = data.get("questions", {})
     _require_object(questions, project_file, "questions")
-    for key in list(questions):
-        if key not in ("mode", "escalate"):
-            raise ConfigError(f"{project_file}: unknown questions key {key!r}")
-        if questions[key] == "":
-            del questions[key]
+    _parse_section(questions, ("mode", "escalate"), ("questions",), f"{project_file} questions", project_file)
+
+
+def _parse_section(section, allowed, path, where, project_file):
+    """Validate one project-file section in place: reject unknown keys, drop empty values, parse the rest."""
+    for key in list(section):
+        if key not in allowed:
+            raise ConfigError(f"{project_file}: unknown {'.'.join(path)} key {key!r}")
+        if section[key] == "":
+            del section[key]
             continue
-        questions[key] = _parse(("questions", key), questions[key], f"{project_file} questions.{key}")
+        section[key] = _parse(path + (key,), section[key], f"{where}.{key}")
 
 
 def _require_object(value, project_file, where):
@@ -230,14 +229,6 @@ def _set(layer, path, value):
     node[path[-1]] = value
 
 
-def _deep_merge(target, source):
-    for key, value in source.items():
-        if isinstance(value, dict) and isinstance(target.get(key), dict):
-            _deep_merge(target[key], value)
-        else:
-            target[key] = value if not isinstance(value, dict) else json.loads(json.dumps(value))
-
-
 def _finalize(layers):
     """Pick each reviewer key from the highest source that sets it, reviewer-specific or default.
 
@@ -265,8 +256,8 @@ def _finalize(layers):
         review[reviewer] = section
     questions = {}
     for layer in layers:
-        _deep_merge(questions, {"questions": layer.get("questions", {})})
-    return {"review": review, "questions": questions["questions"]}
+        questions.update(layer.get("questions", {}))
+    return {"review": review, "questions": questions}
 
 
 def _pop_option(argv: list[str], name: str) -> tuple[str | None, list[str]]:
@@ -315,7 +306,7 @@ def _gate_flags(reviewer: str, from_path: str | None, rest: list[str]) -> str:
 
 def main(argv=None):
     """CLI entry point: print the resolved config, or with --gate-flags=plan|code that reviewer's
-    review_gate.py flags on one line, read from --from <ship-config.json> when given so a story's
+    review_gate.py flags on one line, read from --from=<ship-config.json> when given so a story's
     frozen config is what the gate sees. On error print the message to stderr and exit non-zero."""
     try:
         argv = sys.argv[1:] if argv is None else argv
