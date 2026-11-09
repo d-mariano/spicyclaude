@@ -69,7 +69,9 @@ Rules the gate enforces:
 - The fixes file has exactly one entry for every prior finding at or above the fix floor that
   passed the confidence gate, each `fixed` or `rejected` with a note. A finding the fixer never
   mentions fails the round, so a skip cannot hide as progress.
-- Ids look like `F12`, are unique within a round, and stay stable across rounds for the same issue.
+- Ids look like `F12` and are unique within a round; no key outside the schema appears anywhere in
+  the file. Keeping an id stable across rounds for the same issue is the reviewer's duty, which the
+  gate cannot check.
 - `category` is one of the schema's enumerated values and `location` is `path`, `path:line` or
   `path:start-end`, so fingerprints compare like with like.
 - Identity across rounds is the fingerprint of category, file path, and normalized title, so a

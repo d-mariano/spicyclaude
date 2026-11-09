@@ -92,4 +92,4 @@ Highest precedence first.
 }
 ```
 
-Invalid values stop the run with the offending key named. A fix floor stricter than the minimum severity is invalid.
+Invalid values stop the run with the offending key named. A fix floor stricter than the minimum severity is invalid. An empty value in any source means unset. Precedence is by source first: a `--max-review-rounds` argument beats a project file's `review.plan.max_rounds`, while inside one source a reviewer-specific key beats that source's default.

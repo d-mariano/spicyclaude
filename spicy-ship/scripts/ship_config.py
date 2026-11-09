@@ -71,15 +71,12 @@ def resolve(argv, env, project_path=None):
     flags, plugin_pairs = _split_argv(argv)
     layers = [
         DEFAULTS,
-        _from_plugin_config(plugin_pairs),
+        _from_pairs(plugin_pairs, PLUGIN_CONFIG_PATHS, "plugin option"),
         _from_project_file(project_path if project_path is not None else project_file(env)),
         _from_paths(ENV_PATHS, env, "environment variable"),
-        _from_flags(flags),
+        _from_pairs(flags, ARG_PATHS, "argument"),
     ]
-    merged = {}
-    for layer in layers:
-        _deep_merge(merged, layer)
-    return _finalize(merged)
+    return _finalize(layers)
 
 
 def project_file(env, cwd=None):
@@ -113,31 +110,17 @@ def _split_argv(argv):
     return flags, plugin_pairs
 
 
-def _from_flags(flags):
+def _from_pairs(pairs, table, label):
     layer = {}
-    for raw in flags:
+    for raw in pairs:
         if "=" not in raw:
-            raise ConfigError(f"argument {raw!r} must look like --flag=value")
-        flag, value = raw.split("=", 1)
-        if flag not in ARG_PATHS:
-            raise ConfigError(f"unknown argument {flag!r}; known: {', '.join(sorted(ARG_PATHS))}")
+            raise ConfigError(f"{label} {raw!r} must look like KEY=VALUE")
+        key, value = raw.split("=", 1)
+        if key not in table:
+            raise ConfigError(f"unknown {label} {key!r}; known: {', '.join(sorted(table))}")
         if value == "":
             continue
-        _set(layer, ARG_PATHS[flag], _parse(ARG_PATHS[flag], value, f"argument {flag}"))
-    return layer
-
-
-def _from_plugin_config(pairs):
-    layer = {}
-    for pair in pairs:
-        if "=" not in pair:
-            raise ConfigError(f"--plugin-config value {pair!r} must look like KEY=VALUE")
-        key, value = pair.split("=", 1)
-        if key not in PLUGIN_CONFIG_PATHS:
-            raise ConfigError(f"unknown plugin option {key!r}; known: {', '.join(sorted(PLUGIN_CONFIG_PATHS))}")
-        if value == "":
-            continue
-        _set(layer, PLUGIN_CONFIG_PATHS[key], _parse(PLUGIN_CONFIG_PATHS[key], value, f"plugin option {key}"))
+        _set(layer, table[key], _parse(table[key], value, f"{label} {key}"))
     return layer
 
 
@@ -179,16 +162,22 @@ def _validate_project_shape(data, project_file):
         if reviewer not in ("default",) + REVIEWERS:
             raise ConfigError(f"{project_file}: unknown review section {reviewer!r}")
         _require_object(section, project_file, f"review.{reviewer}")
-        for key, value in section.items():
+        for key in list(section):
             if key not in REVIEW_KEYS:
                 raise ConfigError(f"{project_file}: unknown review key {key!r}")
-            section[key] = _parse(("review", reviewer, key), value, f"{project_file} review.{reviewer}.{key}")
+            if section[key] == "":
+                del section[key]
+                continue
+            section[key] = _parse(("review", reviewer, key), section[key], f"{project_file} review.{reviewer}.{key}")
     questions = data.get("questions", {})
     _require_object(questions, project_file, "questions")
-    for key, value in questions.items():
+    for key in list(questions):
         if key not in ("mode", "escalate"):
             raise ConfigError(f"{project_file}: unknown questions key {key!r}")
-        questions[key] = _parse(("questions", key), value, f"{project_file} questions.{key}")
+        if questions[key] == "":
+            del questions[key]
+            continue
+        questions[key] = _parse(("questions", key), questions[key], f"{project_file} questions.{key}")
 
 
 def _require_object(value, project_file, where):
@@ -249,19 +238,35 @@ def _deep_merge(target, source):
             target[key] = value if not isinstance(value, dict) else json.loads(json.dumps(value))
 
 
-def _finalize(merged):
-    default = merged["review"]["default"]
+def _finalize(layers):
+    """Pick each reviewer key from the highest source that sets it, reviewer-specific or default.
+
+    Sources are ordered lowest to highest. Within one source a reviewer-specific value beats
+    that source's default, but a higher source's default beats a lower source's reviewer value,
+    so an argument always wins over the project file.
+    """
     review = {}
     for reviewer in REVIEWERS:
-        section = dict(default)
-        section.update(merged["review"].get(reviewer, {}))
+        section = {}
+        for key in REVIEW_KEYS:
+            for layer in reversed(layers):
+                sections = layer.get("review", {})
+                if key in sections.get(reviewer, {}):
+                    section[key] = sections[reviewer][key]
+                    break
+                if key in sections.get("default", {}):
+                    section[key] = sections["default"][key]
+                    break
         if at_least(section["fix_floor"], section["min_severity"]) and section["fix_floor"] != section["min_severity"]:
             raise ConfigError(
                 f"review.{reviewer}: fix_floor {section['fix_floor']!r} is stricter than "
                 f"min_severity {section['min_severity']!r}; a fix floor can only be equal or looser"
             )
         review[reviewer] = section
-    return {"review": review, "questions": merged["questions"]}
+    questions = {}
+    for layer in layers:
+        _deep_merge(questions, {"questions": layer.get("questions", {})})
+    return {"review": review, "questions": questions["questions"]}
 
 
 def _pop_option(argv: list[str], name: str) -> tuple[str | None, list[str]]:

@@ -1,6 +1,13 @@
 """Tests for review_gate: schema checks and loop decisions."""
 
+import contextlib
+import io
+import json
+import subprocess
+import sys
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import review_gate
 from review_gate import GateError
@@ -37,10 +44,30 @@ def fixed(*ids):
     return [{"id": i, "resolution": "fixed", "note": "done"} for i in ids]
 
 
+def all_rejected(prior):
+    """A fixes file in which the fixer rejected every finding of the prior round."""
+    return rejected(*[f["id"] for f in prior["findings"]])
+
+
 def decide(current, prior=None, fixes=None, max_rounds=3, min_severity="High", fix_floor="Medium"):
-    if prior is not None and fixes is None:
-        fixes = rejected(*[f["id"] for f in prior["findings"]])
     return review_gate.decide(current, prior, fixes, max_rounds=max_rounds, min_severity=min_severity, fix_floor=fix_floor)
+
+
+def run_main(argv):
+    """Run review_gate.main and return (exit code, stdout, stderr)."""
+    out, err = io.StringIO(), io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+        code = review_gate.main(argv)
+    return code, out.getvalue(), err.getvalue()
+
+
+def failing(*args, **kwargs):
+    """Call decide expecting GateError and return its message."""
+    try:
+        decide(*args, **kwargs)
+    except GateError as exc:
+        return str(exc)
+    raise AssertionError("GateError not raised")
 
 
 class OutcomeTest(unittest.TestCase):
@@ -57,19 +84,19 @@ class OutcomeTest(unittest.TestCase):
 
     def test_exhausted_at_max_round(self):
         prior = report(2, [finding("F1", "High", location="src/a.py:3")], prior=[{"id": "F1", "status": "unresolved"}])
-        result = decide(report(3, [finding("F1", "High")], prior=[{"id": "F1", "status": "unresolved"}]), prior)
+        result = decide(report(3, [finding("F1", "High")], prior=[{"id": "F1", "status": "unresolved"}]), prior, all_rejected(prior))
         self.assertEqual(result["outcome"], "EXHAUSTED")
         self.assertFalse(result["critical"])
 
     def test_exhausted_with_critical_is_flagged(self):
         prior = report(2, [finding("F1", "Critical", location="src/a.py:3")], prior=[{"id": "F1", "status": "unresolved"}])
-        result = decide(report(3, [finding("F1", "Critical")], prior=[{"id": "F1", "status": "unresolved"}]), prior)
+        result = decide(report(3, [finding("F1", "Critical")], prior=[{"id": "F1", "status": "unresolved"}]), prior, all_rejected(prior))
         self.assertEqual(result["outcome"], "EXHAUSTED")
         self.assertTrue(result["critical"])
 
     def test_exhausted_beats_stalled(self):
         prior = report(2, [finding("F1", "High")], prior=[{"id": "F1", "status": "unresolved"}])
-        result = decide(report(3, [finding("F1", "High")], prior=[{"id": "F1", "status": "unresolved"}]), prior)
+        result = decide(report(3, [finding("F1", "High")], prior=[{"id": "F1", "status": "unresolved"}]), prior, all_rejected(prior))
         self.assertEqual(result["outcome"], "EXHAUSTED")
 
     def test_low_confidence_findings_are_dropped_before_gating(self):
@@ -87,16 +114,10 @@ class OutcomeTest(unittest.TestCase):
 
 
 class StallTest(unittest.TestCase):
-    def test_stalled_when_blocking_set_repeats_prior_round(self):
-        prior = report(1, [finding("F1", "High", location="src/a.py:10")])
-        current = report(2, [finding("F1", "High", location="src/a.py:14")], prior=[{"id": "F1", "status": "unresolved"}])
-        result = decide(current, prior)
-        self.assertEqual(result["outcome"], "STALLED")
-
     def test_not_stalled_when_blocking_set_changes(self):
         prior = report(1, [finding("F1", "High")])
         current = report(2, [finding("F2", "High", title="Race on write", location="src/b.py:3")], prior=[{"id": "F1", "status": "resolved"}])
-        self.assertEqual(decide(current, prior)["outcome"], "CONTINUE")
+        self.assertEqual(decide(current, prior, all_rejected(prior))["outcome"], "CONTINUE")
 
     def test_fingerprint_ignores_line_numbers_and_case(self):
         a = review_gate.fingerprint(finding("F1", title="Null Deref", location="src/a.py:10"))
@@ -106,14 +127,14 @@ class StallTest(unittest.TestCase):
 
 class PriorFindingsTest(unittest.TestCase):
     def test_unresolved_prior_must_reappear_in_findings(self):
+        prior = report(1, [finding("F1")])
         current = report(2, [], prior=[{"id": "F1", "status": "unresolved"}])
-        with self.assertRaises(GateError):
-            decide(current)
+        self.assertIn("not re-listed", failing(current, prior, rejected("F1")))
 
     def test_regressed_prior_counts_as_blocking_when_relisted(self):
         prior = report(1, [finding("F1", "Medium")])
         current = report(2, [finding("F1", "High")], prior=[{"id": "F1", "status": "regressed"}])
-        self.assertEqual(decide(current, prior)["blocking"], ["F1"])
+        self.assertEqual(decide(current, prior, all_rejected(prior))["blocking"], ["F1"])
 
 
 class SchemaTest(unittest.TestCase):
@@ -136,8 +157,9 @@ class SchemaTest(unittest.TestCase):
             decide(report(3, [finding("F1")]), report(1, []))
 
     def test_round_above_max_fails_loud(self):
-        with self.assertRaises(GateError):
-            decide(report(4, [finding("F1")]))
+        prior = report(3, [finding("F1")], prior=[{"id": "F1", "status": "unresolved"}])
+        current = report(4, [finding("F1")], prior=[{"id": "F1", "status": "unresolved"}])
+        self.assertIn("exceeds max_rounds", failing(current, prior, rejected("F1")))
 
     def test_duplicate_ids_fail_loud(self):
         with self.assertRaises(GateError):
@@ -155,24 +177,24 @@ class PriorReconciliationTest(unittest.TestCase):
         prior = report(1, [finding("F1"), finding("F2", title="Race on write", location="src/b.py:3")])
         current = report(2, [], prior=[{"id": "F1", "status": "resolved"}])
         with self.assertRaises(GateError):
-            decide(current, prior)
+            decide(current, prior, all_rejected(prior))
 
     def test_resolved_prior_still_listed_fails_loud(self):
         prior = report(1, [finding("F1")])
         current = report(2, [finding("F1")], prior=[{"id": "F1", "status": "resolved"}])
         with self.assertRaises(GateError):
-            decide(current, prior)
+            decide(current, prior, all_rejected(prior))
 
     def test_phantom_prior_id_fails_loud(self):
         prior = report(1, [finding("F1")])
         current = report(2, [], prior=[{"id": "F1", "status": "resolved"}, {"id": "F7", "status": "resolved"}])
         with self.assertRaises(GateError):
-            decide(current, prior)
+            decide(current, prior, all_rejected(prior))
 
     def test_all_priors_resolved_passes(self):
         prior = report(1, [finding("F1")])
         current = report(2, [], prior=[{"id": "F1", "status": "resolved"}])
-        self.assertEqual(decide(current, prior)["outcome"], "PASS")
+        self.assertEqual(decide(current, prior, all_rejected(prior))["outcome"], "PASS")
 
 
 class FindingShapeTest(unittest.TestCase):
@@ -195,12 +217,12 @@ class StallByIdTest(unittest.TestCase):
     def test_stalled_when_same_id_is_reraised_with_reworded_title(self):
         prior = report(1, [finding("F1", "High", title="Refresh token stored in plaintext")])
         current = report(2, [finding("F1", "High", title="Plaintext refresh token persisted")], prior=[{"id": "F1", "status": "unresolved"}])
-        self.assertEqual(decide(current, prior)["outcome"], "STALLED")
+        self.assertEqual(decide(current, prior, all_rejected(prior))["outcome"], "STALLED")
 
     def test_stalled_when_renumbered_but_same_fingerprint(self):
         prior = report(1, [finding("F1", "High")])
         current = report(2, [finding("F2", "High", location="src/a.py:40")], prior=[{"id": "F1", "status": "resolved"}])
-        self.assertEqual(decide(current, prior)["outcome"], "STALLED")
+        self.assertEqual(decide(current, prior, all_rejected(prior))["outcome"], "STALLED")
 
     def test_remaining_rejected_finding_stalls_even_after_other_was_fixed(self):
         prior = report(1, [finding("F1", "High"), finding("F2", "High", title="Race on write", location="src/b.py:3")])
@@ -215,9 +237,8 @@ class StallByIdTest(unittest.TestCase):
 
     def test_duplicate_prior_ids_fail_loud(self):
         prior = report(1, [finding("F1")])
-        current = report(2, [], prior=[{"id": "F1", "status": "unresolved"}, {"id": "F1", "status": "resolved"}])
-        with self.assertRaises(GateError):
-            decide(current, prior)
+        current = report(2, [finding("F1")], prior=[{"id": "F1", "status": "unresolved"}, {"id": "F1", "status": "unresolved"}])
+        self.assertIn("more than once", failing(current, prior, rejected("F1")))
 
 
 class StallNeedsRejectionTest(unittest.TestCase):
@@ -278,6 +299,95 @@ class FixesCompletenessTest(unittest.TestCase):
     def test_fixes_without_prior_fails_loud(self):
         with self.assertRaises(GateError):
             review_gate.decide(report(1, [finding("F1")]), None, fixed("F1"))
+
+
+class ConfidenceBoundaryTest(unittest.TestCase):
+    def test_confidence_exactly_80_is_kept(self):
+        result = decide(report(1, [finding("F1", "High", confidence=80)]))
+        self.assertEqual((result["outcome"], result["dropped_low_confidence"]), ("CONTINUE", []))
+
+    def test_confidence_exactly_80_prior_finding_needs_a_fix_entry(self):
+        prior = report(1, [finding("F1", "High", confidence=80)])
+        current = report(2, [], prior=[{"id": "F1", "status": "resolved"}])
+        self.assertIn("F1", failing(current, prior, []))
+
+
+class FingerprintTest(unittest.TestCase):
+    def test_path_is_part_of_the_fingerprint(self):
+        a = review_gate.fingerprint(finding("F1", location="src/a.py:1"))
+        b = review_gate.fingerprint(finding("F1", location="src/b.py:1"))
+        self.assertNotEqual(a, b)
+
+    def test_category_is_part_of_the_fingerprint(self):
+        a = review_gate.fingerprint(finding("F1", category="correctness"))
+        b = review_gate.fingerprint(finding("F1", category="security"))
+        self.assertNotEqual(a, b)
+
+    def test_same_title_in_another_file_is_not_a_repeat(self):
+        prior = report(1, [finding("F1", "High", location="src/a.py:1")])
+        current = report(2, [finding("F2", "High", location="src/b.py:1")], prior=[{"id": "F1", "status": "resolved"}])
+        self.assertEqual(decide(current, prior, rejected("F1"))["outcome"], "CONTINUE")
+
+
+class ExactShapeTest(unittest.TestCase):
+    def test_unexpected_report_key_fails_loud(self):
+        bad = report(1, [finding("F1")])
+        bad["verdict"] = "PASS"
+        self.assertIn("verdict", failing(bad))
+
+    def test_unexpected_finding_key_fails_loud(self):
+        bad = finding("F1")
+        bad["fingerprint"] = "abc"
+        self.assertIn("fingerprint", failing(report(1, [bad])))
+
+    def test_empty_reviewer_or_target_fails_loud(self):
+        bad = report(1, [finding("F1")], reviewer="")
+        self.assertIn("reviewer", failing(bad))
+        bad = report(1, [finding("F1")])
+        bad["target"] = " "
+        self.assertIn("target", failing(bad))
+
+
+class MainTest(unittest.TestCase):
+    def write(self, tmp, name, payload):
+        path = Path(tmp) / name
+        path.write_text(payload if isinstance(payload, str) else json.dumps(payload))
+        return str(path)
+
+    def test_round_one_prints_the_decision_and_exits_zero(self):
+        with TemporaryDirectory() as tmp:
+            code, out, err = run_main([self.write(tmp, "r1.json", report(1, [finding("F1")]))])
+        self.assertEqual((code, err), (0, ""))
+        self.assertEqual(json.loads(out)["outcome"], "CONTINUE")
+
+    def test_contract_violation_exits_two_with_prefix(self):
+        with TemporaryDirectory() as tmp:
+            code, out, err = run_main([self.write(tmp, "r1.json", {})])
+        self.assertEqual((code, out), (2, ""))
+        self.assertTrue(err.startswith("review_gate: "))
+
+    def test_missing_and_invalid_files_exit_two(self):
+        with TemporaryDirectory() as tmp:
+            self.assertEqual(run_main(["/nonexistent/r1.json"])[0], 2)
+            self.assertEqual(run_main([self.write(tmp, "r1.json", "{not json")])[0], 2)
+            r2 = self.write(tmp, "r2.json", report(2, [finding("F1")], prior=[{"id": "F1", "status": "unresolved"}]))
+            self.assertEqual(run_main([r2, "--prior", "/nonexistent/r1.json", "--fixes", "/nonexistent/f.json"])[0], 2)
+
+    def test_fixes_without_prior_exits_two(self):
+        with TemporaryDirectory() as tmp:
+            r1 = self.write(tmp, "r1.json", report(1, [finding("F1")]))
+            f1 = self.write(tmp, "f1.json", rejected("F1"))
+            code, out, err = run_main([r1, "--fixes", f1])
+        self.assertEqual((code, out), (2, ""))
+        self.assertIn("--fixes without --prior", err)
+
+    def test_script_entry_point_via_subprocess(self):
+        with TemporaryDirectory() as tmp:
+            r1 = self.write(tmp, "r1.json", report(1, []))
+            done = subprocess.run([sys.executable, "-I", review_gate.__file__, r1], capture_output=True, text=True)
+        self.assertEqual((done.returncode, done.stderr), (0, ""))
+        self.assertEqual(json.loads(done.stdout)["outcome"], "PASS")
+
 
 if __name__ == "__main__":
     unittest.main()

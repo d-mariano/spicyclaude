@@ -34,6 +34,23 @@ def resolve(argv=(), env=None, project_file=ABSENT):
     return ship_config.resolve(list(argv), env or {}, project_file)
 
 
+def resolve_project(payload, argv=(), env=None):
+    """Resolve with payload written as the project file; payload may be any JSON value or raw text."""
+    with TemporaryDirectory() as d:
+        f = Path(d) / "spicyclaude.json"
+        f.write_text(payload if isinstance(payload, str) else json.dumps(payload))
+        return resolve(argv, env, f)
+
+
+def failing(fn, *args, **kwargs):
+    """Call fn expecting ConfigError and return its message."""
+    try:
+        fn(*args, **kwargs)
+    except ship_config.ConfigError as exc:
+        return str(exc)
+    raise AssertionError("ConfigError not raised")
+
+
 class DefaultsTest(unittest.TestCase):
     def test_defaults_when_nothing_set(self):
         cfg = resolve()
@@ -44,17 +61,11 @@ class DefaultsTest(unittest.TestCase):
 
 class PrecedenceTest(unittest.TestCase):
     def test_project_file_beats_plugin_config(self):
-        with TemporaryDirectory() as d:
-            f = Path(d) / "spicyclaude.json"
-            f.write_text(json.dumps({"review": {"default": {"max_rounds": 5}}}))
-            cfg = resolve(["--plugin-config", "maxReviewRounds=2"], project_file=f)
+        cfg = resolve_project({"review": {"default": {"max_rounds": 5}}}, ["--plugin-config", "maxReviewRounds=2"])
         self.assertEqual(cfg["review"]["code"]["max_rounds"], 5)
 
     def test_env_beats_project_file(self):
-        with TemporaryDirectory() as d:
-            f = Path(d) / "spicyclaude.json"
-            f.write_text(json.dumps({"review": {"default": {"min_severity": "Low"}}}))
-            cfg = resolve(env={"SPICY_REVIEW_MIN_SEVERITY": "Critical"}, project_file=f)
+        cfg = resolve_project({"review": {"default": {"min_severity": "Low"}}}, env={"SPICY_REVIEW_MIN_SEVERITY": "Critical"})
         self.assertEqual(cfg["review"]["plan"]["min_severity"], "Critical")
 
     def test_args_beat_env(self):
@@ -71,6 +82,27 @@ class PrecedenceTest(unittest.TestCase):
         self.assertEqual(cfg["review"]["plan"]["max_rounds"], 3)
 
 
+class CrossSourcePrecedenceTest(unittest.TestCase):
+    def test_argument_default_beats_project_reviewer_value(self):
+        cfg = resolve_project({"review": {"plan": {"max_rounds": 1}}}, argv=["--max-review-rounds=5"])
+        self.assertEqual(cfg["review"]["plan"]["max_rounds"], 5)
+        self.assertEqual(cfg["review"]["code"]["max_rounds"], 5)
+
+    def test_env_default_beats_project_reviewer_value(self):
+        cfg = resolve_project({"review": {"code": {"min_severity": "Medium"}}}, env={"SPICY_REVIEW_MIN_SEVERITY": "Critical"})
+        self.assertEqual(cfg["review"]["code"]["min_severity"], "Critical")
+
+    def test_project_reviewer_value_beats_plugin_default(self):
+        cfg = resolve_project({"review": {"plan": {"max_rounds": 1}}}, argv=["--plugin-config", "maxReviewRounds=4"])
+        self.assertEqual(cfg["review"]["plan"]["max_rounds"], 1)
+        self.assertEqual(cfg["review"]["code"]["max_rounds"], 4)
+
+    def test_reviewer_beats_default_within_one_source(self):
+        cfg = resolve(["--max-review-rounds=5", "--plan-rounds=2"])
+        self.assertEqual(cfg["review"]["plan"]["max_rounds"], 2)
+        self.assertEqual(cfg["review"]["code"]["max_rounds"], 5)
+
+
 class PerReviewerTest(unittest.TestCase):
     def test_per_reviewer_arg_overrides_default_for_that_reviewer_only(self):
         cfg = resolve(["--plan-rounds=2", "--code-min-severity=Critical"])
@@ -85,10 +117,7 @@ class PerReviewerTest(unittest.TestCase):
         self.assertEqual(cfg["review"]["code"]["min_severity"], "Critical")
 
     def test_project_file_per_reviewer_section(self):
-        with TemporaryDirectory() as d:
-            f = Path(d) / "spicyclaude.json"
-            f.write_text(json.dumps({"review": {"plan": {"max_rounds": 1}}}))
-            cfg = resolve(project_file=f)
+        cfg = resolve_project({"review": {"plan": {"max_rounds": 1}}})
         self.assertEqual(cfg["review"]["plan"]["max_rounds"], 1)
         self.assertEqual(cfg["review"]["code"]["max_rounds"], 3)
 
@@ -105,33 +134,44 @@ class QuestionsTest(unittest.TestCase):
 
 class ValidationTest(unittest.TestCase):
     def test_invalid_severity_fails_loud(self):
-        with self.assertRaises(ship_config.ConfigError):
-            resolve(["--min-severity=Nit"])
+        self.assertIn("--min-severity", failing(resolve, ["--min-severity=Nit"]))
 
     def test_invalid_rounds_fails_loud(self):
-        with self.assertRaises(ship_config.ConfigError):
-            resolve(env={"SPICY_MAX_REVIEW_ROUNDS": "zero"})
-        with self.assertRaises(ship_config.ConfigError):
-            resolve(["--max-review-rounds=0"])
+        self.assertIn("SPICY_MAX_REVIEW_ROUNDS", failing(resolve, env={"SPICY_MAX_REVIEW_ROUNDS": "zero"}))
+        self.assertIn("at least 1", failing(resolve, ["--max-review-rounds=0"]))
 
     def test_invalid_mode_fails_loud(self):
-        with self.assertRaises(ship_config.ConfigError):
-            resolve(["--questions=yolo"])
+        self.assertIn("--questions", failing(resolve, ["--questions=yolo"]))
 
     def test_unknown_arg_fails_loud(self):
-        with self.assertRaises(ship_config.ConfigError):
-            resolve(["--max-rounds=3"])
+        self.assertIn("--max-rounds", failing(resolve, ["--max-rounds=3"]))
+
+    def test_flag_without_value_fails_loud(self):
+        self.assertIn("--questions", failing(resolve, ["--questions"]))
+
+    def test_plugin_config_without_value_fails_loud(self):
+        self.assertIn("--plugin-config", failing(resolve, ["--plugin-config"]))
+
+    def test_unknown_plugin_option_fails_loud(self):
+        self.assertIn("bogus", failing(resolve, ["--plugin-config", "bogus=1"]))
 
     def test_unknown_project_key_fails_loud(self):
-        with TemporaryDirectory() as d:
-            f = Path(d) / "spicyclaude.json"
-            f.write_text(json.dumps({"review": {"default": {"rounds": 3}}}))
-            with self.assertRaises(ship_config.ConfigError):
-                resolve(project_file=f)
+        self.assertIn("rounds", failing(resolve_project, {"review": {"default": {"rounds": 3}}}))
+
+    def test_unknown_top_level_project_key_fails_loud(self):
+        self.assertIn("revew", failing(resolve_project, {"revew": {}}))
+
+    def test_unknown_review_section_fails_loud(self):
+        self.assertIn("docs", failing(resolve_project, {"review": {"docs": {}}}))
+
+    def test_unknown_questions_key_fails_loud(self):
+        self.assertIn("modes", failing(resolve_project, {"questions": {"modes": "auto"}}))
+
+    def test_invalid_json_project_file_fails_loud(self):
+        self.assertIn("not valid JSON", failing(resolve_project, "{not json"))
 
     def test_fix_floor_above_min_severity_fails_loud(self):
-        with self.assertRaises(ship_config.ConfigError):
-            resolve(["--min-severity=Low", "--fix-floor=High"])
+        self.assertIn("fix_floor", failing(resolve, ["--min-severity=Low", "--fix-floor=High"]))
 
 
 
@@ -140,6 +180,20 @@ class EmptyValueTest(unittest.TestCase):
         cfg = resolve(["--escalate=", "--max-review-rounds="])
         self.assertEqual(cfg["questions"]["escalate"], ["irreversible"])
         self.assertEqual(cfg["review"]["code"]["max_rounds"], 3)
+
+    def test_empty_env_value_is_unset(self):
+        cfg = resolve(env={"SPICY_REVIEW_MIN_SEVERITY": "", "SPICY_MAX_REVIEW_ROUNDS": "", "SPICY_QUESTION_ESCALATE": ""})
+        self.assertEqual(cfg["review"]["plan"], {"max_rounds": 3, "min_severity": "High", "fix_floor": "Medium"})
+        self.assertEqual(cfg["questions"]["escalate"], ["irreversible"])
+
+    def test_empty_project_value_is_unset(self):
+        cfg = resolve_project({"review": {"default": {"min_severity": "", "max_rounds": ""}}, "questions": {"mode": "", "escalate": ""}})
+        self.assertEqual(cfg["review"]["plan"], {"max_rounds": 3, "min_severity": "High", "fix_floor": "Medium"})
+        self.assertEqual(cfg["questions"], {"mode": "auto", "escalate": ["irreversible"]})
+
+    def test_explicit_empty_escalate_list_in_project_file_clears_guard(self):
+        cfg = resolve_project({"questions": {"escalate": []}})
+        self.assertEqual(cfg["questions"]["escalate"], [])
 
 
 class StrictTypesTest(unittest.TestCase):
@@ -174,7 +228,6 @@ class ProjectRootTest(unittest.TestCase):
             self.assertEqual(ship_config.project_file({"CLAUDE_PROJECT_DIR": d}), Path(d) / ".claude" / "spicyclaude.json")
 
     def test_project_file_falls_back_to_git_toplevel(self):
-        import subprocess
         with TemporaryDirectory() as d:
             subprocess.run(["git", "init", "-q", d], check=True)
             nested = Path(d) / "pkg" / "api"
@@ -201,7 +254,6 @@ class ProjectFileErrorsTest(unittest.TestCase):
                 resolve(project_file=link)
 
     def test_unreadable_project_file_fails_loud(self):
-        from unittest.mock import patch
         with TemporaryDirectory() as d:
             f = Path(d) / "spicyclaude.json"
             f.write_text("{}")
@@ -210,7 +262,6 @@ class ProjectFileErrorsTest(unittest.TestCase):
                     resolve(project_file=f)
 
     def test_missing_git_binary_fails_loud(self):
-        from unittest.mock import patch
         with patch.object(ship_config.subprocess, "run", side_effect=FileNotFoundError("git")):
             with self.assertRaises(ship_config.ConfigError):
                 ship_config.project_file({})

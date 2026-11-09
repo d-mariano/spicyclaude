@@ -157,6 +157,12 @@ def _validate_report(report, label):
     missing = [k for k in REPORT_KEYS if k not in report]
     if missing:
         raise GateError(f"{label}: missing keys {missing}")
+    extra = sorted(set(report) - set(REPORT_KEYS))
+    if extra:
+        raise GateError(f"{label}: unexpected keys {extra}")
+    for key in ("reviewer", "target"):
+        if not isinstance(report[key], str) or not report[key].strip():
+            raise GateError(f"{label}: {key} must be a non-empty string")
     if not isinstance(report["round"], int) or report["round"] < 1:
         raise GateError(f"{label}: round must be a positive integer")
     if not isinstance(report["findings"], list) or not isinstance(report["prior_findings"], list):
@@ -182,6 +188,9 @@ def _validate_finding(finding, label):
     missing = [k for k in FINDING_KEYS if k not in finding]
     if missing:
         raise GateError(f"{label}: finding {finding.get('id', '?')!r} missing keys {missing}")
+    extra = sorted(set(finding) - set(FINDING_KEYS))
+    if extra:
+        raise GateError(f"{label}: finding {finding.get('id', '?')!r} has unexpected keys {extra}")
     if finding["severity"] not in SEVERITIES:
         raise GateError(f"{label}: finding {finding['id']!r} severity must be one of {SEVERITIES}")
     if not isinstance(finding["confidence"], int) or not 0 <= finding["confidence"] <= 100:
