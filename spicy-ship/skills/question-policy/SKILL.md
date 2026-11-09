@@ -41,6 +41,13 @@ What each party does with a guarded question:
 Set `--escalate=none` to drop the `irreversible` guard. Questions with no `recommended` option
 stay guarded regardless.
 
+## What is not a question
+
+A permission denial, a missing tool, a command that will not run, or a path that does not exist is
+an operational block, not a fork in the work. An agent that hits one returns `FAILED` with the
+blocker in `summary` and does not dress it up as a question; the orchestrator marks the story
+blocked and names the blocker, because the remedy is in the environment, not in an answer.
+
 ## Question contract
 
 Agents return questions inside their envelope. [references/question.schema.json](references/question.schema.json)
@@ -101,7 +108,9 @@ the questions the agent decided provisionally so the orchestrator can ask them a
 
 ## Decisions log
 
-`decisions.md` in the story's context folder, one line per decision, append-only:
+`decisions.md` in the story's context folder, one line per decision, append-only. Create it with
+Write when it does not exist; otherwise append with the Edit tool. Never Write over an existing
+file, which replaces what earlier phases logged:
 
 ```
 - D3 · planner · Hash or encrypt refresh tokens? → bcrypt hash · costly · AC-3 requires leak resistance; hashing needs no key management

@@ -60,6 +60,16 @@ Run the tests with:
 python3 -m unittest discover -s spicy-ship/scripts/tests -t spicy-ship/scripts
 ```
 
+## Unattended runs
+
+Phase agents read files with the file tools, use the shell only for git, the plugin scripts, and the project's test command, load the craft skills, and the explorer and planner fetch from the web. Pre-approve that surface and nothing stalls on a prompt:
+
+```json
+{"permissions": {"allow": ["Bash(git *)", "Bash(python3 *)", "Edit", "Write", "Skill", "WebSearch", "WebFetch"]}}
+```
+
+Add the project's own test runner if it is not `python3`. `ship-it` itself pre-approves `gh` for the pull request step through its own frontmatter. A headless run (`claude -p`) that hits anything outside the allowlist fails loud at that step and the story ends `blocked` with the denied command named; nothing is retried around a denial.
+
 ## Configuration
 
 Highest precedence first.
@@ -69,7 +79,7 @@ Highest precedence first.
 | Skill arguments | `--max-review-rounds=5 --min-severity=Medium --plan-rounds=2 --questions=batch` |
 | Environment | `SPICY_MAX_REVIEW_ROUNDS`, `SPICY_REVIEW_MIN_SEVERITY`, `SPICY_QUESTION_MODE`, `SPICY_PLAN_MAX_ROUNDS`, `SPICY_CODE_MIN_SEVERITY` |
 | Project file | `.claude/spicyclaude.json`, see below |
-| Plugin options | `/plugin configure spicy-ship@spicyclaude` |
+| Plugin options | `/plugin configure spicy-ship@spicyclaude`; an option reaches the skill only when it is set and the plugin is installed from a marketplace, never from a `--plugin-dir` load |
 | Defaults | 3 rounds, `High`, fix floor `Medium`, mode `auto`, escalate `irreversible` |
 
 ```json
