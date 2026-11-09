@@ -47,12 +47,12 @@ start until every lens has returned its text.
 
 ## 2a. If the Agent tool is not available
 
-Claude Code withholds `Agent` at the subagent depth limit. When that happens, do not improvise a
+When the Agent tool is not available to you, do not improvise a
 partial fan-out. Run one consolidated pass yourself over the shared context file with the four
 Tier-1 lenses' questions in mind: does the diff do what the story says, is anything concretely
 exploitable, is there needless complexity, does each behavior change have a test that would fail
 without it. Score with the same rubric, skip step 3, and state `single-pass: Agent tool withheld`
-in the envelope summary so the orchestrator can decide whether to re-run with more depth.
+in the envelope summary; the orchestrator records it and reports it in the final reply.
 
 ## 3. Verify
 
