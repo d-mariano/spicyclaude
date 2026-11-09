@@ -1,14 +1,33 @@
 """Tests for ship_config: config precedence and fail-loud validation."""
 
+import contextlib
+import io
 import json
+import os
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 import ship_config
 
 
 ABSENT = Path("/nonexistent/spicyclaude.json")
+
+
+def run_main(argv, env=None, project=None):
+    """Run ship_config.main in a hermetic environment and return (exit code, stdout, stderr)."""
+    with TemporaryDirectory() as tmp:
+        if project is not None:
+            (Path(tmp) / ".claude").mkdir()
+            (Path(tmp) / ".claude" / "spicyclaude.json").write_text(json.dumps(project))
+        out, err = io.StringIO(), io.StringIO()
+        with patch.dict(os.environ, {"CLAUDE_PROJECT_DIR": tmp, **(env or {})}, clear=True):
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                code = ship_config.main(argv)
+    return code, out.getvalue(), err.getvalue()
 
 
 def resolve(argv=(), env=None, project_file=ABSENT):
@@ -195,6 +214,73 @@ class ProjectFileErrorsTest(unittest.TestCase):
         with patch.object(ship_config.subprocess, "run", side_effect=FileNotFoundError("git")):
             with self.assertRaises(ship_config.ConfigError):
                 ship_config.project_file({})
+
+class GateFlagsTest(unittest.TestCase):
+    DEFAULT_LINE = "--max-rounds 3 --min-severity High --fix-floor Medium"
+    EXPECTED_DEFAULTS = {
+        "review": {
+            "plan": {"max_rounds": 3, "min_severity": "High", "fix_floor": "Medium"},
+            "code": {"max_rounds": 3, "min_severity": "High", "fix_floor": "Medium"},
+        },
+        "questions": {"mode": "auto", "escalate": ["irreversible"]},
+    }
+
+    def test_plan_prints_one_line_of_gate_flags(self):
+        self.assertEqual(run_main(["--gate-flags=plan"]), (0, self.DEFAULT_LINE + "\n", ""))
+
+    def test_code_reads_the_code_section(self):
+        code_line = "--max-rounds 5 --min-severity High --fix-floor Medium\n"
+        self.assertEqual(run_main(["--code-rounds=5", "--gate-flags=code"]), (0, code_line, ""))
+        self.assertEqual(run_main(["--code-rounds=5", "--gate-flags=plan"]), (0, self.DEFAULT_LINE + "\n", ""))
+
+    def test_cli_flag_applies(self):
+        line = "--max-rounds 2 --min-severity High --fix-floor Medium\n"
+        self.assertEqual(run_main(["--plan-rounds=2", "--gate-flags=plan"]), (0, line, ""))
+
+    def test_env_applies(self):
+        line = "--max-rounds 3 --min-severity Critical --fix-floor Medium\n"
+        self.assertEqual(run_main(["--gate-flags=code"], env={"SPICY_CODE_MIN_SEVERITY": "Critical"}), (0, line, ""))
+
+    def test_project_file_applies(self):
+        line = "--max-rounds 1 --min-severity High --fix-floor Medium\n"
+        project = {"review": {"plan": {"max_rounds": 1}}}
+        self.assertEqual(run_main(["--gate-flags=plan"], project=project), (0, line, ""))
+
+    def test_plugin_config_applies(self):
+        line = "--max-rounds 4 --min-severity High --fix-floor Medium\n"
+        argv = ["--plugin-config", "maxReviewRounds=4", "--gate-flags=plan"]
+        self.assertEqual(run_main(argv), (0, line, ""))
+
+    def test_unknown_reviewer_fails_loud(self):
+        for flag in ("--gate-flags=docs", "--gate-flags=Plan", "--gate-flags=", "--gate-flags"):
+            with self.subTest(flag=flag):
+                code, out, err = run_main([flag])
+                self.assertEqual(code, 1)
+                self.assertEqual(out, "")
+                self.assertIn("--gate-flags must be one of plan, code", err)
+
+    def test_invalid_config_with_gate_flags_fails_loud(self):
+        code, out, err = run_main(["--gate-flags=plan", "--min-severity=Nit"])
+        self.assertEqual(code, 1)
+        self.assertEqual(out, "")
+        self.assertIn("severity must be one of", err)
+
+    def test_cli_entry_point_defaults_to_sys_argv(self):
+        with TemporaryDirectory() as tmp:
+            result = subprocess.run(
+                [sys.executable, ship_config.__file__, "--gate-flags=plan"],
+                env={"CLAUDE_PROJECT_DIR": tmp},
+                capture_output=True,
+                text=True,
+            )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, self.DEFAULT_LINE + "\n")
+
+    def test_without_gate_flags_prints_full_json(self):
+        code, out, err = run_main([])
+        self.assertEqual((code, err), (0, ""))
+        self.assertEqual(out, json.dumps(self.EXPECTED_DEFAULTS, indent=2) + "\n")
+
 
 if __name__ == "__main__":
     unittest.main()

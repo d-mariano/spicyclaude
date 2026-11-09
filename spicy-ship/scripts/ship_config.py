@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Resolve spicy-ship configuration and print it as JSON.
 
+--gate-flags=plan|code prints that reviewer's review_gate.py flags on one line instead.
+
 Precedence, highest first: CLI flags, SPICY_* environment variables, the
 project file .claude/spicyclaude.json at the project root, plugin userConfig
 values passed as --plugin-config KEY=VALUE, built-in defaults. An empty value
@@ -21,6 +23,7 @@ ESCALATIONS = ("irreversible", "external")
 REVIEWERS = ("plan", "code")
 REVIEW_KEYS = ("max_rounds", "min_severity", "fix_floor")
 PROJECT_FILE = Path(".claude", "spicyclaude.json")
+GATE_FLAGS = "--gate-flags"
 
 DEFAULTS = {
     "review": {"default": {"max_rounds": 3, "min_severity": "High", "fix_floor": "Medium"}},
@@ -260,10 +263,39 @@ def _finalize(merged):
     return {"review": review, "questions": merged["questions"]}
 
 
+def _pop_gate_flags(argv: list[str]) -> tuple[str | None, list[str]]:
+    """Split --gate-flags out of argv and return (reviewer or None, remaining argv).
+
+    The last occurrence wins; a bare flag counts as an empty value. Raises ConfigError naming
+    the allowed reviewers when the flag is present with anything other than plan or code.
+    """
+    reviewer, rest = None, []
+    for raw in argv:
+        if raw == GATE_FLAGS or raw.startswith(GATE_FLAGS + "="):
+            reviewer = raw.partition("=")[2]
+        else:
+            rest.append(raw)
+    if reviewer is not None and reviewer not in REVIEWERS:
+        raise ConfigError(f"{GATE_FLAGS} must be one of {', '.join(REVIEWERS)}, got {reviewer!r}")
+    return reviewer, rest
+
+
+def _gate_flags_line(section: dict[str, int | str]) -> str:
+    """Render one resolved review section as review_gate.py flags, in REVIEW_KEYS order."""
+    return " ".join(f"--{key.replace('_', '-')} {section[key]}" for key in REVIEW_KEYS)
+
+
 def main(argv=None):
-    """CLI entry point: print the resolved config, or the error and a non-zero exit."""
+    """CLI entry point: print the resolved config, or with --gate-flags=plan|code that reviewer's
+    review_gate.py flags on one line. On error print the message to stderr and exit non-zero."""
     try:
-        print(json.dumps(resolve(sys.argv[1:] if argv is None else argv, os.environ), indent=2))
+        argv = sys.argv[1:] if argv is None else argv
+        reviewer, rest = _pop_gate_flags(argv)
+        config = resolve(rest, os.environ)
+        if reviewer is None:
+            print(json.dumps(config, indent=2))
+        else:
+            print(_gate_flags_line(config["review"][reviewer]))
     except ConfigError as exc:
         print(f"ship_config: {exc}", file=sys.stderr)
         return 1
