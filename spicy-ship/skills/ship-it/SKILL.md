@@ -31,13 +31,12 @@ before it runs. `${CLAUDE_PLUGIN_ROOT}` is substituted by the harness before you
 
 ## Preflight
 
-Each block below is one simple command on purpose: a pipe, a `;` or a `||` makes the permission
+The block below is one simple command on purpose: a pipe, a `;` or a `||` makes the permission
 check split it into parts that each need approval, and a refused block ends the run.
 
 !`git status --porcelain --untracked-files=no`
 
-
-- Any line from the first block is a tracked change; say what is uncommitted and stop. The
+- Any line it prints is a tracked change; say what is uncommitted and stop. The
   untracked `context/` folder never shows here and is expected.
 - Subagent depth needs no check for `ship-it`: phases run one level down and the code-reviewer's
   lenses two levels down, within Claude Code's default.

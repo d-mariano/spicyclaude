@@ -27,7 +27,7 @@ envelopes, nothing else.
 | 1 | `spicy-ship:phase:explorer` | `story.md` | `research-[nnn].md` | none |
 | 2 | `spicy-ship:phase:planner` | `story.md`, `research-[nnn].md` | `plan-[nnn].md` | none |
 | 3 | review loop: `spicy-ship:phase:plan-reviewer` and `spicy-ship:phase:fixer` in `plan` mode | `plan-[nnn].md`, `story.md` | `plan-review-r{n}.json`, `plan-fixes-r{n}.json` | `review.plan` |
-| 4 | `spicy-ship:phase:executor` | `plan-[nnn].md`, `research-[nnn].md` | commits, `progress-[nnn].md` | none |
+| 4 | `spicy-ship:phase:executor` | `plan-[nnn].md`, `research-[nnn].md`, `story.md` | commits, `progress-[nnn].md` | none |
 | 5 | review loop: `spicy-ship:phase:code-reviewer` and `spicy-ship:phase:fixer` in `code` mode | `base_sha..HEAD`, `story.md`, `plan-[nnn].md` | `code-review-r{n}.json`, `code-fixes-r{n}.json` | `review.code` |
 
 Phase 4 runs only after the plan gate is `PASS`, or `EXHAUSTED` with `critical: false`. Anything
@@ -110,7 +110,7 @@ round.
   notification, and nothing in this pipeline can proceed without the previous phase's artifact.
   Never reply to the user, in part or in full, while a phase agent is still running.
 - Every phase agent's definition confines its shell use to git, the plugin scripts, and the
-  recorded test command; you do not need to repeat that, only to pass the paths it needs.
+  test command `story.md` names; you do not need to repeat that, only to pass the paths it needs.
 - Run every shell command you issue, the gate above all, as one plain command from the
   repository root: no `cd`, no pipe, no `&&`, `;` or `echo`. The same allow rules the agents live
   under apply to you, and a compound command stops matching them and prompts or fails.

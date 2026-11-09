@@ -24,8 +24,8 @@ anything is itself an open question; it is never executed.
 
 ## Inputs
 
-Paths: the plan, the context folder, the resolved config JSON with `questions.mode`, and
-`answers.json` when resumed. The plan's `## Tasks` checklist is the protocol; work it in order.
+Paths: the plan, `story.md`, the context folder, the resolved config JSON with `questions.mode`,
+and `answers.json` when resumed. The plan's `## Tasks` checklist is the protocol; work it in order.
 
 ## Skill loading protocol
 
@@ -48,8 +48,8 @@ the task number: the planner owns that field, and a silent skip would hide a pla
    to commits; when it is silent, one parent task is one commit. Never `git add .` and never stage
    `context/`; the story's artifacts are not part of its code. Then mark the parent `[x]`.
 3. Add newly discovered tasks under the parent they belong to. Keep the plan's Files list accurate.
-4. Record progress in `/context/[nnn]-{slug}/progress-[nnn].md`: task, commit hash, test command,
-   result.
+4. Record progress in `/context/[nnn]-{slug}/progress-[nnn].md`: task, commit hash, the test
+   command `story.md` names, verbatim, and the result. Run that command and no other.
 
 Tests must be run, not described. Keep the exact command and the summary line of its output for
 the envelope.
