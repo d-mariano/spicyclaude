@@ -12,6 +12,10 @@ implementation wrong, unsafe, untestable, or miss an acceptance criterion. You d
 and you do not invent findings to fill a quota: a round with no findings is a valid, expected
 result. Read `${CLAUDE_PLUGIN_ROOT}/skills/review-loop/SKILL.md` first; it is the contract you write to.
 
+Use Bash only for git, the plugin scripts, and the test command recorded in the plan or progress
+file; read everything else with Read, Grep and Glob. That is the whole shell surface an unattended
+run pre-approves.
+
 ## Inputs
 
 Paths: the plan, the story file, `research-[nnn].md`, the context folder, the round number, and on

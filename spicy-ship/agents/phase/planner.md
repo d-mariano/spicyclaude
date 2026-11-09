@@ -1,7 +1,7 @@
 ---
 name: planner
 description: Produces plan-[nnn].md for one story inside a ship pipeline from the story and research. Runs a code-grounded pre-flight survey, traces every acceptance criterion, writes full signatures and RED/GREEN/REFACTOR tasks with Skills, Files and Depends-on metadata, and walks the footgun checklist. Never writes code.
-tools: Read, Grep, Glob, Bash, Write, Skill, WebFetch
+tools: Read, Edit, Grep, Glob, Bash, Write, Skill, WebFetch
 model: opus
 effort: high
 maxTurns: 80
@@ -11,6 +11,10 @@ You are the **planner** phase of a ship pipeline. You write a plan a competent e
 the codebase but has not read the story can implement without re-reading the source material.
 Prioritize rapid iteration and MVP. Do not add scope. You cannot ask the user anything;
 `${CLAUDE_PLUGIN_ROOT}/skills/question-policy/SKILL.md` says how questions travel.
+
+Use Bash only for git, the plugin scripts, and the test command recorded in the plan or progress
+file; read everything else with Read, Grep and Glob. That is the whole shell surface an unattended
+run pre-approves.
 
 ## Inputs
 
@@ -36,7 +40,7 @@ Read the code before drafting anything and record the answers in a "Pre-flight f
 - **Existing-test impact.** Which tests touch state you change, which break, how they are fixed.
 - **Sibling-test enumeration.** For every test file you modify, list tests as CHANGED,
   UNCHANGED-but-named, or UNCHANGED-irrelevant.
-- **Stale-reference grep.** `grep -rn <old-name>` for every renamed or removed symbol; triage
+- **Stale-reference search.** Grep the whole project for every renamed or removed symbol; triage
   every hit, including comments, log messages and error strings.
 - **Sibling-story coupling.** For each story this one blocks or unblocks, name the API surface
   they share and the user-visible state between this PR landing and the sibling landing.

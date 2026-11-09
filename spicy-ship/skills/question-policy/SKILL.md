@@ -108,9 +108,9 @@ the questions the agent decided provisionally so the orchestrator can ask them a
 
 ## Decisions log
 
-`decisions.md` in the story's context folder, one line per decision, append-only. Append with
-the Edit tool or a shell append; never Write the whole file, which replaces what earlier phases
-logged:
+`decisions.md` in the story's context folder, one line per decision, append-only. Create it with
+Write when it does not exist; otherwise append with the Edit tool. Never Write over an existing
+file, which replaces what earlier phases logged:
 
 ```
 - D3 · planner · Hash or encrypt refresh tokens? → bcrypt hash · costly · AC-3 requires leak resistance; hashing needs no key management

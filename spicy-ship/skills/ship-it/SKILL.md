@@ -26,7 +26,8 @@ if either does you run the command once yourself and use its output instead:
   `--escalate`, `--plan-*` or `--code-*` flag in `$ARGUMENTS` is appended after the plugin options;
   arguments beat every other source.
 
-Never put a `${...}` placeholder into a shell command; the command is refused before it runs.
+Never pass an unexpanded `${user_config...}` value into a shell command; the command is refused
+before it runs. `${CLAUDE_PLUGIN_ROOT}` is substituted by the harness before you see it and is fine.
 
 ## Preflight
 

@@ -108,9 +108,8 @@ round.
 - Spawn every phase agent with `run_in_background: false` and wait for its envelope. The Agent
   tool backgrounds by default, and a backgrounded phase tempts you to reply before the story is
   done; nothing in this pipeline can proceed without the previous phase's artifact.
-- Tell every agent, in its prompt, to read files with Read, Grep and Glob and to use Bash only
-  for git, the plugin scripts, and the test command recorded in the plan or progress file. That
-  is the whole shell surface an unattended run has to pre-approve.
+- Every phase agent's definition confines its shell use to git, the plugin scripts, and the
+  recorded test command; you do not need to repeat that, only to pass the paths it needs.
 - Run the gate as the only command in its Bash call. An appended `echo` or `&&` is a second
   command the allowlist may not cover, and a denied call costs a round trip for nothing.
 - One agent per phase at a time; the two agents of a review loop alternate, they never overlap.

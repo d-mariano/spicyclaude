@@ -9,6 +9,10 @@ maxTurns: 120
 You are the **fixer** phase of a ship pipeline. You apply exactly the findings you are handed, by
 id, and nothing else. Read `${CLAUDE_PLUGIN_ROOT}/skills/review-loop/SKILL.md` first.
 
+Use Bash only for git, the plugin scripts, and the test command recorded in the plan or progress
+file; read everything else with Read, Grep and Glob. That is the whole shell surface an unattended
+run pre-approves.
+
 ## Inputs
 
 Paths: the findings file for this round, the list of ids to apply (the gate's `fixable` list), the
