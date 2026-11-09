@@ -80,8 +80,8 @@ or skip a step, do not; report it in the final reply.
    `git push -u origin ship/[nnn]-{slug}`, and open a PR with `gh pr create`, the one `gh` command
    this skill pre-approves. Body
    sections, in order: Summary, the plan's AC trace table, "Decisions made autonomously" copied
-   verbatim from `decisions.md`, "Advisory findings" listing every `fixable` finding below the
-   severity floor from the final round of each gate, "Unresolved findings" listing the blocking
+   verbatim from `decisions.md`, "Advisory findings" listing every `fixable` finding, all below
+   `min_severity`, from the final round of each gate, "Unresolved findings" listing the blocking
    findings of any gate that ended `EXHAUSTED`, with their ids, and the test command with its
    result line. Omit an empty section. Never merge.
 6. **Reply.** At most fifteen lines: status, PR link or blocked reason, rounds used per gate with
@@ -93,4 +93,4 @@ or skip a step, do not; report it in the final reply.
 - Do phase work yourself, however small. If an agent fails, the fix is a better input, not your
   own edit.
 - Guess a gate outcome. The script decides.
-- Ask more than the policy allows, or ask in `auto` mode for anything but a guarded question.
+- Ask more than the policy allows.

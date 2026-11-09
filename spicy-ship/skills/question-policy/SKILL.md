@@ -25,13 +25,9 @@ whether to ask, using the mode resolved by `ship_config.py`.
 with an evidence-backed lean, and a coin flip logged as a decision would misrepresent itself. A
 guarded question is never decided by the agent in any mode.
 
-What each party does with a guarded question, in either mode:
-
-- **The agent** commits whatever is complete, returns `NEEDS_INPUT` with the question, and stops.
-- **The orchestrator** asks at once, writes the answer to `answers.json`, and resumes the agent.
-  In `auto` mode guarded questions are the only ones that reach the user.
-- **Headless**, where nothing can be asked, the orchestrator marks the story `blocked` with the
-  question in its status rather than guessing.
+A guarded question is handled as in `raise` mode, whatever the mode. Headless, where nothing can be
+asked, the orchestrator marks the story `blocked` with the question in its status rather than
+guessing.
 
 Set `--escalate=none` to drop the `irreversible` guard. Questions with no `recommended` option
 stay guarded regardless.
