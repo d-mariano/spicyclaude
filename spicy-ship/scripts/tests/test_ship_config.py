@@ -172,7 +172,24 @@ class ValidationTest(unittest.TestCase):
         self.assertIn("not valid JSON", failing(resolve_project, "{not json"))
 
     def test_fix_floor_above_min_severity_fails_loud(self):
-        self.assertIn("fix_floor", failing(resolve, ["--min-severity=Low", "--fix-floor=High"]))
+        self.assertIn("'Critical' is stricter", failing(resolve, ["--min-severity=High", "--fix-floor=Critical"]))
+
+    def test_fix_floor_from_argument_and_environment_takes_effect(self):
+        self.assertEqual(resolve(["--fix-floor=Low"])["review"]["code"]["fix_floor"], "Low")
+        self.assertEqual(resolve(env={"SPICY_REVIEW_FIX_FLOOR": "Low"})["review"]["plan"]["fix_floor"], "Low")
+
+    def test_invalid_escalate_entries_fail_loud(self):
+        message = failing(resolve, ["--escalate=irreversible,extrnal"])
+        self.assertIn("escalate", message)
+        self.assertIn("extrnal", message)
+        message = failing(resolve_project, {"questions": {"escalate": ["bogus"]}})
+        self.assertIn("questions.escalate", message)
+        self.assertIn("bogus", message)
+
+    def test_key_known_elsewhere_is_unknown_in_the_wrong_section(self):
+        self.assertIn("unknown questions key 'max_rounds'", failing(resolve_project, {"questions": {"max_rounds": 2}}))
+        self.assertIn("unknown review.plan key 'mode'", failing(resolve_project, {"review": {"plan": {"mode": "auto"}}}))
+        self.assertIn("unknown review.default key 'rounds'", failing(resolve_project, {"review": {"default": {"rounds": ""}}}))
 
 
 
@@ -211,10 +228,16 @@ class StrictTypesTest(unittest.TestCase):
         self.assertIn("questions.mode", failing(resolve_project, {"questions": {"mode": "yolo"}}))
 
     def test_non_object_sections_fail_loud(self):
-        cases = {'{"review": [1]}': "review", '{"review": {"default": "nope"}}': "review.default", '{"questions": 3}': "questions", "[1]": "top level"}
-        for payload, where in cases.items():
+        cases = {
+            '{"review": [1]}': "review must be a JSON object",
+            '{"review": {"default": "nope"}}': "review.default must be a JSON object",
+            '{"review": {"plan": 5}}': "review.plan must be a JSON object",
+            '{"questions": 3}': "questions must be a JSON object",
+            "[1]": "top level must be a JSON object",
+        }
+        for payload, message in cases.items():
             with self.subTest(payload=payload):
-                self.assertIn(where, failing(resolve_project, payload))
+                self.assertIn(message, failing(resolve_project, payload))
 
 class ProjectRootTest(unittest.TestCase):
     def test_project_file_anchored_on_claude_project_dir(self):

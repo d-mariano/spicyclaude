@@ -162,21 +162,22 @@ def _validate_project_shape(data, project_file):
         if reviewer not in ("default",) + REVIEWERS:
             raise ConfigError(f"{project_file}: unknown review section {reviewer!r}")
         _require_object(section, project_file, f"review.{reviewer}")
-        _parse_section(section, REVIEW_KEYS, ("review", reviewer), f"{project_file} review.{reviewer}", project_file)
+        _parse_section(section, REVIEW_KEYS, ("review", reviewer), project_file)
     questions = data.get("questions", {})
     _require_object(questions, project_file, "questions")
-    _parse_section(questions, ("mode", "escalate"), ("questions",), f"{project_file} questions", project_file)
+    _parse_section(questions, ("mode", "escalate"), ("questions",), project_file)
 
 
-def _parse_section(section, allowed, path, where, project_file):
+def _parse_section(section, allowed, path, project_file):
     """Validate one project-file section in place: reject unknown keys, drop empty values, parse the rest."""
+    label = ".".join(path)
     for key in list(section):
         if key not in allowed:
-            raise ConfigError(f"{project_file}: unknown {'.'.join(path)} key {key!r}")
+            raise ConfigError(f"{project_file}: unknown {label} key {key!r}")
         if section[key] == "":
             del section[key]
             continue
-        section[key] = _parse(path + (key,), section[key], f"{where}.{key}")
+        section[key] = _parse(path + (key,), section[key], f"{project_file} {label}.{key}")
 
 
 def _require_object(value, project_file, where):
