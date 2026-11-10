@@ -16,6 +16,7 @@ import ship_config
 
 
 ABSENT = Path("/nonexistent/spicyclaude.json")
+UNKNOWN_SEVERITY = "Trivial"
 
 
 def run_main(argv, env=None, project=None):
@@ -135,7 +136,23 @@ class QuestionsTest(unittest.TestCase):
 
 class ValidationTest(unittest.TestCase):
     def test_invalid_severity_fails_loud(self):
-        self.assertIn("--min-severity", failing(resolve, ["--min-severity=Nit"]))
+        self.assertIn("--min-severity", failing(resolve, [f"--min-severity={UNKNOWN_SEVERITY}"]))
+
+    def test_nit_fix_floor_applies_to_both_reviewers(self):
+        code, out, err = run_main(["--fix-floor=Nit"])
+        self.assertEqual(code, 0)
+        self.assertEqual(err, "")
+        for reviewer in ("plan", "code"):
+            self.assertEqual(
+                json.loads(out)["review"][reviewer],
+                {"max_rounds": 3, "min_severity": "High", "fix_floor": "Nit"},
+            )
+
+    def test_nit_min_severity_with_default_fix_floor_fails_loud(self):
+        code, out, err = run_main(["--min-severity=Nit"])
+        self.assertEqual(code, 1)
+        self.assertEqual(out, "")
+        self.assertIn("fix_floor 'Medium' is stricter than min_severity 'Nit'", err)
 
     def test_invalid_rounds_fails_loud(self):
         self.assertIn("SPICY_MAX_REVIEW_ROUNDS", failing(resolve, env={"SPICY_MAX_REVIEW_ROUNDS": "zero"}))
@@ -344,7 +361,7 @@ class GateFlagsTest(unittest.TestCase):
                 self.assertIn("--gate-flags must be one of plan, code", err)
 
     def test_invalid_config_with_gate_flags_fails_loud(self):
-        code, out, err = run_main(["--gate-flags=plan", "--min-severity=Nit"])
+        code, out, err = run_main(["--gate-flags=plan", f"--min-severity={UNKNOWN_SEVERITY}"])
         self.assertEqual(code, 1)
         self.assertEqual(out, "")
         self.assertIn("severity must be one of", err)

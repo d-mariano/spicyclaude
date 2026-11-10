@@ -1,6 +1,6 @@
 """The shared severity scale, strictest first. Imported by ship_config and review_gate."""
 
-SEVERITIES = ("Critical", "High", "Medium", "Low")
+SEVERITIES = ("Critical", "High", "Medium", "Low", "Nit")
 
 
 def at_least(severity, floor):
