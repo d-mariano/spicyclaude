@@ -25,7 +25,7 @@ only consumes its output.
 
 ## Severity and confidence
 
-Use the shared rubric from `spicy-review`: `Critical`, `High`, `Medium`, `Low`, plus a confidence
+Use the shared rubric from `spicy-review`: `Critical`, `High`, `Medium`, `Low`, `Nit`, plus a confidence
 score from 0 to 100. The gate drops anything under 80 before deciding. Reviewers apply the
 rubric's `what-not-to-flag` list and are told plainly that a round with no findings is a valid,
 expected result. A reviewer asked to find problems will find something; the floor is the

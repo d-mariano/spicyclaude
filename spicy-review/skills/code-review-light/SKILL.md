@@ -35,7 +35,7 @@ current branch against its base.
 3. **Filter.** Every finding needs **severity + confidence 0–100 + file:line + concrete fix**.
    Drop anything below confidence 80. Drop anything on the what-not-to-flag list.
 
-4. **Print** a severity-tiered summary (Critical → High → Medium → Low), each line in the
+4. **Print** a severity-tiered summary (Critical → High → Medium → Low → Nit), each line in the
    rubric's rendering format (`- [NN] path:line — **Title.** problem. Fix: …`). End with a
    one-line takeaway. If nothing survives the gate, say **No concerns identified.**
 

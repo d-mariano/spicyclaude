@@ -218,7 +218,7 @@ Note that plugin `agents/` subfolders become part of the scoped identifier: `age
 ---
 name: ship-it
 description: Implement one well-defined story end to end (explore → plan → plan review loop → execute → code review loop → PR). Use when the user says ship it / implement this story.
-argument-hint: "<story-file|issue#|text> [--max-review-rounds=N] [--min-severity=critical|high|medium|low] [--questions=auto|raise|batch] [--pr|--no-pr]"
+argument-hint: "<story-file|issue#|text> [--max-review-rounds=N] [--min-severity=critical|high|medium|low|nit] [--questions=auto|raise|batch] [--pr|--no-pr]"
 disable-model-invocation: true
 allowed-tools: Bash(git *) Bash(gh *) Bash(python3 *) Read Write
 ---

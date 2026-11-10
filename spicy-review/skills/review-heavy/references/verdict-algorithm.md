@@ -50,7 +50,7 @@ Decide from the **confirmed** findings:
 | Any **Critical**                  | **Needs Work**      |
 | Any **High** (no Critical)        | **Needs Work**      |
 | **Medium** only                   | **Needs Attention** |
-| **Low** only, or nothing survives | **Ready to Merge**  |
+| **Low** or **Nit** only, or nothing survives | **Ready to Merge**  |
 
 ## 7. Posting & approval policy
 
@@ -74,6 +74,9 @@ approver.
 …
 
 ## Low
+…
+
+## Nit
 …
 
 <one-line takeaway>
