@@ -53,7 +53,7 @@ or skip a step, do not; report it in the final reply.
    read `ship-state.json` in the named folder; if its `branch` does not start with `ship/`, end
    with `status: blocked` naming the branch and check nothing out. Otherwise check out the branch, use the folder's
    `ship-config.json` instead of the config above, and continue from its `phase` per the pipeline's
-   resume rules; skip the rest of this step. Otherwise pick the next `nnn` and the slug, and create
+   resume rules; skip the rest of this step. Without `--resume`, pick the next `nnn` and the slug, and create
    and check out `ship/[nnn]-{slug}` from the current `HEAD`, whatever branch that is. Agent commits
    land only on `ship/*` branches, so a run started on a shared branch never writes to it. Then
    write `story.md` into `/context/[nnn]-{slug}/` with the Write tool, which creates the
