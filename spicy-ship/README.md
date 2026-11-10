@@ -9,14 +9,6 @@ Ship one story unattended. `/spicy-ship:ship-it` explores, plans, reviews the pl
 
 Depends on `spicy-skills` for the craft skills the planner, executor and fixer load, and on `spicy-review` for the severity rubric and the reviewer agents.
 
-The code-reviewer fans out to the review lenses one subagent level below itself. In an interactive session the documented default depth of three levels covers that. In a headless run (`claude -p`) on the build this was tested with (2.1.319), a subagent had no Agent tool until the depth was set explicitly, so unattended runs need this in the project's settings; it is harmless elsewhere:
-
-```json
-{"env": {"CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "3"}}
-```
-
-Without it the code-reviewer falls back to a single consolidated pass, says `single-pass: Agent tool withheld` in its envelope, and `ship-it` repeats that in its final reply.
-
 ## Usage
 
 ```
@@ -69,6 +61,14 @@ Phase agents read files with the file tools, use the shell only for git, the plu
 ```
 
 Add the project's own test runner if it is not `python3`. Agents run each command plain, from the repository root, with no `cd`, pipe or `&&`, because a compound command stops matching these rules and prompts. `ship-it` itself pre-approves `gh` for the pull request step through its own frontmatter. A headless run (`claude -p`) that hits anything outside the allowlist fails loud at that step and the story ends `blocked` with the denied command named; nothing is retried around a denial.
+
+The code-reviewer fans out to the review lenses one subagent level below itself. In an interactive session the documented default depth of three levels covers that. In a headless run (`claude -p`) on the build this was tested with (2.1.319), a subagent had no Agent tool until the depth was set explicitly, so headless runs also need this in the project's settings; it is harmless elsewhere:
+
+```json
+{"env": {"CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "3"}}
+```
+
+Without it the code-reviewer falls back to a single consolidated pass, says `single-pass: Agent tool withheld` in its envelope, and `ship-it` repeats that in its final reply.
 
 ## Configuration
 

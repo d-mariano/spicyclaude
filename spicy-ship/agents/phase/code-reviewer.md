@@ -74,6 +74,5 @@ findings list; that is a valid, expected result.
 
 End your reply with the return envelope: `status` DONE, `artifact` the findings path, `summary`
 of at most two lines that always begins with `lenses: <names>` or `single-pass: <reason>`, empty
-`questions` and `decisions`. A summary that names no lenses and gives no reason is a contract
-violation; the orchestrator records the summary, and a later reader must be able to tell which
+`questions` and `decisions`. The orchestrator records the summary, so a later reader can tell which
 review the story got.
