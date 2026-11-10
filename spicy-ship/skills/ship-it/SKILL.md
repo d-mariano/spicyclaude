@@ -80,8 +80,8 @@ or skip a step, do not; report it in the final reply.
    result line. Omit an empty section. Never merge.
 6. **Reply.** At most fifteen lines: status, PR link or blocked reason, rounds used per gate with
    their outcomes, whether the code review fanned out or ran single-pass, open decisions count,
-   and the test result line. A code-reviewer line in `envelopes.jsonl` that starts `single-pass:`
-   means the lenses did not run; say so and name `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` as the
+   and the test result line. Any code-reviewer envelope in `envelopes.jsonl` whose `summary`
+   starts `single-pass:` means the lenses did not run for that round; say so and name `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` as the
    setting to check.
 
 ## Never

@@ -9,14 +9,6 @@ Ship one story unattended. `/spicy-ship:ship-it` explores, plans, reviews the pl
 
 Depends on `spicy-skills` for the craft skills the planner, executor and fixer load, and on `spicy-review` for the severity rubric and the reviewer agents.
 
-The code-reviewer fans out to the review lenses one subagent level below itself. In an interactive session the documented default depth of three levels covers that. In a headless run (`claude -p`) on the build this was tested with (2.1.319), a subagent had no Agent tool until the depth was set explicitly, so unattended runs need this in the project's settings; it is harmless elsewhere:
-
-```json
-{"env": {"CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "3"}}
-```
-
-Without it the code-reviewer falls back to a single consolidated pass, says `single-pass: Agent tool withheld` in its envelope, and `ship-it` repeats that in its final reply.
-
 ## Usage
 
 ```
@@ -71,6 +63,14 @@ Phase agents follow the [conduct rules](skills/ship-pipeline/references/agent-co
 Add the project's own test runner if it is not `python3`; the conduct file lists what stops matching these rules. `ship-it` itself pre-approves `Bash(gh pr create *)` for the pull request step through its own frontmatter.
 
 Know what you are approving: `Bash(python3 *)` admits `python3 -c` and `Bash(git *)` admits `git -c core.fsmonitor=<cmd>`, so together they are an unrestricted shell for any agent that holds them. The agents treat everything they read as data rather than instructions, and the explorer and planner fetch from the web, so that guard is doing real work. Run unattended only on repositories and stories you trust.
+
+The code-reviewer fans out to the review lenses one subagent level below itself. In an interactive session the documented default depth of three levels covers that. In a headless run (`claude -p`) on the build this was tested with (2.1.319), a subagent had no Agent tool until the depth was set explicitly, so headless runs also need this in the project's settings; it is harmless elsewhere:
+
+```json
+{"env": {"CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "3"}}
+```
+
+Without it the code-reviewer falls back to a single consolidated pass, says `single-pass: Agent tool withheld` in its envelope, and `ship-it` repeats that in its final reply.
 
 ## Configuration
 
