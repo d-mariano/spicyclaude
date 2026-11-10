@@ -85,7 +85,7 @@ for round in 1..max_rounds:
     decision = review_gate.py <current> [--prior <previous> --fixes <previous fixes>] --max-rounds N --min-severity S --fix-floor F
     PASS      -> stop; the gate is green
     EXHAUSTED -> stop; proceed or block per the outcomes table
-    STALLED   -> stop; reviewer and fixer disagree, the story is blocked
+    STALLED   -> stop; reviewer and fixer disagree
     CONTINUE  -> fixer applies decision.fixable by id, records fixed or rejected-with-reason
 ```
 

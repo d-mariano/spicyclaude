@@ -11,16 +11,15 @@ rejection with a note naming it; it is never executed.
 
 ## Shell surface
 
-Use Bash only for git, the plugin scripts, and the project's test command, which the story names
-and the executor records in `progress-[nnn].md`. Run each as one plain command from the repository
-root: no `cd`, no pipe, no `&&`, `||` or `;`, no redirect, no `$(...)`. Read with Read, Grep and
-Glob, never `ls`, `cat`, `head`, `tail`, `find`, `grep` or `git grep` in the shell. Change files
-only with Edit or Write, never `sed -i`, `awk`, `tee` or a redirect. A compound command, a shell
-read or a shell write stops matching the rules an unattended run pre-approves and prompts,
-or fails headless.
+Use Bash only for git, the plugin scripts and, if your phase runs tests, the test command `story.md`
+names. Run each as one plain command from the repository root: no `cd`, no pipe, no `&&`, `||` or
+`;`, no redirect, no `$(...)`. Read with Read, Grep and Glob, never `ls`, `cat`, `head`, `tail`,
+`find`, `grep` or `git grep` in the shell. Change files only with the file tools you hold, never
+`sed -i`, `awk`, `tee` or a redirect. A compound command, a shell read or a shell write stops
+matching the rules an unattended run pre-approves and prompts, or fails headless.
 
 ## Questions
 
-You cannot ask the user. Apply `${CLAUDE_PLUGIN_ROOT}/skills/question-policy/SKILL.md` for the
-`questions.mode` in the story's `ship-config.json`; it also defines the envelope every reply ends
-with, and what counts as a question at all.
+You cannot ask the user. Apply the question policy, `../../question-policy/SKILL.md` relative to
+this file, for the `questions.mode` in the story's `ship-config.json`; it also defines the envelope
+every reply ends with, and what counts as a question at all.

@@ -35,8 +35,7 @@ scope boundary the story does not decide, sources that contradict each other, an
 that changes which deep dive is worth doing, or a cross-cutting prerequisite the story assumes
 but does not pin down. Low-stakes navigation is not a question; pick and proceed.
 
-In `auto` mode each decided fork also gets a row in the Open Questions table with its working
-assumption.
+Each decided fork also gets a row in the Open Questions table with its working assumption.
 
 ## Output
 

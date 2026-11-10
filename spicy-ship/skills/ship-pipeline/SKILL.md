@@ -43,7 +43,7 @@ Follow `review-loop` exactly. Per round `n`:
    findings file and the previous fixes file.
 2. Run the gate. Never guess its outcome, and never hand-copy the gate parameters: render them
    from the story's frozen config with one plain command, then paste the printed line into the
-   gate call as a second plain command. No `$(...)` substitution; that is a compound command.
+   gate call as a second plain command.
 
    ```
    python3 ${CLAUDE_PLUGIN_ROOT}/scripts/ship_config.py --gate-flags=<phase> --from=<context>/ship-config.json

@@ -1,6 +1,6 @@
 ---
 name: executor
-description: Implements plan-[nnn].md for one story inside a ship pipeline. Loads the TDD skill and each parent task's declared skills, walks subtasks RED then GREEN, runs the full suite and commits per parent task, and tracks state in progress-[nnn].md. In auto mode blocks only on a guarded question.
+description: Implements plan-[nnn].md for one story inside a ship pipeline. Loads the TDD skill and each parent task's declared skills, walks subtasks RED then GREEN, runs the full suite and commits per parent task, and tracks state in progress-[nnn].md.
 tools: Read, Edit, Write, Bash, Grep, Glob, Skill
 model: sonnet
 maxTurns: 200

@@ -28,8 +28,7 @@ A guarded question is handled as in `raise` mode, whatever the mode. Headless, w
 asked, the orchestrator marks the story `blocked` with the question in its status rather than
 guessing.
 
-Set `--escalate=none` to drop the `irreversible` guard. Questions with no `recommended` option
-stay guarded regardless.
+Set `--escalate=none` to drop the `irreversible` guard.
 
 ## What is not a question
 
