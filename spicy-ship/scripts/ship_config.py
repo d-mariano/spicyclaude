@@ -9,6 +9,7 @@ values passed as --plugin-config KEY=VALUE, built-in defaults. An empty value
 in any source means unset. Invalid input exits non-zero.
 """
 
+import copy
 import json
 import os
 import subprocess
@@ -71,10 +72,10 @@ def resolve(argv, env, project_path=None):
     flags, plugin_pairs = _split_argv(argv)
     layers = [
         DEFAULTS,
-        _from_pairs(plugin_pairs, PLUGIN_CONFIG_PATHS, "plugin option"),
+        _from_pairs(plugin_pairs, PLUGIN_CONFIG_PATHS, "plugin option", "KEY=VALUE"),
         _from_project_file(project_path if project_path is not None else project_file(env)),
         _from_paths(ENV_PATHS, env, "environment variable"),
-        _from_pairs(flags, ARG_PATHS, "argument"),
+        _from_pairs(flags, ARG_PATHS, "argument", "--flag=value"),
     ]
     return _finalize(layers)
 
@@ -110,11 +111,11 @@ def _split_argv(argv):
     return flags, plugin_pairs
 
 
-def _from_pairs(pairs, table, label):
+def _from_pairs(pairs, table, label, shape):
     layer = {}
     for raw in pairs:
         if "=" not in raw:
-            raise ConfigError(f"{label} {raw!r} must look like KEY=VALUE")
+            raise ConfigError(f"{label} {raw!r} must look like {shape}")
         key, value = raw.split("=", 1)
         if key not in table:
             raise ConfigError(f"unknown {label} {key!r}; known: {', '.join(sorted(table))}")
@@ -249,7 +250,7 @@ def _finalize(layers):
     questions = {}
     for layer in layers:
         questions.update(layer.get("questions", {}))
-    return {"review": review, "questions": questions}
+    return copy.deepcopy({"review": review, "questions": questions})
 
 
 def _pop_option(argv: list[str], name: str) -> tuple[str | None, list[str]]:

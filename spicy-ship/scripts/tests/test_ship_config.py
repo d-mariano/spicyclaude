@@ -148,7 +148,10 @@ class ValidationTest(unittest.TestCase):
         self.assertIn("unknown argument '--max-rounds'", failing(resolve, ["--max-rounds=3"]))
 
     def test_flag_without_value_fails_loud(self):
-        self.assertIn("--questions", failing(resolve, ["--questions"]))
+        self.assertIn("'--questions' must look like --flag=value", failing(resolve, ["--questions"]))
+
+    def test_plugin_option_without_equals_fails_loud(self):
+        self.assertIn("'bogus' must look like KEY=VALUE", failing(resolve, ["--plugin-config", "bogus"]))
 
     def test_plugin_config_without_value_fails_loud(self):
         self.assertIn("--plugin-config", failing(resolve, ["--plugin-config"]))
@@ -197,6 +200,9 @@ class ValidationTest(unittest.TestCase):
         self.assertIn("unknown review.default key 'rounds'", failing(resolve_project, {"review": {"default": {"rounds": ""}}}))
         self.assertIn("spicyclaude.json", failing(resolve_project, {"questions": {"max_rounds": 2}}))
 
+    def test_resolved_config_shares_nothing_with_the_defaults(self):
+        resolve()["questions"]["escalate"].append("external")
+        self.assertEqual(resolve()["questions"]["escalate"], ["irreversible"])
 
 
 class EmptyValueTest(unittest.TestCase):
