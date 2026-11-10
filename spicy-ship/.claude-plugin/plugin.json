@@ -34,12 +34,11 @@
     "questionMode": {
       "type": "string",
       "title": "Open-question mode",
-      "description": "auto decides and logs; raise asks immediately; batch asks at checkpoints.",
+      "description": "auto decides and logs; raise asks before continuing.",
       "default": "auto",
       "options": [
         "auto",
-        "raise",
-        "batch"
+        "raise"
       ]
     }
   }

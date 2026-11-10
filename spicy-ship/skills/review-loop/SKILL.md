@@ -69,7 +69,9 @@ Rules the gate enforces:
 - The fixes file has exactly one entry for every prior finding at or above the fix floor that
   passed the confidence gate, each `fixed` or `rejected` with a note. A finding the fixer never
   mentions fails the round, so a skip cannot hide as progress.
-- Ids look like `F12`, are unique within a round, and stay stable across rounds for the same issue.
+- Ids look like `F12` and are unique within a round; no key outside the schema appears anywhere in
+  the file. Keeping an id stable across rounds for the same issue is the reviewer's duty, which the
+  gate cannot check.
 - `category` is one of the schema's enumerated values and `location` is `path`, `path:line` or
   `path:start-end`, so fingerprints compare like with like.
 - Identity across rounds is the fingerprint of category, file path, and normalized title, so a
@@ -81,9 +83,9 @@ Rules the gate enforces:
 for round in 1..max_rounds:
     reviewer writes <phase>-review-r<round>.json (round 1 has no prior)
     decision = review_gate.py <current> [--prior <previous> --fixes <previous fixes>] --max-rounds N --min-severity S --fix-floor F
-    PASS      -> stop; the gate is green; decision.fixable, if any, goes to the PR body unfixed
-    EXHAUSTED -> stop; apply the question policy to the blocking findings
-    STALLED   -> stop; reviewer and fixer disagree, escalate
+    PASS      -> stop; the gate is green
+    EXHAUSTED -> stop; proceed or block per the outcomes table
+    STALLED   -> stop; reviewer and fixer disagree
     CONTINUE  -> fixer applies decision.fixable by id, records fixed or rejected-with-reason
 ```
 
@@ -94,12 +96,15 @@ progress the reviewer judged insufficient; the loop continues while the budget l
 
 ## Outcomes
 
-| Outcome | In `auto` mode | In `raise` or `batch` mode |
-|---|---|---|
-| `PASS` | proceed; list `fixable` findings in the PR body under "Advisory findings" | same |
-| `EXHAUSTED`, no `Critical` | proceed, list blocking findings in the PR body under "Unresolved findings" | ask the user |
-| `EXHAUSTED`, `critical: true` | mark the story blocked; never open the PR | ask the user |
-| `STALLED` | mark the story blocked | ask the user |
+Gate outcomes are decisions of the loop, never questions to the user; the question mode does not
+change them.
+
+| Outcome | What the orchestrator does |
+|---|---|
+| `PASS` | proceed; `fixable` findings stay unfixed |
+| `EXHAUSTED`, no `Critical` | proceed; the blocking findings stay unresolved |
+| `EXHAUSTED`, `critical: true` | mark the story blocked; never open the PR |
+| `STALLED` | mark the story blocked |
 
 ## Roles
 

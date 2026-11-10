@@ -3,7 +3,7 @@ name: review-heavy
 description: Deep, risk-tiered multi-reviewer code review. Sizes the change, fans out to the right set of read-only reviewer subagents in parallel, cross-checks findings with a verification pass, then prints one severity-tiered report and verdict — and optionally posts it to the PR (inline + summary). Never approves or merges.
 argument-hint: "[pr-number | branch | files] [--post] [--request-changes]"
 disable-model-invocation: true
-allowed-tools: Bash(gh pr view *), Bash(gh pr diff *), Bash(gh repo view *), Bash(gh api repos/*/pulls/*/reviews*), Bash(gh api --method POST repos/*/pulls/*/reviews *), Bash(git *), Read, Grep, Glob, Write, Agent, mcp__atlassian__*
+allowed-tools: Bash(gh pr view *), Bash(gh pr diff *), Bash(gh repo view *), Bash(git merge-base *), Read, Grep, Glob, Write, Agent, mcp__atlassian__getJiraIssue
 model: opus
 ---
 
@@ -26,11 +26,14 @@ default to the current branch vs. its base.
 
 ## 2. Fetch context once → shared context file
 
-`gh pr view <n> --json title,body` + `gh pr diff <n>` (branch: `git diff <base>...HEAD` + `git log`).
+`gh pr view <n> --json title,body` + `gh pr diff <n>` (branch: `git diff <base>...HEAD` + `git log`,
+each of which asks for permission because their `--output` flag writes files; never pass it).
 Extract the Jira key (`[A-Z]+-[0-9]+`) from the branch/PR title and fetch the issue (description +
-acceptance criteria) via the Atlassian MCP server (API-token auth; e.g. `mcp__atlassian__getJiraIssue`
-— match your `.mcp.json` server name; not the retiring `/sse` endpoint). If Jira is unreachable or
-absent, **degrade gracefully** to PR-description-only. Write it all (PR title/body, full diff, Jira
+acceptance criteria) with the Atlassian MCP server's `getJiraIssue` tool (API-token auth, not the
+retiring `/sse` endpoint). The frontmatter pre-approves `mcp__atlassian__getJiraIssue`, so that read
+runs unprompted only when the `.mcp.json` server is named `atlassian`; any other Atlassian call,
+which could edit a ticket, asks for permission. If Jira is unreachable or absent, **degrade
+gracefully** to PR-description-only. Write it all (PR title/body, full diff, Jira
 or the degradation note) with **Write** to an absolute temp path you choose (e.g.
 `/tmp/claude-review-context-pr<N>.md`). Keep that **absolute path** — every reviewer reads it.
 

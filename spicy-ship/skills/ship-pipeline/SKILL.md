@@ -27,13 +27,12 @@ envelopes, nothing else.
 | 1 | `spicy-ship:phase:explorer` | `story.md` | `research-[nnn].md` | none |
 | 2 | `spicy-ship:phase:planner` | `story.md`, `research-[nnn].md` | `plan-[nnn].md` | none |
 | 3 | review loop: `spicy-ship:phase:plan-reviewer` and `spicy-ship:phase:fixer` in `plan` mode | `plan-[nnn].md`, `story.md` | `plan-review-r{n}.json`, `plan-fixes-r{n}.json` | `review.plan` |
-| 4 | `spicy-ship:phase:executor` | `plan-[nnn].md`, `research-[nnn].md` | commits, `progress-[nnn].md` | none |
+| 4 | `spicy-ship:phase:executor` | `plan-[nnn].md`, `research-[nnn].md`, `story.md` | commits, `progress-[nnn].md` | none |
 | 5 | review loop: `spicy-ship:phase:code-reviewer` and `spicy-ship:phase:fixer` in `code` mode | `base_sha..HEAD`, `story.md`, `plan-[nnn].md` | `code-review-r{n}.json`, `code-fixes-r{n}.json` | `review.code` |
 
-Phase 4 runs only after the plan gate is `PASS`, or `EXHAUSTED` with `critical: false`. Anything
-else stops the story. Before spawning the executor, record `git rev-parse HEAD` as `base_sha` in
-`ship-state.json`; every later phase reviews `base_sha..HEAD` and nothing older, whatever else the
-branch carries.
+Phase 4 runs only when the plan gate's outcome proceeds per the `review-loop` outcomes table. Before
+spawning the executor, record `git rev-parse HEAD` as `base_sha` in `ship-state.json`; every later
+phase reviews `base_sha..HEAD` and nothing older, whatever else the branch carries.
 
 ## Running a review loop
 
@@ -43,7 +42,7 @@ Follow `review-loop` exactly. Per round `n`:
    findings file and the previous fixes file.
 2. Run the gate. Never guess its outcome, and never hand-copy the gate parameters: render them
    from the story's frozen config with one plain command, then paste the printed line into the
-   gate call as a second plain command. No `$(...)` substitution; that is a compound command.
+   gate call as a second plain command.
 
    ```
    python3 ${CLAUDE_PLUGIN_ROOT}/scripts/ship_config.py --gate-flags=<phase> --from=<context>/ship-config.json
@@ -58,8 +57,7 @@ Follow `review-loop` exactly. Per round `n`:
    ```
 
 3. On `CONTINUE`, spawn the fixer with the findings file, the `fixable` ids, the mode, and in
-   `code` mode the progress file, whose recorded test command the fixer must run. Then the next
-   round.
+   `code` mode `story.md`, whose test command the fixer runs. Then the next round.
 4. On anything else, record the outcome in `ship-state.json` and act on it per the review-loop
    outcomes table.
 
@@ -69,6 +67,10 @@ fails the gate too, set `status: blocked` with the gate's message and stop.
 
 ## Handling envelopes
 
+- Every envelope, whatever its status, is appended as one line to `envelopes.jsonl` in the
+  context folder, with the phase and round added: create it with Write when it does not exist,
+  otherwise append with the Edit tool, never Write over it. The summaries are the record of what
+  each agent reported, including a code-reviewer's `single-pass: ...`.
 - `DONE`: record the artifact in `ship-state.json` and move on. The agent has already appended its
   `decisions` to `decisions.md`; the envelope copy is for your reply and the PR summary, never for
   writing to the log a second time.
@@ -79,11 +81,13 @@ fails the gate too, set `status: blocked` with the gate's message and stop.
   inputs plus the answers path. All state is on disk, so a fresh agent loses nothing.
 - `FAILED`: set `status: blocked` with the summary and stop. Do not retry a `FAILED` phase without
   a change in inputs. A permission denial, a missing tool, or an unreadable path is `FAILED`, not
-  `NEEDS_INPUT`: no question to the user changes it, and the fix is in the environment.
+  `NEEDS_INPUT`: no question to the user changes it, and the fix is in the environment. The one
+  exception is the code-reviewer without the Agent tool: it reviews in a single consolidated pass
+  and reports `DONE` with `single-pass: ...`, which is a result, not a failure.
 
 ## State
 
-`ship-state.json` is the only memory that survives compaction or a new session. Write it after
+`ship-state.json` is the resume point; the files named below decide the step within a phase. Write it after
 every phase and every gate:
 
 ```json
@@ -106,7 +110,8 @@ and whose gate passed. With `status: needs_input`, every question in `questions.
 `<phase>:<id>` key is absent from `answers.json` is still open; ask those before anything else. Inside a review loop the files
 decide the next step: no findings file for `round` means spawn the reviewer; findings but no fixes
 file means run the gate again, which is idempotent, and act on it; both present means the next
-round.
+round. Earlier envelopes are in `envelopes.jsonl`; read it back for anything the final reply needs,
+such as whether the code review fanned out or ran single-pass.
 
 ## Rules
 
@@ -116,12 +121,11 @@ round.
   run in the background in interactive sessions regardless; their completion arrives as a
   notification, and nothing in this pipeline can proceed without the previous phase's artifact.
   Never reply to the user, in part or in full, while a phase agent is still running.
-- Every phase agent's definition confines its shell use to git, the plugin scripts, and the
-  recorded test command; you do not need to repeat that, only to pass the paths it needs.
-- Run every shell command you issue, the gate above all, as one plain command from the
-  repository root: no `cd`, no pipe, no `&&`, `;` or `echo`. The same allow rules the agents live
-  under apply to you, and a compound command stops matching them and prompts or fails.
+- The one-plain-command rule in [references/agent-conduct.md](references/agent-conduct.md) applies
+  to you: one plain command per call, the gate above all. Every agent carries the
+  conduct rules itself; you pass paths, not reminders.
 - One agent per phase at a time; the two agents of a review loop alternate, they never overlap.
-- The executor's test run is the executor's claim. Before the story is called done, run the
-  command it recorded in `progress-[nnn].md` once yourself and keep it with its result line.
+- The executor's test run is the executor's claim. Before the story is called done, run the test
+  command `story.md` names once yourself and keep it with its result line; if `progress-[nnn].md`
+  records a different one, the story is blocked with both commands named.
 - Only the main session asks the user. If you are an agent, `NEEDS_INPUT` goes up, not out.

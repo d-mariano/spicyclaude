@@ -69,7 +69,7 @@ Specialized subagents (planner, researcher, executer, iterator, reviewers, crawl
 
 - **[commands/README.md](commands/README.md)** — All slash commands, including the `aidevtools` PRD/task generators, `/crawl`, and the `/design` router with its greenfield/integrate variants.
 - **[agents/README.md](agents/README.md)** — Full agent catalog.
-- **[skills/spice/README.md](skills/spice/README.md)** — SPICE deep dive.
+- **[skills/spice/SKILL.md](skills/spice/SKILL.md)** — SPICE deep dive.
 - **[CLAUDE.md](CLAUDE.md)** — The full philosophy.
 
 ## 🌶️ Statusline
