@@ -1,14 +1,34 @@
 """Tests for ship_config: config precedence and fail-loud validation."""
 
+import contextlib
+import io
 import json
+import os
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
+import review_gate
 import ship_config
 
 
 ABSENT = Path("/nonexistent/spicyclaude.json")
+
+
+def run_main(argv, env=None, project=None):
+    """Run ship_config.main in a hermetic environment and return (exit code, stdout, stderr)."""
+    with TemporaryDirectory() as tmp:
+        if project is not None:
+            (Path(tmp) / ".claude").mkdir()
+            (Path(tmp) / ".claude" / "spicyclaude.json").write_text(json.dumps(project))
+        out, err = io.StringIO(), io.StringIO()
+        with patch.dict(os.environ, {"CLAUDE_PROJECT_DIR": tmp, **(env or {})}, clear=True):
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                code = ship_config.main(argv)
+    return code, out.getvalue(), err.getvalue()
 
 
 def resolve(argv=(), env=None, project_file=ABSENT):
@@ -155,7 +175,6 @@ class ProjectRootTest(unittest.TestCase):
             self.assertEqual(ship_config.project_file({"CLAUDE_PROJECT_DIR": d}), Path(d) / ".claude" / "spicyclaude.json")
 
     def test_project_file_falls_back_to_git_toplevel(self):
-        import subprocess
         with TemporaryDirectory() as d:
             subprocess.run(["git", "init", "-q", d], check=True)
             nested = Path(d) / "pkg" / "api"
@@ -195,6 +214,170 @@ class ProjectFileErrorsTest(unittest.TestCase):
         with patch.object(ship_config.subprocess, "run", side_effect=FileNotFoundError("git")):
             with self.assertRaises(ship_config.ConfigError):
                 ship_config.project_file({})
+
+class GateFlagsTest(unittest.TestCase):
+    DEFAULT_LINE = "--max-rounds 3 --min-severity High --fix-floor Medium"
+    EXPECTED_DEFAULTS = {
+        "review": {
+            "plan": {"max_rounds": 3, "min_severity": "High", "fix_floor": "Medium"},
+            "code": {"max_rounds": 3, "min_severity": "High", "fix_floor": "Medium"},
+        },
+        "questions": {"mode": "auto", "escalate": ["irreversible"]},
+    }
+
+    def test_plan_prints_one_line_of_gate_flags(self):
+        self.assertEqual(run_main(["--gate-flags=plan"]), (0, self.DEFAULT_LINE + "\n", ""))
+
+    def test_code_reads_the_code_section(self):
+        code_line = "--max-rounds 5 --min-severity High --fix-floor Medium\n"
+        self.assertEqual(run_main(["--code-rounds=5", "--gate-flags=code"]), (0, code_line, ""))
+        self.assertEqual(run_main(["--code-rounds=5", "--gate-flags=plan"]), (0, self.DEFAULT_LINE + "\n", ""))
+
+    def test_cli_flag_applies(self):
+        line = "--max-rounds 2 --min-severity High --fix-floor Medium\n"
+        self.assertEqual(run_main(["--plan-rounds=2", "--gate-flags=plan"]), (0, line, ""))
+
+    def test_env_applies(self):
+        line = "--max-rounds 3 --min-severity Critical --fix-floor Medium\n"
+        self.assertEqual(run_main(["--gate-flags=code"], env={"SPICY_CODE_MIN_SEVERITY": "Critical"}), (0, line, ""))
+
+    def test_project_file_applies(self):
+        line = "--max-rounds 1 --min-severity High --fix-floor Medium\n"
+        project = {"review": {"plan": {"max_rounds": 1}}}
+        self.assertEqual(run_main(["--gate-flags=plan"], project=project), (0, line, ""))
+
+    def test_plugin_config_applies(self):
+        line = "--max-rounds 4 --min-severity High --fix-floor Medium\n"
+        argv = ["--plugin-config", "maxReviewRounds=4", "--gate-flags=plan"]
+        self.assertEqual(run_main(argv), (0, line, ""))
+
+    def test_unknown_reviewer_fails_loud(self):
+        for flag in ("--gate-flags=docs", "--gate-flags=Plan", "--gate-flags=", "--gate-flags"):
+            with self.subTest(flag=flag):
+                code, out, err = run_main([flag])
+                self.assertEqual(code, 1)
+                self.assertEqual(out, "")
+                self.assertIn("--gate-flags must be one of plan, code", err)
+
+    def test_invalid_config_with_gate_flags_fails_loud(self):
+        code, out, err = run_main(["--gate-flags=plan", "--min-severity=Nit"])
+        self.assertEqual(code, 1)
+        self.assertEqual(out, "")
+        self.assertIn("severity must be one of", err)
+
+    def test_cli_entry_point_defaults_to_sys_argv(self):
+        with TemporaryDirectory() as tmp:
+            result = subprocess.run(
+                [sys.executable, ship_config.__file__, "--gate-flags=plan"],
+                env={"CLAUDE_PROJECT_DIR": tmp},
+                capture_output=True,
+                text=True,
+            )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, self.DEFAULT_LINE + "\n")
+
+    def test_without_gate_flags_prints_full_json(self):
+        code, out, err = run_main([])
+        self.assertEqual((code, err), (0, ""))
+        self.assertEqual(out, json.dumps(self.EXPECTED_DEFAULTS, indent=2) + "\n")
+
+
+
+class GateFlagsFromTest(unittest.TestCase):
+    FROZEN = {
+        "review": {
+            "plan": {"max_rounds": 2, "min_severity": "Medium", "fix_floor": "Low"},
+            "code": {"max_rounds": 4, "min_severity": "Critical", "fix_floor": "Critical"},
+        },
+        "questions": {"mode": "raise", "escalate": []},
+    }
+
+    def frozen(self, tmp, payload=None):
+        path = Path(tmp) / "ship-config.json"
+        path.write_text(json.dumps(self.FROZEN if payload is None else payload))
+        return str(path)
+
+    def test_from_renders_the_frozen_section_and_ignores_live_sources(self):
+        with TemporaryDirectory() as tmp:
+            code, out, err = run_main(["--gate-flags=plan", f"--from={self.frozen(tmp)}"], env={"SPICY_PLAN_MAX_ROUNDS": "9"})
+        self.assertEqual((code, out, err), (0, "--max-rounds 2 --min-severity Medium --fix-floor Low\n", ""))
+
+    def test_from_reads_the_code_section_too(self):
+        with TemporaryDirectory() as tmp:
+            code, out, _ = run_main(["--gate-flags=code", f"--from={self.frozen(tmp)}"])
+        self.assertEqual((code, out), (0, "--max-rounds 4 --min-severity Critical --fix-floor Critical\n"))
+
+    def test_from_rejects_other_flags(self):
+        with TemporaryDirectory() as tmp:
+            code, out, err = run_main(["--gate-flags=plan", f"--from={self.frozen(tmp)}", "--plan-rounds=7"])
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("--plan-rounds", err)
+
+    def test_from_without_gate_flags_fails_loud(self):
+        with TemporaryDirectory() as tmp:
+            code, out, err = run_main([f"--from={self.frozen(tmp)}"])
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("only applies together with --gate-flags", err)
+
+    def test_from_missing_file_fails_loud(self):
+        code, out, err = run_main(["--gate-flags=plan", "--from=/nonexistent/ship-config.json"])
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("/nonexistent/ship-config.json", err)
+
+    def test_from_file_missing_section_fails_loud(self):
+        with TemporaryDirectory() as tmp:
+            path = self.frozen(tmp, {"review": {"plan": self.FROZEN["review"]["plan"]}, "questions": {}})
+            code, out, err = run_main(["--gate-flags=code", f"--from={path}"])
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("review.code", err)
+
+    def test_from_file_with_invalid_value_fails_loud(self):
+        with TemporaryDirectory() as tmp:
+            bad = json.loads(json.dumps(self.FROZEN))
+            bad["review"]["plan"]["max_rounds"] = "many"
+            code, out, err = run_main(["--gate-flags=plan", f"--from={self.frozen(tmp, bad)}"])
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("max_rounds", err)
+
+    def test_empty_from_fails_loud(self):
+        code, out, err = run_main(["--gate-flags=plan", "--from="])
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("--from needs the path", err)
+
+    def test_from_rejects_fix_floor_stricter_than_min_severity(self):
+        bad = {"review": {"plan": {"max_rounds": 3, "min_severity": "Medium", "fix_floor": "High"}}}
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ship-config.json"
+            path.write_text(json.dumps(bad))
+            code, out, err = run_main(["--gate-flags=plan", f"--from={path}"])
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("stricter than", err)
+
+    def test_from_malformed_files_fail_loud(self):
+        cases = {
+            "{not json": "cannot read",
+            "[1, 2]": "top level must be a JSON object",
+            '{"review": {"plan": []}}': "has no review.plan section",
+            '{"review": []}': "review must be a JSON object",
+            '{"review": null}': "review must be a JSON object",
+            '{"review": {"plan": {"max_rounds": 2}}}': "is missing ['min_severity', 'fix_floor']",
+        }
+        for payload, fragment in cases.items():
+            with self.subTest(payload=payload), TemporaryDirectory() as tmp:
+                path = Path(tmp) / "ship-config.json"
+                path.write_text(payload)
+                code, out, err = run_main(["--gate-flags=plan", f"--from={path}"])
+                self.assertEqual((code, out), (1, ""))
+                self.assertIn(fragment, err)
+
+    def test_printed_line_is_accepted_by_review_gate(self):
+        flags = run_main(["--gate-flags=plan"])[1].split()
+        with TemporaryDirectory() as tmp:
+            findings = Path(tmp) / "r1.json"
+            findings.write_text(json.dumps({"reviewer": "r", "target": "t", "round": 1, "prior_findings": [], "findings": []}))
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(review_gate.main([str(findings), *flags]), 0)
+
 
 if __name__ == "__main__":
     unittest.main()
