@@ -62,7 +62,7 @@ python3 -m unittest discover -s spicy-ship/scripts/tests -t spicy-ship/scripts
 
 ## Unattended runs
 
-Phase agents follow the [conduct rules](skills/ship-pipeline/references/agent-conduct.md): the shell only for git, the plugin scripts and the test command, each as one plain command, and files through the file tools. They also load the craft skills by name, and the explorer and planner fetch from the web. Pre-approve that surface and nothing stalls on a prompt:
+Phase agents follow the [conduct rules](skills/ship-pipeline/references/agent-conduct.md) for the shell and the file tools. They also load the craft skills by name, and the explorer and planner fetch from the web. Pre-approve that surface and nothing stalls on a prompt:
 
 ```json
 {"permissions": {"allow": ["Bash(git *)", "Bash(python3 *)", "Edit", "Write", "Skill", "WebSearch", "WebFetch"]}}

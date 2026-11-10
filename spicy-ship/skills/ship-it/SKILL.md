@@ -74,8 +74,8 @@ or skip a step, do not; report it in the final reply.
    `git push -u origin ship/[nnn]-{slug}`, and open a PR with `gh pr create`, the one `gh` command
    this skill pre-approves. Body
    sections, in order: Summary, the plan's AC trace table, "Decisions made autonomously" copied
-   verbatim from `decisions.md`, "Advisory findings" listing every `fixable` finding, all below
-   `min_severity`, from the final round of each gate, "Unresolved findings" listing the blocking
+   verbatim from `decisions.md`, "Advisory findings" listing every `fixable` finding not in
+   `blocking` from the final round of each gate, "Unresolved findings" listing the blocking
    findings of any gate that ended `EXHAUSTED`, with their ids, and the test command with its
    result line. Omit an empty section. Never merge.
 6. **Reply.** At most fifteen lines: status, PR link or blocked reason, rounds used per gate with

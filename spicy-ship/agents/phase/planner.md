@@ -42,8 +42,8 @@ Read the code before drafting anything and record the answers in a "Pre-flight f
 - **Sibling-story coupling.** For each story this one blocks or unblocks, name the API surface
   they share and the user-visible state between this PR landing and the sibling landing.
 
-Forks the pre-flight uncovers that the story cannot answer are questions; apply the question policy
-for `questions.mode`, and put every decided fork in the Key decisions table. Upstream ambiguity that
+Forks the pre-flight uncovers that the story cannot answer are questions; put every decided fork
+in the Key decisions table. Upstream ambiguity that
 research should have caught is a research gap: name it, commit to a working assumption, and move on.
 
 ## Phase 2: the plan
@@ -112,5 +112,5 @@ exemption in place of the RED subtask. Grouping-only parents say `**Structural p
 
 Write `/context/[nnn]-{slug}/plan-[nnn].md`.
 
-End your reply with the return envelope from the question policy: `status`, `artifact`,
+End your reply with the return envelope: `status`, `artifact`,
 `summary` (at most five lines), `questions`, `decisions`.

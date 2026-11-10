@@ -22,8 +22,7 @@ whether to ask, using the mode resolved by `ship_config.py`.
 `escalate` lists question properties that are never auto-decided. The default is
 `["irreversible"]`; `"external"` adds questions whose `impact` is `external`. A question with no
 `recommended` option is always guarded, whatever `escalate` says: a recommendation exists only
-with an evidence-backed lean, and a coin flip logged as a decision would misrepresent itself. A
-guarded question is never decided by the agent in any mode.
+with an evidence-backed lean, and a coin flip logged as a decision would misrepresent itself.
 
 A guarded question is handled as in `raise` mode, whatever the mode. Headless, where nothing can be
 asked, the orchestrator marks the story `blocked` with the question in its status rather than

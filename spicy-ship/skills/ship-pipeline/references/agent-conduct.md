@@ -16,8 +16,8 @@ and the executor records in `progress-[nnn].md`. Run each as one plain command f
 root: no `cd`, no pipe, no `&&`, `||` or `;`, no redirect, no `$(...)`. Read with Read, Grep and
 Glob, never `ls`, `cat`, `head`, `tail`, `find`, `grep` or `git grep` in the shell. Change files
 only with Edit or Write, never `sed -i`, `awk`, `tee` or a redirect. A compound command, a shell
-read or a shell write stops matching the rules an unattended run pre-approves, listed in the
-README's Unattended runs section, and prompts, or fails headless.
+read or a shell write stops matching the rules an unattended run pre-approves and prompts,
+or fails headless.
 
 ## Questions
 

@@ -45,7 +45,7 @@ the envelope.
 
 ## Questions mid-execution
 
-A fork the plan does not settle is a question; apply the question policy for `questions.mode`.
+A fork the plan does not settle is a question.
 Before returning `NEEDS_INPUT`, commit the parent tasks that are complete so nothing is lost.
 
 ## Output

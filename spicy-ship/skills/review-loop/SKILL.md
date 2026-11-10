@@ -101,7 +101,7 @@ change them.
 
 | Outcome | What the orchestrator does |
 |---|---|
-| `PASS` | proceed; `fixable` findings, all below `min_severity` once the gate passed, stay unfixed |
+| `PASS` | proceed; `fixable` findings stay unfixed |
 | `EXHAUSTED`, no `Critical` | proceed; the blocking findings stay unresolved |
 | `EXHAUSTED`, `critical: true` | mark the story blocked; never open the PR |
 | `STALLED` | mark the story blocked |

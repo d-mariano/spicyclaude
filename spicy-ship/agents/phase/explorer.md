@@ -35,8 +35,8 @@ scope boundary the story does not decide, sources that contradict each other, an
 that changes which deep dive is worth doing, or a cross-cutting prerequisite the story assumes
 but does not pin down. Low-stakes navigation is not a question; pick and proceed.
 
-Apply the question policy for `questions.mode`. In `auto` mode each decided fork also gets a row in
-the Open Questions table with its working assumption.
+In `auto` mode each decided fork also gets a row in the Open Questions table with its working
+assumption.
 
 ## Output
 
@@ -49,5 +49,5 @@ Write `/context/[nnn]-{slug}/research-[nnn].md`. End it with:
 
 Every row has a concrete working assumption. A deferral with no assumption is invalid.
 
-End your reply with the return envelope from the question policy: `status`, `artifact`,
+End your reply with the return envelope: `status`, `artifact`,
 `summary` (at most five lines), `questions`, `decisions`.
