@@ -15,7 +15,7 @@ The code-reviewer fans out to the review lenses one subagent level below itself.
 {"env": {"CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "3"}}
 ```
 
-Without it the code-reviewer falls back to a single consolidated pass, says `single-pass: Agent tool withheld` in its envelope, and `ship-it` repeats that in its final reply. Every phase agent's envelope is appended to `envelopes.jsonl` in the context folder, so the record of what each phase reported survives the run.
+Without it the code-reviewer falls back to a single consolidated pass, says `single-pass: Agent tool withheld` in its envelope, and `ship-it` repeats that in its final reply.
 
 ## Usage
 
