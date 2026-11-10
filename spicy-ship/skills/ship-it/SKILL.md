@@ -64,12 +64,12 @@ or skip a step, do not; report it in the final reply.
 3. **Questions.** On `NEEDS_INPUT`, apply `question-policy` for the resolved mode. When you ask,
    render each question through `AskUserQuestion` as the contract specifies, at most four per
    call, options in the given order, no "Other". Write `answers.json`, then resume the agent.
-4. **Done means.** The plan gate and the code gate each ended `PASS`, or `EXHAUSTED` with
-   `critical: false`. You ran the test command `story.md` names yourself after the code gate and
-   it is green. If the command `progress-[nnn].md` records differs from the story's, the story is
-   blocked with both commands named; never run a command only an agent wrote down. Any
-   `STALLED`, `FAILED`, or critical `EXHAUSTED` ends the run with `status: blocked`; say why and
-   stop. Never open a PR for a blocked story.
+4. **Done means.** The plan gate and the code gate each ended in an outcome the `review-loop`
+   outcomes table proceeds on. You ran the test command `story.md` names yourself after the code
+   gate and it is green. If the command `progress-[nnn].md` records differs from the story's, the
+   story is blocked with both commands named; never run a command only an agent wrote down. Any
+   other gate outcome, or a `FAILED` phase, ends the run with `status: blocked`; say why and stop.
+   Never open a PR for a blocked story.
 5. **Pull request.** Unless `--no-pr`: push only the story's branch, with
    `git push -u origin ship/[nnn]-{slug}`, and open a PR with `gh pr create`, the one `gh` command
    this skill pre-approves. Body

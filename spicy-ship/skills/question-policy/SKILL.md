@@ -1,6 +1,6 @@
 ---
 name: question-policy
-description: How ship pipelines handle open questions when the agent doing the work cannot ask the user. Defines the auto and raise modes, the escalation guard (irreversible questions by default, and always a question with no recommendation), the question contract agents return, and the decisions log that goes into the PR. Load when an agent hits a fork it cannot resolve from its inputs, or when an orchestrator receives NEEDS_INPUT.
+description: How ship pipelines handle open questions when the agent doing the work cannot ask the user. Defines the auto and raise modes, the escalation guard, the question contract agents return, and the decisions log that goes into the PR. Load when an agent hits a fork it cannot resolve from its inputs, or when an orchestrator receives NEEDS_INPUT.
 user-invocable: false
 ---
 

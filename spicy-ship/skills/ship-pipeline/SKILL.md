@@ -30,10 +30,9 @@ envelopes, nothing else.
 | 4 | `spicy-ship:phase:executor` | `plan-[nnn].md`, `research-[nnn].md`, `story.md` | commits, `progress-[nnn].md` | none |
 | 5 | review loop: `spicy-ship:phase:code-reviewer` and `spicy-ship:phase:fixer` in `code` mode | `base_sha..HEAD`, `story.md`, `plan-[nnn].md` | `code-review-r{n}.json`, `code-fixes-r{n}.json` | `review.code` |
 
-Phase 4 runs only after the plan gate is `PASS`, or `EXHAUSTED` with `critical: false`. Anything
-else stops the story. Before spawning the executor, record `git rev-parse HEAD` as `base_sha` in
-`ship-state.json`; every later phase reviews `base_sha..HEAD` and nothing older, whatever else the
-branch carries.
+Phase 4 runs only when the plan gate's outcome proceeds per the `review-loop` outcomes table. Before
+spawning the executor, record `git rev-parse HEAD` as `base_sha` in `ship-state.json`; every later
+phase reviews `base_sha..HEAD` and nothing older, whatever else the branch carries.
 
 ## Running a review loop
 
