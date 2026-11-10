@@ -29,9 +29,11 @@ default to the current branch vs. its base.
 `gh pr view <n> --json title,body` + `gh pr diff <n>` (branch: `git diff <base>...HEAD` + `git log`,
 each of which asks for permission because their `--output` flag writes files; never pass it).
 Extract the Jira key (`[A-Z]+-[0-9]+`) from the branch/PR title and fetch the issue (description +
-acceptance criteria) via the Atlassian MCP server (API-token auth; e.g. `mcp__atlassian__getJiraIssue`
-— match your `.mcp.json` server name; not the retiring `/sse` endpoint) Only that read is pre-approved; any other Atlassian call, which could edit a ticket, asks for permission.. If Jira is unreachable or
-absent, **degrade gracefully** to PR-description-only. Write it all (PR title/body, full diff, Jira
+acceptance criteria) with the Atlassian MCP server's `getJiraIssue` tool (API-token auth, not the
+retiring `/sse` endpoint). The frontmatter pre-approves `mcp__atlassian__getJiraIssue`, so that read
+runs unprompted only when the `.mcp.json` server is named `atlassian`; any other Atlassian call,
+which could edit a ticket, asks for permission. If Jira is unreachable or absent, **degrade
+gracefully** to PR-description-only. Write it all (PR title/body, full diff, Jira
 or the degradation note) with **Write** to an absolute temp path you choose (e.g.
 `/tmp/claude-review-context-pr<N>.md`). Keep that **absolute path** — every reviewer reads it.
 
