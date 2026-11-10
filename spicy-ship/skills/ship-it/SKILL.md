@@ -40,12 +40,6 @@ check split it into parts that each need approval, and a refused block ends the 
 
 - Any line from the first block is a tracked change; say what is uncommitted and stop. The
   untracked `context/` folder never shows here and is expected.
-- The code-reviewer spawns its lenses one level below itself. Interactive sessions have the depth
-  for that by default; headless runs on the build this was tested with did not, so unattended runs
-  put `{"env": {"CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "3"}}` in the project's settings, which is
-  harmless interactively. If any code-reviewer line in `envelopes.jsonl` says `single-pass: ...`, the lenses did
-  not run; say so in the final reply and name `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` as the
-  setting to check.
 
 ## Procedure
 
@@ -79,7 +73,9 @@ check split it into parts that each need approval, and a refused block ends the 
    their ids, and the test command with its result line. Never merge.
 6. **Reply.** At most fifteen lines: status, PR link or blocked reason, rounds used per gate with
    their outcomes, whether the code review fanned out or ran single-pass, open decisions count,
-   and the test result line.
+   and the test result line. A code-reviewer line in `envelopes.jsonl` that starts `single-pass:`
+   means the lenses did not run; say so and name `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` as the
+   setting to check.
 
 ## Never
 
