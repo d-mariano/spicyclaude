@@ -45,6 +45,7 @@ Standard library only, so they run wherever Claude Code runs.
 
 - `scripts/ship_config.py` resolves configuration and prints JSON. With `--gate-flags=plan|code` it prints that reviewer's `review_gate.py` flags on one line instead, and with `--from=<ship-config.json>` it renders them from a story's frozen config rather than resolving again.
 - `scripts/review_gate.py` validates a round's findings and prints the loop decision. After round 1 it needs `--prior` (the previous round's findings) and `--fixes` (the fixer's resolutions for that round).
+- `scripts/fleet_plan.py` validates a fleet manifest, a list of stories in the order they stack, and prints which story runs next and the branch it stacks on. No skill calls it yet.
 
 Run the tests with:
 
