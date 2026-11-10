@@ -28,7 +28,8 @@
         "Critical",
         "High",
         "Medium",
-        "Low"
+        "Low",
+        "Nit"
       ]
     },
     "questionMode": {

@@ -48,7 +48,7 @@ name the concrete bad outcome, it is not Critical or High.
 
 ## Scoring
 
-Four severities and a 0 to 100 confidence, as the review-loop skill defines. Trace the claim in
+Five severities and a 0 to 100 confidence, as the review-loop skill defines. Trace the claim in
 the code before scoring 80 or above; anything lower is dropped by the gate, so prefer silence over
 a shaky call. An unmet acceptance criterion you can quote is High. A plan that solves the wrong
 problem is Critical.

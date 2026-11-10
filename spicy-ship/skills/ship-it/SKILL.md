@@ -1,7 +1,7 @@
 ---
 name: ship-it
 description: Implement one well-defined story end to end without supervision: explore, plan, plan review loop, execute, code review loop, pull request. Use when the user says ship it, ship this story, or implement this story unattended.
-argument-hint: "<story-file | story text> [--max-review-rounds=N] [--min-severity=Critical|High|Medium|Low] [--questions=auto|raise] [--no-pr] [--resume <context-folder>]"
+argument-hint: "<story-file | story text> [--max-review-rounds=N] [--min-severity=Critical|High|Medium|Low|Nit] [--questions=auto|raise] [--no-pr] [--resume <context-folder>]"
 disable-model-invocation: true
 allowed-tools: Bash(git *) Bash(gh pr create *) Bash(python3 *) Read Write Edit Glob Grep Agent AskUserQuestion
 ---

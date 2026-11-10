@@ -18,4 +18,4 @@ Read-only reviewers, one lens each: `mental-alignment`, `security`, `code-qualit
 
 ## Shared contract
 
-Every reviewer scores against [skills/review-heavy/references/severity-rubric.md](skills/review-heavy/references/severity-rubric.md): four severities, a 0 to 100 confidence score, and a hard gate at 80. [what-not-to-flag.md](skills/review-heavy/references/what-not-to-flag.md) is the suppression list. Other plugins that consume findings, such as `spicy-ship`, build on this rubric.
+Every reviewer scores against [skills/review-heavy/references/severity-rubric.md](skills/review-heavy/references/severity-rubric.md): five severities, a 0 to 100 confidence score, and a hard gate at 80. [what-not-to-flag.md](skills/review-heavy/references/what-not-to-flag.md) is the suppression list. Other plugins that consume findings, such as `spicy-ship`, build on this rubric.

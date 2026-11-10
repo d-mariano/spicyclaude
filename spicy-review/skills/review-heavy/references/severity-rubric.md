@@ -11,6 +11,7 @@ Each finding gets **one severity** and **one confidence score**. Do not invent o
 | **High**     | A measurable regression, a real bug that will be hit in practice, or a clear, quotable guideline / `CLAUDE.md` violation.                                            | **Blocks / strong gate.**|
 | **Medium**   | A real issue but lower-impact or situational — worth fixing, not a blocker.                                                                                          | Advisory.                |
 | **Low**      | Minor / nice-to-have. Advisory; **suppress if it would make the report noisy.**                                                                                      | Advisory.                |
+| **Nit**      | Pure style or naming preference with no behavioral effect, beyond what a linter or formatter catches. **Suppress if it would make the report noisy.**                | Advisory, never blocks.  |
 
 Rules of thumb:
 - If you cannot name the concrete bad outcome, it is not Critical or High.
@@ -38,7 +39,7 @@ a missed nitpick is cheaper than a false alarm that erodes trust in the review.
 
 ```
 - title:      minimal words naming the issue (becomes the bolded header when posted)
-  severity:   Critical | High | Medium | Low
+  severity:   Critical | High | Medium | Low | Nit
   confidence: 0-100
   location:   path/to/file.ext:LINE   (range if needed)
   category:   the reviewer's domain — mental-alignment | security | code-quality | documentation |

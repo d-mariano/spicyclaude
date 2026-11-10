@@ -73,6 +73,13 @@ class OutcomeTest(unittest.TestCase):
         self.assertEqual(result["blocking"], [])
         self.assertEqual(result["fixable"], ["F1"])
 
+    def test_nit_finding_is_neither_blocking_nor_fixable_by_default(self):
+        result = decide(report(1, [finding("F1", "Nit")]))
+        self.assertEqual(result["outcome"], "PASS")
+        self.assertEqual(result["blocking"], [])
+        self.assertEqual(result["fixable"], [])
+        self.assertEqual(result["dropped_low_confidence"], [])
+
     def test_continue_when_blocking_and_rounds_remain(self):
         result = decide(report(1, [finding("F1", "High")]))
         self.assertEqual(result["outcome"], "CONTINUE")
@@ -370,6 +377,26 @@ class MainTest(unittest.TestCase):
             code, out, err = run_main([self.write(tmp, "r1.json", report(1, [finding("F1")]))])
         self.assertEqual((code, err), (0, ""))
         self.assertEqual(json.loads(out)["outcome"], "CONTINUE")
+
+    def test_default_gate_options_leave_a_nit_unblocking_and_unfixed(self):
+        with TemporaryDirectory() as tmp:
+            code, out, err = run_main([self.write(tmp, "r1.json", report(1, [finding("F1", "Nit")]))])
+        self.assertEqual((code, err), (0, ""))
+        decision = json.loads(out)
+        self.assertEqual(decision["outcome"], "PASS")
+        self.assertEqual(decision["blocking"], [])
+        self.assertEqual(decision["fixable"], [])
+        self.assertEqual(decision["max_rounds"], 3)
+        self.assertEqual(decision["min_severity"], "High")
+
+    def test_nit_fix_floor_hands_nit_findings_to_the_fixer(self):
+        with TemporaryDirectory() as tmp:
+            path = self.write(tmp, "r1.json", report(1, [finding("F1", "Nit")]))
+            code, out, err = run_main([path, "--fix-floor", "Nit"])
+        self.assertEqual((code, err), (0, ""))
+        decision = json.loads(out)
+        self.assertEqual(decision["fixable"], ["F1"])
+        self.assertEqual(decision["blocking"], [])
 
     def test_contract_violation_exits_two_with_prefix(self):
         with TemporaryDirectory() as tmp:

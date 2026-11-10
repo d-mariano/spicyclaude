@@ -35,7 +35,7 @@
       "properties": {
         "id": {"type": "string", "pattern": "^F[0-9]+$"},
         "title": {"type": "string", "minLength": 1, "description": "Fewest words that name the issue; part of the cross-round fingerprint."},
-        "severity": {"enum": ["Critical", "High", "Medium", "Low"]},
+        "severity": {"enum": ["Critical", "High", "Medium", "Low", "Nit"]},
         "confidence": {"type": "integer", "minimum": 0, "maximum": 100, "description": "Per the spicy-review rubric; under 80 is dropped by the gate."},
         "location": {"type": "string", "pattern": "^[^:]+(:[0-9]+(-[0-9]+)?)?$", "description": "path or path:line or path:start-end"},
         "category": {"enum": ["correctness", "security", "tests", "design", "ac-coverage", "mental-alignment", "code-quality", "documentation", "performance", "deps", "observability", "simplification"]},
