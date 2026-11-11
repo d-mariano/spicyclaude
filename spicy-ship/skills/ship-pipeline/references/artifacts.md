@@ -19,9 +19,10 @@ three-digit number under `/context/`; `slug` is kebab-case from the story title,
 | `code-review-r{n}.json` | code-reviewer | round `n` findings |
 | `code-fixes-r{n}.json` | fixer | round `n` resolutions |
 | `decisions.md` | every agent, append-only | one line per autonomous decision; copied into the PR body |
+| `pr-body.md` | orchestrator | the pull request description, written when the story finishes |
 | `answers.json` | orchestrator | the user's answers, keyed by `<phase>:<id>`, accumulated across the story |
 
-`nnn` inside file names matches the folder. Rounds start at 1. Research and every review and
-fixes JSON are write-once. The plan and `progress-[nnn].md` are updated in place, `decisions.md`,
+`nnn` inside file names matches the folder. Rounds start at 1. Research, `pr-body.md` and every
+review and fixes JSON are write-once. The plan and `progress-[nnn].md` are updated in place, `decisions.md`,
 `envelopes.jsonl` and `answers.json` only grow, and `ship-state.json` and `questions.json` are replaced. Nothing is
 deleted.

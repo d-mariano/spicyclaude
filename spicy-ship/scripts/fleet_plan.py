@@ -11,7 +11,7 @@ nothing else. Contract violations exit 2.
 The manifest is {"trunk": <branch>, "stories": [...]}. Each story has "id",
 "story" (the path of its story file), "depends_on" (ids of stories listed
 before it) and "status"; once it starts it also has its ship/* "branch", and it
-may carry "context", "pr" and "blocked_reason". A story with several
+may carry "context", "worktree", "pr" and "blocked_reason". A story with several
 dependencies needs one of them to depend on all the others, so that one branch
 holds everything it builds on.
 """
@@ -25,7 +25,7 @@ STATUSES = ("pending", "running", "needs_input", "blocked", "done")
 ACTIVE = ("running", "needs_input")
 MANIFEST_KEYS = ("trunk", "stories")
 STORY_KEYS = ("id", "story", "depends_on", "status")
-BOOKKEEPING_KEYS = ("branch", "context", "pr", "blocked_reason")
+BOOKKEEPING_KEYS = ("branch", "context", "worktree", "pr", "blocked_reason")
 BRANCH_PREFIX = "ship/"
 
 
@@ -124,7 +124,7 @@ def _check_story(story, position, by_id):
         return
     branch = story.get("branch")
     if not (isinstance(branch, str) and branch.startswith(BRANCH_PREFIX)):
-        raise FleetError(f"story {sid!r}: branch must be a {BRANCH_PREFIX}* branch once the story starts, got {branch!r}")
+        raise FleetError(f"story {sid!r}: branch must be a {BRANCH_PREFIX}* branch once it starts, got {branch!r}")
     for dep in story["depends_on"]:
         if by_id[dep]["status"] != "done":
             raise FleetError(f"story {sid!r} is {status} but its dependency {dep!r} is not done")

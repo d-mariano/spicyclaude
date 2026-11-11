@@ -64,20 +64,13 @@ or skip a step, do not; report it in the final reply.
 3. **Questions.** On `NEEDS_INPUT`, apply `question-policy` for the resolved mode. When you ask,
    render each question through `AskUserQuestion` as the contract specifies, at most four per
    call, options in the given order, no "Other". Write `answers.json`, then resume the agent.
-4. **Done means.** The plan gate and the code gate each ended in an outcome the `review-loop`
-   outcomes table proceeds on. You ran the test command `story.md` names yourself after the code
-   gate and it is green. If the command `progress-[nnn].md` records differs from the story's, the
-   story is blocked with both commands named; never run a command only an agent wrote down. Any
-   other gate outcome, or a `FAILED` phase, ends the run with `status: blocked`; say why and stop.
-   Never open a PR for a blocked story.
+4. **Done means.** The pipeline's Finishing section holds: both gates proceed, the story's test
+   command is green when you run it, and `pr-body.md` is written. Anything else ends the run with
+   `status: blocked`; say why and stop. Never open a PR for a blocked story.
 5. **Pull request.** Unless `--no-pr`: push only the story's branch, with
-   `git push -u origin ship/[nnn]-{slug}`, and open a PR with `gh pr create`, the one `gh` command
-   this skill pre-approves. Body
-   sections, in order: Summary, the plan's AC trace table, "Decisions made autonomously" copied
-   verbatim from `decisions.md`, "Advisory findings" listing every `fixable` finding not in
-   `blocking` from the final round of each gate, "Unresolved findings" listing the blocking
-   findings of any gate that ended `EXHAUSTED`, with their ids, and the test command with its
-   result line. Omit an empty section. Never merge.
+   `git push -u origin ship/[nnn]-{slug}`, and open the PR with
+   `gh pr create --title <story title> --body-file <context folder>/pr-body.md`, the one `gh`
+   command this skill pre-approves. Never merge.
 6. **Reply.** At most fifteen lines: status, PR link or blocked reason, rounds used per gate with
    their outcomes, whether the code review fanned out or ran single-pass, open decisions count,
    and the test result line. Any code-reviewer envelope in `envelopes.jsonl` whose `summary`

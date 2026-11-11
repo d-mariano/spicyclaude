@@ -48,7 +48,7 @@ Legacy single-prompt reviews remain as commands: [`/review:pragmatic-code-review
 
 ## 🚢 Ship
 
-**[spicy-ship](spicy-ship/)** ships one story unattended: `/spicy-ship:ship-it <story>` explores, plans, reviews the plan, implements, reviews the code, and opens a PR, delegating each phase to an agent. Its `review-loop` has a deterministic gate script and its `question-policy` says when you get asked.
+**[spicy-ship](spicy-ship/)** ships stories unattended: `/spicy-ship:ship-it <story>` explores, plans, reviews the plan, implements, reviews the code, and opens a PR, delegating each phase to an agent. `/spicy-ship:ship-fleet <manifest>` does that for several stories at once, each in its own worktree, as stacked PRs. Its `review-loop` has a deterministic gate script and its `question-policy` says when you get asked.
 
 ## 📦 Plugins
 

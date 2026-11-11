@@ -102,7 +102,8 @@ class StartTest(unittest.TestCase):
         self.assertEqual(decide(manifest(*stories)), decision("WAIT", active=[run("S2", "ship/001-a")]))
 
     def test_optional_bookkeeping_keys_are_accepted(self):
-        done = story("S1", "done", context="context/001-a", pr="https://example.test/pr/1", blocked_reason=None)
+        kept = {"context": "context/001-a", "worktree": "/w/1", "pr": "https://example.test/pr/1", "blocked_reason": None}
+        done = story("S1", "done", **kept)
         self.assertEqual(decide(manifest(done, story("S2")))["start"], [run("S2", "main")])
 
 

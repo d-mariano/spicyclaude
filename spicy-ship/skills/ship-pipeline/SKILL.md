@@ -113,6 +113,21 @@ file means run the gate again, which is idempotent, and act on it; both present 
 round. Earlier envelopes are in `envelopes.jsonl`; read it back for anything the final reply needs,
 such as whether the code review fanned out or ran single-pass.
 
+## Finishing
+
+The story is finished when both gates ended in an outcome the `review-loop` outcomes table
+proceeds on and the test command `story.md` names is green when you run it yourself, once, after
+the code gate. The executor's test run is the executor's claim; never run a command only an agent
+wrote down, and if `progress-[nnn].md` records a different command, the story is blocked with both
+commands named. Any other gate outcome, or a `FAILED` phase, leaves the story blocked.
+
+For a finished story, write `pr-body.md` in the context folder and set `status: done`. Its
+sections, in order: Summary, the plan's AC trace table, "Decisions made autonomously" copied
+verbatim from `decisions.md`, "Advisory findings" listing every `fixable` finding not in `blocking`
+from the final round of each gate, "Unresolved findings" listing the blocking findings of any gate
+that ended `EXHAUSTED`, with their ids, and the test command with its result line. Omit an empty
+section. A blocked story gets no `pr-body.md`.
+
 ## Rules
 
 - Paths, not content. Never paste an artifact into a prompt.
@@ -125,7 +140,4 @@ such as whether the code review fanned out or ran single-pass.
   to you: one plain command per call, the gate above all. Every agent carries the
   conduct rules itself; you pass paths, not reminders.
 - One agent per phase at a time; the two agents of a review loop alternate, they never overlap.
-- The executor's test run is the executor's claim. Before the story is called done, run the test
-  command `story.md` names once yourself and keep it with its result line; if `progress-[nnn].md`
-  records a different one, the story is blocked with both commands named.
 - Only the main session asks the user. If you are an agent, `NEEDS_INPUT` goes up, not out.

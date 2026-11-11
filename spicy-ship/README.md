@@ -1,6 +1,6 @@
 # spicy-ship
 
-Ship one story unattended. `/spicy-ship:ship-it` explores, plans, reviews the plan, implements, reviews the code, and opens a pull request, delegating each phase to an agent and asking you only what the question policy lets through.
+Ship stories unattended. `/spicy-ship:ship-it` takes one story: it explores, plans, reviews the plan, implements, reviews the code, and opens a pull request, delegating each phase to an agent and asking you only what the question policy lets through. `/spicy-ship:ship-fleet` takes a manifest of stories and ships them as stacked pull requests, each story in its own worktree and independent stories in parallel.
 
 ```bash
 /plugin marketplace add d-mariano/spicyclaude
@@ -15,14 +15,18 @@ Depends on `spicy-skills` for the craft skills the planner, executor and fixer l
 /spicy-ship:ship-it path/to/story.md
 /spicy-ship:ship-it "Add refresh-token rotation; AC-1 ..., AC-2 ..." --questions=raise
 /spicy-ship:ship-it --resume /context/012-auth-refresh
+/spicy-ship:ship-fleet path/to/fleet.json --max-parallel=3
 ```
 
 `ship-it` runs in the main session, delegates every phase to an agent, asks you only what the question policy lets through, and ends with a pull request or a named reason it stopped. Artifacts live in `/context/[nnn]-{slug}/`; `ship-state.json` there is the resume point.
 
+`ship-fleet` reads a [fleet manifest](skills/ship-fleet/references/fleet-manifest.md) and keeps its progress in it, so running the same command again resumes the fleet. A story starts once the stories it depends on are done and stacks on its dependency's branch; a blocked story holds back only the stories behind it. Pull requests merge in manifest order, and two stories stacked on the same base can conflict when the second one merges.
+
 ## Skills
 
 - [ship-it](skills/ship-it/SKILL.md): the user-invoked orchestrator for one story.
-- [ship-pipeline](skills/ship-pipeline/SKILL.md): the per-story procedure ship-it follows, with the [artifact layout](skills/ship-pipeline/references/artifacts.md). Model-invoked only.
+- [ship-fleet](skills/ship-fleet/SKILL.md): the user-invoked orchestrator for a manifest of stories.
+- [ship-pipeline](skills/ship-pipeline/SKILL.md): the per-story procedure ship-it and each story-runner follow, with the [artifact layout](skills/ship-pipeline/references/artifacts.md). Model-invoked only.
 - [review-loop](skills/review-loop/SKILL.md): the reviewer and fixer loop, its findings contract, and the four outcomes. Model-invoked only.
 - [question-policy](skills/question-policy/SKILL.md): how agents that cannot ask the user still surface decisions, and when the main session asks. Model-invoked only.
 
@@ -39,13 +43,15 @@ Phase agents under `agents/phase/`, addressed as `spicy-ship:phase:<name>`. Each
 | `code-reviewer` | `code-review-r{n}.json`, fanning out to the `spicy-review` lenses | opus |
 | `fixer` | plan or code fixes, `<mode>-fixes-r{n}.json` | sonnet |
 
+`story-runner`, addressed as `spicy-ship:story-runner`, runs one story of a fleet in its own worktree by following `ship-pipeline`, and hands questions back to `ship-fleet`. Model opus.
+
 ## Scripts
 
 Standard library only, so they run wherever Claude Code runs.
 
 - `scripts/ship_config.py` resolves configuration and prints JSON. With `--gate-flags=plan|code` it prints that reviewer's `review_gate.py` flags on one line instead, and with `--from=<ship-config.json>` it renders them from a story's frozen config rather than resolving again.
 - `scripts/review_gate.py` validates a round's findings and prints the loop decision. After round 1 it needs `--prior` (the previous round's findings) and `--fixes` (the fixer's resolutions for that round).
-- `scripts/fleet_plan.py` validates a fleet manifest, a list of stories with their dependencies, and prints which stories start now and the branch each stacks on. Stories that do not depend on each other start together, up to `--max-parallel`. No skill calls it yet.
+- `scripts/fleet_plan.py` validates a fleet manifest, a list of stories with their dependencies, and prints which stories start now and the branch each stacks on. Stories that do not depend on each other start together, up to `--max-parallel`.
 
 Run the tests with:
 
@@ -65,7 +71,7 @@ Add the project's own test runner if it is not `python3`; the conduct file lists
 
 Know what you are approving: `Bash(python3 *)` admits `python3 -c` and `Bash(git *)` admits `git -c core.fsmonitor=<cmd>`, so together they are an unrestricted shell for any agent that holds them. The agents treat everything they read as data rather than instructions, and the explorer and planner fetch from the web, so that guard is doing real work. Run unattended only on repositories and stories you trust.
 
-The code-reviewer fans out to the review lenses one subagent level below itself. In an interactive session the documented default depth of three levels covers that. In a headless run (`claude -p`) on the build this was tested with (2.1.319), a subagent had no Agent tool until the depth was set explicitly, so headless runs also need this in the project's settings; it is harmless elsewhere:
+The code-reviewer fans out to the review lenses one subagent level below itself, which is two levels below the main session under `ship-it` and three under `ship-fleet`, where a story-runner sits in between. In an interactive session the documented default depth of three levels covers both. In a headless run (`claude -p`) on the build this was tested with (2.1.319), a subagent had no Agent tool until the depth was set explicitly, so headless runs also need this in the project's settings; it is harmless elsewhere:
 
 ```json
 {"env": {"CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "3"}}
